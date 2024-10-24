@@ -130,7 +130,7 @@
     <div class="container">
         <div class="login-container">
             <div class="form-container">
-                <form method="post" action="{% url 'user_login' %}">
+                <form method="post" action="{% url 'user_app:user_login' %}">
                     {% csrf_token %}
                     <h2>Welcome Back</h2>
                     <input type="email" placeholder="Email"  id="email" name="email" value="{{email}}" required />
@@ -143,9 +143,9 @@
                           Sign in using Google
                     </button></a> 
                     <div class="links">
-                        <a href="{% url 'forget_password' %}">Forgot your password?</a>
+                        <a href="{% url 'user_app:forget_password' %}">Forgot your password?</a>
                         <br>
-                        <a href="{% url 'sign_up' %}">Don't have an account? Sign Up</a>
+                        <a href="{% url 'user_app:sign_up' %}">Don't have an account? Sign Up</a>
                         {% if messages %}
                         {% for message in messages %}
                             <div class="alert  mt-3">

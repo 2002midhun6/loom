@@ -14,6 +14,8 @@ User = get_user_model()
 # Create your views here.
 
 def user_login(request):
+    # if request.user.is_authenticated:
+    #     return redirect('index')
    
     
     if request.method == 'POST':
@@ -35,9 +37,9 @@ def user_login(request):
             # else:
             #     request.session.set_expiry(0) # expires when browser is closed
             if user.is_staff:
-                return redirect('#')
+                return redirect('admin_app:admin_home')
             else:
-                return redirect('index')
+                return redirect('user_app:index')
         else:
             error='Email or Password wrong!'
             return render(request,'user/login.html',{'email':email,'password':password,'error':error})
@@ -45,6 +47,8 @@ def user_login(request):
         return render(request,'user/login.html')
 @never_cache  
 def sign_up(request):
+    if request.user.is_authenticated:
+        return redirect('user_app:index')
     error=None
     if request.method == 'POST':
         
@@ -83,7 +87,7 @@ def sign_up(request):
                     valid_time = (datetime.now() + timedelta(minutes=3)).isoformat()  # Convert to string
                     request.session['valid_time'] = valid_time
                     request.session['access']=False
-                    return redirect('enter_otp')  # Redirect to OTP verification page
+                    return redirect('user_app:enter_otp')  # Redirect to OTP verification page
                 else:
                     error1= 'Email already exists!'
                     return render(request,'user/sign_up.html',{"error1":error1,"email":email,"username":username,"first_name":first_name,"last_name":last_name,"password":password,"confirm_password":confirm_password})
@@ -124,7 +128,7 @@ def sign_up(request):
                 return None
             valid_time = (datetime.now() + timedelta(minutes=3)).isoformat()  # Convert to string
             request.session['valid_time'] = valid_time
-            return redirect('enter_otp')  # Redirect to OTP verification page
+            return redirect('user_app:enter_otp')  # Redirect to OTP verification page
 
     
     return render(request,'user/sign_up.html')  
@@ -198,7 +202,7 @@ def enter_otp(request):
             del request.session['valid_time']
 
             messages.success(request, "Your email has been verified! You can now log in.")
-            return redirect('user_login')
+            return redirect('user_app:user_login')
     return render(request,'user/otp_enter.html')
 @never_cache
 def resend_otp(request):
@@ -233,9 +237,9 @@ def resend_otp(request):
             valid_time = (datetime.now() + timedelta(minutes=3)).isoformat()  # Convert to string
             request.session['valid_time'] = valid_time
             if request.session['access']:
-                return redirect('enter_otp_password')
+                return redirect('user_app:enter_otp_password')
             else:
-                return redirect('enter_otp')  
+                return redirect('user_app:enter_otp')  
 # forget_password
 @never_cache
 def forget_password(request):
@@ -268,7 +272,7 @@ def forget_password(request):
                     print('redirecting to the verify OTP page')
                     valid_time = (datetime.now() + timedelta(minutes=3)).isoformat()  # Convert to string
                     request.session['valid_time'] = valid_time
-                    return redirect(enter_otp_password)  # Redirect to OTP verification page
+                    return redirect('user_app:enter_otp_password')  # Redirect to OTP verification page
             else:
                 messages.error(request, 'Email does not exists!')
                 
@@ -303,7 +307,7 @@ def enter_otp_password(request):
             del request.session['registration_otp']
             
             del request.session['valid_time']
-            return redirect(password_check)
+            return redirect('user_app:password_check')
     
     return render(request,'user/otp_password.html')
 @never_cache
@@ -325,7 +329,7 @@ def password_check(request):
             
         messages.success(request,'Password changed successfully')
         
-        return redirect('user_login')
+        return redirect('user_app:user_login')
         
    else:
        

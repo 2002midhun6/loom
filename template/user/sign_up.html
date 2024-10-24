@@ -66,7 +66,7 @@
                         <p class="mb-0">Create your account</p>
                     </div>
                     <div class="signup-form">
-                        <form method="post" action="{% url 'sign_up'%}">
+                        <form method="post" action="{% url 'user_app:sign_up'%}">
                             {% csrf_token %}
                             
                             <div class="row mb-3">
@@ -104,7 +104,7 @@
                         </form>
                         
                         <div class="text-center">
-                            <small>Already have an account? <a href="{% url 'user_login' %}">Login</a></small>
+                            <small>Already have an account? <a href="{% url 'user_app:user_login' %}">Login</a></small>
                         </div>
                         
                        

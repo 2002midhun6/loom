@@ -69,7 +69,7 @@
                         <p class="mb-0">Enter OTP</p>
                     </div>
                     <div class="otp-form">
-                        <form method="post" action="{% url 'enter_otp' %}">
+                        <form method="post" action="{% url 'user_app:enter_otp' %}">
                             {% csrf_token %}
                             
                             <div class="mb-4">

@@ -172,10 +172,10 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 
-LOGIN_URL = 'user:user_login'
-LOGOUT_URL = 'user:user_login'
-LOGIN_REDIRECT_URL = 'user:index'
-ACCOUNT_LOGOUT_REDIRECT_URL = 'user:user_login'
+LOGIN_URL = 'user_login'
+LOGOUT_URL = 'user_login'
+LOGIN_REDIRECT_URL = 'index'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'user_login'
 
 SOCIALACCOUNT_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
