@@ -14,8 +14,9 @@ User = get_user_model()
 # Create your views here.
 
 def user_login(request):
-    # if request.user.is_authenticated:
-    #     return redirect('index')
+    if request.user.is_authenticated:
+        return redirect('user_app:index')
+    
    
     
     if request.method == 'POST':
@@ -336,7 +337,17 @@ def password_check(request):
         return render(request,'user/password_check.html')
 @never_cache
 def index(request):
-    return render(request,'user/index.html')
+    if request.user.is_authenticated:
+        return render(request,'user/index.html')
+    return redirect('user_app:user_login')
+@never_cache
+def user_logout(request):
+ if request.user.is_authenticated:
+    if request.method=='POST':
+        logout(request)
+        return redirect('user_app:user_login')
+ else:
+          return redirect('user_app:index')
 
               
         

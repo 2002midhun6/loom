@@ -1,0 +1,83 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+{% block content%}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4">category.name</h2>
+            
+            <!-- Add Category Button -->
+            <!-- <form action="{% url 'category_app:add_category'%}" method="post"> -->
+                <a href="{% url 'category_app:add_sub_category'%}">
+            <div class="d-flex justify-content-end mb-3 mt-5">
+                <button type="button" class="btn btn-primary" >
+                    Add Sub_category
+                </button>
+            </div>
+        </a>
+        <!-- </form> -->
+
+            <!-- Category Table -->
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                    
+                        <th>Sub_Category Name</th>
+                        <th>Image</th>
+                        <th>Actions</th>
+
+                        
+
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in sub_category_obj %}
+                    <!-- Example Categories -->
+                    <tr>
+                        <td>{{i.sub_category_name}}</td>
+                        <td><img src="{{i.sub_category_image.url}}" width="100" height="50"></td>
+                        <td>
+                            {% if i.is_listed %}
+                            <form action="{% url 'category_app:sub_category_list' i.id %}" method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="user_id" value="2">
+                                <input type="submit" class="form-control form-control-lg rounded-pill bg-light border-success" value="unlist">
+                            </form>
+                            {% endif %}
+                            {% if not i.is_listed %}
+                            <form action="{% url 'category_app:sub_category_list' i.id %} " method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="user_id" value="2">
+                                <input type="submit" class="form-control form-control-lg  rounded-pill bg-light border-danger  text-dark" value="list">
+                            </form>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'category_app:sub_category_edit' i.id%}">
+                            <button class="btn btn-sm btn-warning">Edit</button>
+                        </a>
+                        
+                       
+                            <!-- <form action="" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary mt-3">View Subcategory </button>
+                            </form> -->
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{message.tags}}">
+                            <strong>{{message}}</strong>
+                        </div>
+                    {% endfor %}
+                 {% endif %}
+                    
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

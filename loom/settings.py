@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'user',
+    'category',
      
     # Google sign in 
     'django.contrib.sites',
@@ -133,6 +134,10 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR / 'staticfiles')
 
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 # Additional directories with static files
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR / "static")
@@ -172,10 +177,10 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 
-LOGIN_URL = 'user_login'
-LOGOUT_URL = 'user_login'
-LOGIN_REDIRECT_URL = 'index'
-ACCOUNT_LOGOUT_REDIRECT_URL = 'user_login'
+LOGIN_URL = 'user_app:user_login'
+LOGOUT_URL = 'user_app:user_login'
+LOGIN_REDIRECT_URL = 'user_app:index'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'user_app:user_login'
 
 SOCIALACCOUNT_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',

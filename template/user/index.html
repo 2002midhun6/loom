@@ -61,6 +61,19 @@
 						<div class="col-sm-12 text-left menu-1">
 							<ul>
 								<li class="active"><a href="index.html">Home</a></li>
+								<li><form action="{% url 'user_app:user_logout' %}" method="post">
+									{% csrf_token %}
+								<li class="sidebar-item">
+									
+								  <button type="submit" class="btn btn-primary">
+									<span>
+									  <i class="ti ti-login"></i>
+									</span>
+									<span class="hide-menu">Log_out</span>
+								  </a>
+								</li>
+							</button>
+							</form></li>
 								<li class="has-dropdown">
 									<a href="men.html">Men</a>
 									<ul class="dropdown">
