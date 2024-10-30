@@ -1,0 +1,27 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+{% block content%}
+<br><br>
+    <div class="container mt-5">
+        <h2 class="mb-4">Add New varient</h2>
+        <form action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="sub_category-name" class="form-label">Product Size:</label>
+                <input type="number" class="form-control" id="size" name="size" required>
+
+            </div>
+
+            <div class="mb-3">
+                <label for="sub_category-name" class="form-label">Product Count:</label>
+                <input type="number" class="form-control" id="stock" name="stock" required>
+
+            </div>
+            
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary">Add varients</button>
+        </form>
+    </div>
+{% endblock %}

@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'user',
     'category',
+    'product',
+    'user_app',
+   
      
     # Google sign in 
     'django.contrib.sites',

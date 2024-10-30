@@ -9,6 +9,7 @@ from django.contrib.auth import login,authenticate,logout
 from django.contrib.auth import get_user_model
 from django.views.decorators.cache import never_cache
 
+
 User = get_user_model()
 
 # Create your views here.
@@ -24,15 +25,18 @@ def user_login(request):
         password = request.POST.get('password')
         print(email)
         print(password)
+        user_block = CustomUser.objects.get(email = email)
+        if user_block.is_block:
+                messages.error(request, 'you are blocked by the admin!')
+                return render(request,'user/login.html')
         # remember_me = request.POST.get('remember_me')
         user = authenticate(request, email=email, password = password)
         print(user)
         if user is not None:
+           
             login(request, user)
-            user_block = CustomUser.objects.get(email = email)
-            if user_block.is_block:
-                messages.error(request, 'you are blocked by the admin!')
-                return render(request,'user/login.html')
+           
+            
             # if remember_me:
             #     request.session.set_expiry(1209600)  # 2 weeks
             # else:
@@ -337,15 +341,16 @@ def password_check(request):
         return render(request,'user/password_check.html')
 @never_cache
 def index(request):
-    if request.user.is_authenticated:
-        return render(request,'user/index.html')
-    return redirect('user_app:user_login')
+ 
+
+        return render(request,'user/user_index.html')
+    
 @never_cache
 def user_logout(request):
  if request.user.is_authenticated:
     if request.method=='POST':
         logout(request)
-        return redirect('user_app:user_login')
+        return redirect('user_app:index')
  else:
           return redirect('user_app:index')
 
@@ -353,3 +358,6 @@ def user_logout(request):
         
   
 
+#  <a href="{% url 'cart_app:add_to_cart' product.id %}" class="btn_3">add to cart</a>
+#  <a href="{% url 'wishlist_app:add_to_wishlist' product.id %}" class="like_us"> <i class="ti-heart"></i> </a>
+            

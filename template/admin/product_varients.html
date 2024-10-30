@@ -1,0 +1,68 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+{% block content%}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4">Product varients</h2>
+            
+            <!-- Add Category Button -->
+            <!-- <form action="{% url 'category_app:add_category'%}" method="post"> -->
+               
+            <div class="d-flex justify-content-end mb-3 mt-5">
+               
+                <a href="{% url 'product_app:add_varient' %}">
+                    <button type="button" class="btn btn-primary ms-2" >
+                        Add Size And Stock
+    
+                    </button>
+                    </a>
+                  
+
+            </div>
+            
+        
+        <!-- </form> -->
+
+            <!-- Category Table -->
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>size</th>
+                        <th>stock</th>
+                        <th>update</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for varient in varients%}
+                    <!-- Example Categories -->
+                    <tr> 
+                        <td>{{varient.size}}</td>
+                        <td>{{varient.stock}}</td>
+                        
+                           <td>
+
+                           
+                          <a href="{% url 'product_app:edit_varient' varient.id %}">
+
+                            <button class="btn btn-sm btn-warning">ADD STOCK</button>
+                            </a>
+                        
+                        </td>
+                    </tr>
+                    {% endfor %}
+                   
+                    
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+{% endblock %}

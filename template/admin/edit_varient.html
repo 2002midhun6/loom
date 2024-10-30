@@ -1,0 +1,21 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+{% block content%}
+<br><br>
+    <div class="container mt-5">
+        <h2 class="mb-4">ADD STOCK</h2>
+        <form action="{% url 'product_app:edit_varient' varient.id %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            
+            <div class="mb-3">
+                <label for="stock" class="form-label">add stock:</label>
+                <input type="number" class="form-control" id="stock" name="stock" required>
+            </div>
+            <input type="submit" class="btn-outline-primary">
+            
+        </form>
+    </div>
+
+
+{% endblock  %}

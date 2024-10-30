@@ -2,7 +2,7 @@ from django.shortcuts import render,redirect
 from  . models import *
 from django.views.decorators.cache import never_cache
 from django.contrib import messages
-from django.views.decorators.cache import never_cache
+
 
 # Create your views here.
 @never_cache

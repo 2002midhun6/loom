@@ -1,0 +1,67 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+{% block content%}
+<br><br>
+    <div class="container mt-5">
+        <h2 class="mb-4">Add New product</h2>
+        <form action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="sub_category-name" class="form-label">Poduct Name:</label>
+                <input type="text" class="form-control" id="product_name" name="product_name" required>
+
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">description:</label>
+                <input type="text" class="form-control" id="description" name="description" required>
+
+            </div>
+
+            <div class="mb-3">
+                <label for="main-category" class="form-label">Sub Category</label>
+                <select id="sub_category" class="form-select"  name="sub_category">
+                    <option value="">Select a category</option>
+                    {% for i in sub_categories %}
+                    <option value="{{i.id}}">{{i.sub_category_name}}</option>
+                    {% endfor %}
+                   
+                </select>
+            </div>
+            
+
+
+            <div class="mb-3">
+                <label for="image" class="form-label">Product Image 1:</label>
+                <input type="file" class="form-control" id="image1" name="image1" accept="image/*" required>
+            </div>
+            <div class="mb-3">
+                <label for="-image" class="form-label">Product Image 2:</label>
+                <input type="file" class="form-control" id="image2" name="image2" accept="image/*" required>
+            </div>
+            <div class="mb-3">
+                <label for="category-image" class="form-label">Product Image 2:</label>
+                <input type="file" class="form-control" id="image3" name="image3" accept="image/*" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="price" class="form-label">Price:</label>
+                <input type="text" class="form-control" id="price" name="price" required>
+
+            </div>
+
+
+            <div class="mb-3">
+                <label for="available" class="form-label">Available:</label>
+                <select class="form-select" id="available" name="available" required>
+                    <option value="True">Yes</option>
+                    <option value="False">No</option>
+                </select>
+            </div>
+
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary">Add Product</button>
+        </form>
+    </div>
+{% endblock %}
