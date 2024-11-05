@@ -3,6 +3,7 @@ from  . models import *
 from category.models import *
 from django.db.models import F
 
+
 # Create your views here.
 def admin_product_view(request):
     if request.user.is_authenticated and request.user.is_staff:
@@ -162,7 +163,8 @@ def edit_product(request,id):
         return render(request,'admin/edit_product.html',context)
     else:
         return redirect('user_app:index')
-         
+
+
          
          
 

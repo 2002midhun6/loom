@@ -1,0 +1,126 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+{% block content%}
+<style>
+    
+    #search{
+		color: black;
+		font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+		font-weight: 500;
+		border-radius: 10px;
+        border: 1px solid #666;
+		padding-left: 13px;
+		width: 12rem;
+		height: 40px;
+		
+	}
+	
+</style>
+<div class="container mt-5">
+    <br><br><br>
+    <div class="col-sm-5" id="tdiv">
+        <h2 class="mb-4">Coupon Details</h2>
+        <form action="" method="get">
+            <input id="search" type="search" name="search_query" placeholder="Search offer..." {% if query %} value="{{query}}" {% endif %} >
+            <button class="btn btn-outline-primary" type="submit">Search</button>
+        </form>
+        <a href="{% url 'admin_app:add_coupon' %}" ><button class="btn btn-primary"type="button" style="margin-left: 50rem;transform: translateY(-2rem);">Add</button></a>
+    </div><br>
+
+    <!-- alert box  -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{message.tags}}">
+                <strong>{{message}}</strong>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <script>
+        setTimeout (() => {
+            $(".alert").alert("close")
+        },3000)
+    </script>
+
+    {% if coupons %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">Code</th>
+                    <th scope="col">Minimum Order Amount</th>
+                    <th scope="col">Maximum Order Amount</th>
+                    <th scope="col">Used Limit</th>
+                    <!-- <th scope="col">Created At</th> -->
+                    <th scope="col">Expiry Date</th>
+                    <th scope="col">Discount Amount</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for coupon in coupons %}
+                <tr>
+                    <td>{{ coupon.code }}</td>
+                    <td>{{ coupon.minimum_order_amount }} Rs</td>
+                    <td>{{ coupon.maximum_order_amount }} Rs</td>
+                    <td>{{ coupon.used_limit }}</td>
+                    <!-- <td>{{ coupon.created_at|date:"d M Y H:i" }}</td> -->
+                    <td>{{ coupon.expiry_date|date:"d M Y H:i" }}</td>
+                    <td>{{ coupon.discount_amount }} Rs</td>
+                    <td>
+                        <a href="{% url 'admin_app:edit_coupon' coupon.id %}" ><button class="btn btn-primary"  type="button" >Edit</button></a>
+                    </td>
+                    <td>
+                        <form  action="{% url 'admin_app:remove_coupon' coupon.id %}" method="post">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-danger"type="submit" >Remove</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p>No coupons available.</p>
+    {% endif %}
+</div>
+<script>
+    document.querySelectorAll(".remove_coupon").forEach(form => {
+        form.addEventListener("submit", function(event) {
+            event.preventDefault(); // Prevent the form from submitting immediately
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show success alert after deletion confirmation
+                    Swal.fire({
+                        title: "Deleted!",
+                        text: "Your coupon has been deleted.",
+                        icon: "success",
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        // Submit the form after confirmation
+                        form.submit();
+                    });
+                }
+            });
+        });
+    });
+</script>
+
+<script
+  src="https://code.jquery.com/jquery-3.7.1.js"
+  integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+  crossorigin="anonymous">
+</script>
+{% endblock content %}

@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'category',
     'product',
     'user_app',
+    'cart',
+    'address',
    
      
     # Google sign in 
