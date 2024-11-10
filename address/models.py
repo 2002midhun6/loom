@@ -17,5 +17,6 @@ class Address(models.Model):
     alternative_phone = models.CharField(max_length=20, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     address_type = models.CharField(max_length=10,choices=ADDRESS_TYPE_CHOICES)
+    default = models.BooleanField(default=False)
 
     

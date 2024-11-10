@@ -5,6 +5,7 @@ from django.contrib.auth import login,authenticate,logout
 from django.views.decorators.cache import never_cache
 from product.models import *
 from django.contrib import messages
+from order.models import *
 
 
 # Create your views here.
@@ -240,21 +241,16 @@ def add_banner(request):
         if request.method == 'POST':
             banner_name = request.POST.get('banner_name')
             description = request.POST.get('description')
-            product_id = request.POST.get('product_id')
-            price = request.POST.get('price')
-            deal_price = request.POST.get('deal_price')
+           
             banner_image = request.FILES.get('banner_image')
             start_date = request.POST.get('start_date')
             end_date = request.POST.get('end_date')
-            print(product_id)
-            product = Product.objects.get(id = product_id)
+           
             
             new_banner = Banner(
                 banner_name = banner_name,
                 banner_description = description,
-                product = product,
-                price = price,
-                deal_price = deal_price,
+        
                 banner_image = banner_image,
                 start_date = start_date,
                 end_date = end_date,
@@ -264,10 +260,10 @@ def add_banner(request):
             messages.success(request,f'New banner {banner_name} added.')
             return redirect('admin_app:admin_banner')
         
-        products = Product.objects.all()
+        banner = Banner.objects.all()
         
         context = {
-            'products':products,
+            'banner':banner,
         }
         
         return render(request,'admin/add_banner.html',context)
@@ -281,20 +277,15 @@ def edit_banner(request,id):
         if request.method == 'POST':
             banner_name = request.POST.get('banner_name')
             description = request.POST.get('description')
-            product_id = request.POST.get('product_id')
-            price = request.POST.get('price')
-            deal_price = request.POST.get('deal_price')
+           
             banner_image = request.FILES.get('banner_image')
             start_date = request.POST.get('start_date')
             end_date = request.POST.get('end_date')
             
-            product = Product.objects.get(id = product_id)
+           
             
             banner.banner_name = banner_name
             banner.banner_description = description
-            banner.product = product
-            banner.price = price
-            banner.deal_price = deal_price
             banner.start_date = start_date
             banner.end_date = end_date
             
@@ -306,11 +297,10 @@ def edit_banner(request,id):
             messages.success(request,f' banner {banner_name} edited.')
             return redirect('admin_app:admin_banner')
         
-        products = Product.objects.exclude(id = banner.product.id)
-        
+       
         context = {
             'banner':banner,
-            'products':products,
+           
         }
         
         return render(request,'admin/edit_banner.html',context)
@@ -329,5 +319,63 @@ def remove_banner(request,id):
         return redirect('admin_app:admin_banner')
     else:
         return redirect('user_app:index')
+def admin_orders(request):
+    if request.user.is_authenticated and request.user.is_staff:
+        query = request.GET.get('search_query')
+        if query:
+            orders = Order.objects.filter(id__icontains = query)        
+        else:
+            orders = Order.objects.all().order_by('-id')
+        context = {
+            'orders':orders,
+            'query':query,
+        }
+        return render(request,'admin/order.html',context)
     
+    else:
+        return redirect('user_app:home')
+
+def show_order(request,id):
+    if request.user.is_authenticated and request.user.is_staff:
+        order = Order.objects.get(id = id)
+        order_items = order.items.all()
+        print(order_items )
+        
+        # Handling the form submission to change order status
+        if request.method == "POST":
+            new_status = request.POST.get('order_status')
+            if new_status in dict(STATUS):  # Ensure the status is valid
+                order.order_status = new_status
+                order.save()
+                messages.success(request, "Order status updated successfully.")
+            else:
+                messages.error(request, "Invalid order status.")
+        
+        
+        # Calculating total price
+        total_price = 0
+        item_total_prices = []
+        
+        for item in order_items:
+            # Check if product has an offer and calculate the item total
+            if item.product.offer:
+                item_total = item.quantity * item.product.discount_price
+            else:
+                item_total = item.quantity * item.product.price
+                
+            # Add item total to total order price
+            total_price += item_total
+            item_total_prices.append(item_total)  # Store each item's total price
+
+        context = {
+            'order': order,
+            'order_items': zip(order_items, item_total_prices),  # Pass both items and their individual total prices
+            'total_price': total_price,
+            'status_choices': STATUS,
+            'items':order_items,
+        }
+        return render(request,'admin/show_order.html',context)
+    
+    else:
+        return redirect('user_app:index')
 

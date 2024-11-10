@@ -8,6 +8,8 @@ from datetime import datetime,timedelta
 from django.contrib.auth import login,authenticate,logout
 from django.contrib.auth import get_user_model
 from django.views.decorators.cache import never_cache
+from product.models import *
+from django.utils import timezone
 
 
 User = get_user_model()
@@ -320,7 +322,7 @@ def password_check(request):
    errors = {}
    
    if request.method == 'POST':
-        print('heelo')
+        
         password = request.POST.get('newPassword')
         confirm_password = request.POST.get('confirmPassword')
         
@@ -341,18 +343,29 @@ def password_check(request):
         return render(request,'user/password_check.html')
 @never_cache
 def index(request):
- 
+        if request.user.is_authenticated and request.user.is_staff:
+            return redirect('admin_app:admin_home')
+        if request.user.is_authenticated and request.user.is_block:
+            return redirect('user_app:user_logout')
+       
+        
+        banner = Banner.objects.all()
+        print(banner)
+        context={
+             'banner': banner
+        }
 
-        return render(request,'user/user_index.html')
+        return render(request,'user/user_index.html',context)
     
 @never_cache
 def user_logout(request):
  if request.user.is_authenticated:
-    if request.method=='POST':
+    # if request.method=='POST':
+    logout(request)
+    return redirect('user_app:index')
+ else: 
         logout(request)
         return redirect('user_app:index')
- else:
-          return redirect('user_app:index')
 
               
         

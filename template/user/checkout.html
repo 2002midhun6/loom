@@ -1,0 +1,130 @@
+{% extends 'user/index.html' %}
+{% load static %}
+{% block content %}
+<div class="container">
+    <div class="breadcrumb">
+        <nav>
+            <a href="/">Home</a> / Checkout
+        </nav>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Address Section -->
+            <div class="checkout-section mb-4">
+                <h3>Shipping Address</h3>
+                <div class="address-details p-4 border rounded">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label style="font-weight: bold;color: black;">Country</label>
+                            <p>{{ address.country }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label style="font-weight: bold;color: black;">State</label>
+                            <p>{{ address.state }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label style="font-weight: bold;color: black;">Street Address</label>
+                        <p>{{ address.street_address }}</p>
+                    </div>
+                    
+                    {% if address.landmark %}
+                    <div class="mb-3">
+                        <label style="font-weight: bold;color: black;">Landmark</label>
+                        <p>{{ address.landmark }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label style="font-weight: bold;color: black;">Postal Code</label>
+                            <p>{{ address.postal_code }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label style="font-weight: bold;color: black;">Phone</label>
+                            <p>{{ address.phone }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if address.alternative_phone %}
+                    <div class="mb-3">
+                        <label style="font-weight: bold;color: black;">Alternative Phone</label>
+                        <p>{{ address.alternative_phone }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <labe style="font-weight: bold;color: black;"l>Address Type</label>
+                        <p>{{ address.address_type }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Order Summary -->
+            <div class="cart-total-section mb-4">
+                <h3>Cart Total</h3>
+                <div class="cart-details p-4 border rounded">
+                    <div class="subtotal d-flex justify-content-between mb-2">
+                        <span>Subtotal</span>
+                        <span>{{cart_total}}</span>
+                    </div>
+                    
+                    {% for item in cart_items %}
+                    <div class="cart-item small mb-2">
+                        <span>{{item.quantity}} x {{item.product.product_name}} {{item.varient.size}}</span>
+                        <span class="float-end">{{item.total_price}}</span>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="shipping d-flex justify-content-between mb-2">
+                        <span>Shipping</span>
+                        <span>$0.00</span>
+                    </div>
+                    
+                    <div class="total d-flex justify-content-between font-weight-bold mt-3">
+                        <span>Order Total</span>
+                        <span>{{cart_total}}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="payment-section mb-4">
+				<form action="{% url 'order_app:order_complete' %}" method="post">
+					{% csrf_token %}
+                <h3>Payment Method</h3>
+                <div class="payment-options p-4 border rounded">
+                    <div class="form-check mb-2">
+                        <input type="radio" class="form-check-input" name="payment_method" value="cod" id="cod" required>
+                        <label class="form-check-label" for="cod">Cash on delivery</label>
+                    </div>
+                    
+                    <div class="form-check mb-2">
+                        <input type="radio" class="form-check-input" name="payment_method" id="check" required>
+                        <label class="form-check-label" for="check">Check Payment</label>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input type="radio" class="form-check-input" name="payment_method" id="paypal" required>
+                        <label class="form-check-label" for="paypal">Paypal</label>
+                    </div>
+                    
+                    <!-- <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="terms">
+                        <label class="form-check-label" for="terms">I have read and accept the terms and conditions</label>
+                    </div> -->
+					<button type="submit" class="btn btn-primary w-100">Place an order</button>
+                </div>
+				
+			</form>
+            </div>
+
+          
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -38,9 +38,11 @@ def add_product(request,id):
                 price = request.POST.get('price')
                 description=request.POST.get('description')
                 sub_category_id=request.POST.get('sub_category')
+                offer_id = request.POST.get('offer')
                 sub_category=Sub_Category.objects.get(id=sub_category_id)
                 category_id=sub_category.category.id
                 category=Category.objects.get(id=category_id)
+                
                 
                 
                 
@@ -54,16 +56,24 @@ def add_product(request,id):
                     category=category,
                     sub_category=sub_category,
                     
+
+                    
+                    
                     is_listed = is_listed,
                 )
+                if offer_id:
+                    offer = Offer.objects.get(id = offer_id)
+                    new_product.offer = offer
                 new_product.save()
                 
                 return redirect('product_app:admin_product_view')
         category=Category.objects.get(id=id)
         sub_categories=category.sub_category.all()
+        offers=Offer.objects.all()
         context={
             
                 'sub_categories':sub_categories,
+                'offers':offers
 
             }
         return render(request,'admin/add_product.html',context)
@@ -134,8 +144,10 @@ def add_varient(request):
 def edit_product(request,id):
     if request.user.is_authenticated and request.user.is_staff:
         product=Product.objects.get(id=id)
+        offers=Offer.objects.all()
         context={
-            'product':product
+            'product':product,
+            'offers':offers,
          }
         if request.method == 'POST':
             product_name = request.POST.get('product_name')
@@ -145,6 +157,7 @@ def edit_product(request,id):
             image3 = request.FILES.get('image3')
             price = request.POST.get('price')
             description=request.POST.get('description')
+            offer_id=request.POST.get('offer')
             if description:
                 product.description=description
             product.product_name =  product_name
@@ -154,7 +167,9 @@ def edit_product(request,id):
                 product.image2=image2
             if image3:
                 product.image3=image3
-           
+            if offer_id:
+                    offer = Offer.objects.get(id = offer_id)
+                    product.offer = offer
             product.price=price
             product.save()
             return redirect('product_app:product_list',id=id)

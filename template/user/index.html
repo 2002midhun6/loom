@@ -71,14 +71,14 @@
 
 						<div class="col-sm-12 text-left menu-1">
 							<ul>
-								<li class="active"><a href="#">Home</a></li>
+								<li class="active"><a href="{% url 'user_app:index' %}">Home</a></li>
 								
 								<li >
 								 <a href="{% url 'customer_app:men_product' %}">Men</a>
 									 
 								</li>
 								<li><a href="{% url 'customer_app:women_product' %}">Women</a></li>
-								<li><a href="about.html">About</a></li>
+								<li><a href="{% url 'customer_app:account' %}">Account</a></li>
 								<li><a href="contact.html">Contact</a></li>
 								<li>{% if request.user.is_authenticated %}
 									<form class="nav-link" action="{% url 'user_app:user_logout' %}" method="post" style="display: inline;">
@@ -90,7 +90,7 @@
 									{% endif %}</li>
 								
 								
-								<li class="cart"><a href="cart.html"><i class="icon-shopping-cart"></i> Cart [0]</a></li>
+								<li class="cart"><a href="{% url 'cart_app:view_cart' %}"><i class="icon-shopping-cart"></i> Cart [0]</a></li>
 							</ul>
 						</div>
 					</div>

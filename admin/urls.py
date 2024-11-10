@@ -18,5 +18,8 @@ urlpatterns = [
     path('add_banner/',views.add_banner,name='add_banner'),
     path('edit_banner/<int:id>/', views.edit_banner, name='edit_banner'),
     path('remove_banner/<int:id>/',views.remove_banner, name='remove_banner'),
+    path('admin_orders/',views.admin_orders, name='admin_orders'),
+    path('show_order/<int:id>/',views.show_order, name='show_order'),
+
 
 ]

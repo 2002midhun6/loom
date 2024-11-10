@@ -1,0 +1,201 @@
+{% extends 'user/index.html' %}
+{% load static %}
+{% block content %}
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    tr:nth-child(odd) {
+        background-color: #f9f9f9; /* Light gray for odd rows */
+    }
+
+    tr:nth-child(even) {
+        background-color: #e9e9e9; /* Slightly darker gray for even rows */
+    }
+
+    tr:hover {
+        background-color: #d1d1d1; /* Highlight color on hover */
+    }
+
+    td {
+        padding: 10px;
+        border: 1px solid #ccc;
+    }
+</style>
+    <!-- Breadcrumbs -->
+        <div class="breadcrumbs">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <p><a href="index.html">Home</a> / My Account</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Section -->
+        <div id="colorlib-account" class="colorlib-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h2 class="heading">My Account</h2>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Personal Information -->
+                    <div class="col-md-6">
+                        <div class="account-wrap">
+                            <h3>Personal Information</h3>
+                            <div class="personal-info">
+                                <p><strong>Name:</strong> {{user_details.username}}</p>
+                                <p><strong>First Name:</strong> {{user_details.first_name}}</p>
+                                <p><strong>Last Name:</strong> {{user_details.last_name}}</p>
+                                <p><strong>Email:</strong> {{user_details.email}}</p>
+                                
+                                <a href="{% url 'customer_app:edit_user' user_details.id %}"><button class="btn btn-primary">Edit Profile</button></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Addresses -->
+                    <div class="col-md-6">
+                        <div class="account-wrap">
+                            <h3>My Addresses</h3>
+                            <div class="address-block">
+                                {% for address in address %}
+                                <h4>Default Shipping Address</h4>
+                                <p>
+
+                                   {{address.street_address}}<br>
+                                   {{address.postal_code}}<br>
+                                   {{address.phone}},{{address.alternative_phone}}
+                                    
+                                   
+                                </p>
+                                <div class="address-actions">
+                                    <a href="{% url 'customer_app:edit_address' address.id %}"><button class="btn btn-outline-primary">Edit</button></a>
+                                   
+                                   
+                                </div>
+                                {% endfor %}
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="account-wrap">
+                        <h3>My Addresses</h3>
+                        <h4>Other Address</h4>
+                        <div class="address-block text-center">
+                          
+                            
+                            <table>
+                                <th>Address</th>
+                                <th>Action</th>
+                                {% for address2 in address1 %}
+                                <tr>
+                                    <td>
+                               {{address2.street_address}}<br>
+                               {{address2.postal_code}}<br>
+                               {{address2.phone}},{{address2.alternative_phone}}
+                            </td>
+                            <td>
+
+                            
+                            <div class="address-actions">
+                                <a href="{% url 'customer_app:edit_address' address2.id %}"><button class="btn btn-outline-primary">Edit</button></a>
+                                <form class="remove_item" action="{% url 'customer_app:remove_address' address2.id %}" method="post" >
+                                    {% csrf_token %}
+                                    <button class="btn btn-outline-danger" id="block"  type="submit" >REMOVE</button>
+                                </form>
+                                   
+                               
+                            </div>
+                        </td>
+                            </tr>
+                            {% endfor %}
+                            </table>
+                           
+                            
+                        </div>
+                        <a href="{% url 'customer_app:add_address'%}"><button class="btn btn-primary mt-4">Add New Address</button></a>
+                    </div>
+                </div>
+            </div>
+
+                <!-- Order History -->
+                <div class="row mt-5">
+                    <div class="col-md-12">
+                        <div class="account-wrap">
+                            <h3>Recent Orders</h3>
+                            
+                            <table class="table">
+
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>address</th>
+                                        
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in orders %}
+                                    <tr>
+                                        <td>{{forloop.counter}}</td>
+                                        <td>{{order.order_date}}</td>
+                                        <td>{{order.order_status}}</td>
+                                        <td>{{order.address.street_address}} <br>
+                                            {{order.address.phone}} <br>
+                                           
+                                            {{order.address.postal_code}} <br>
+                                        </td>
+                                       
+                                    </tr>
+                                    {% endfor %}
+                                    
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+       
+     <script>
+        document.querySelectorAll(".remove_item").forEach(form => {
+          form.addEventListener("submit", function(event) {
+              event.preventDefault(); 
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show success alert after deletion confirmation
+                    Swal.fire({
+                        title: "Deleted!",
+                        text: "Cart item has been deleted.",
+                        icon: "success",
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        // Submit the form after confirmation
+                        event.target.submit();
+                    });
+                }
+            });
+        });
+        });
+    </script> 
+{% endblock %}

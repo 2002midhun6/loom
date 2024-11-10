@@ -6,7 +6,14 @@ from django.utils import timezone
 from user.models import CustomUser
 
 
+
 # Create your models here.
+class Offer(models.Model):
+    offer_title=models.CharField(max_length=150)
+    offer_description=models.TextField()
+    offer_percentage=models.IntegerField()
+    start_date=models.DateField()
+    end_date=models.DateField()
 class Product(models.Model):
     product_name = models.CharField(max_length=100)
     description = models.TextField()
@@ -17,7 +24,8 @@ class Product(models.Model):
     category=models.ForeignKey(Category,on_delete=models.CASCADE,related_name='product')
     sub_category=models.ForeignKey(Sub_Category,on_delete=models.CASCADE,related_name='product')
     is_listed=models.BooleanField(default=True)
-
+    offer = models.ForeignKey(Offer,on_delete=models.SET_NULL, null=True)
+    sold_count = models.PositiveIntegerField(blank=True, default=0)
     @property
     def discount_price(self):
         if self.offer:
@@ -43,12 +51,7 @@ class Varient(models.Model):
     size=models.IntegerField()
     stock=models.IntegerField()
     product=models.ManyToManyField(Product,related_name='varient') 
-class Offer(models.Model):
-    offer_title=models.CharField(max_length=150)
-    offer_description=models.TextField()
-    offer_percentage=models.IntegerField()
-    start_date=models.DateField()
-    end_date=models.DateField()
+
 class Coupen(models.Model):
     code = models.CharField(max_length=50, unique=True)
     minimum_order_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
@@ -72,12 +75,8 @@ class Coupen(models.Model):
 class Banner(models.Model):
     banner_name = models.CharField(max_length=255)
     banner_description = models.TextField()
-    product = models.OneToOneField(Product,on_delete=models.CASCADE)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    deal_price = models.DecimalField(max_digits=10, decimal_places=2)
     banner_image = models.ImageField(upload_to='banner/')
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    is_listed = models.BooleanField(default=True)
 
     

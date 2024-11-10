@@ -4,6 +4,7 @@ from product.models import *
 from django.contrib.auth.decorators import login_required
 from decimal import Decimal
 from django.contrib import messages
+from address.models import Address
 
 
 # def add_to_cart(request,id):
@@ -80,7 +81,7 @@ def add_to_cart(request, id):
     
     if not request.user.is_authenticated:
         print("User not authenticated")
-        return HttpResponse("Please login first")
+        return redirect("user_app:user_login")
 
     if request.user.is_staff:
         print("Staff user detected")
@@ -88,7 +89,7 @@ def add_to_cart(request, id):
         
     if request.user.is_block:
         print("Blocked user detected")
-        return redirect('authentication_app:logout')
+        return redirect('user_app:user_logout')
 
     if request.method == 'POST':
         try:
@@ -100,7 +101,7 @@ def add_to_cart(request, id):
             
             product = get_object_or_404(Product, id=id)
             print(f"Product found: {product.product_name}")
-            
+           
             varients_id = request.POST.get('var_id')
             print(f"Variant ID from POST: {varients_id}")
             
@@ -150,9 +151,12 @@ def add_to_cart(request, id):
             return HttpResponse("Variant not found")
         except Exception as e:
             print(f"Error occurred: {str(e)}")
-            return HttpResponse(f"Error: {str(e)}")
-    
-    return HttpResponse("Invalid request method")
+           
+    error_message = "select a size"
+
+           # Add an error message 
+    messages.error(request, error_message)
+    return redirect('customer_app:view_product', id=id )
 
 
 @login_required
@@ -161,6 +165,8 @@ def view_cart(request):
         return redirect('admin_app:admin_home')
     if request.user.is_authenticated and request.user.is_block:
         return redirect('authentication_app:logout')
+    if not request.user.is_authenticated:
+        return redirect('user_app:user_login')
     
     
     # Get the user's cart
@@ -183,13 +189,14 @@ def view_cart(request):
             filtered_cart_items.append(item)
     
     cart_items_with_prices = []
-    
+   
     # Calculate the total price for each item
     for item in filtered_cart_items:
-        # if item.product.offer:
-        #     item.total_price = item.product.discount_price * item.quantity
-        # else:
-        item.total_price = item.product.price * item.quantity
+        if item.product.offer:
+            item.total_price = item.product.discount_price * item.quantity
+        else:
+           item.total_price = item.product.price * item.quantity
+           
         
         cart_items_with_prices.append(item)
     
@@ -202,8 +209,103 @@ def view_cart(request):
         'cart': cart,
         'cart_items': filtered_cart_items,
         'cart_total': cart_total,
+        
     })
 
+@login_required
+def update_cart_item_quantity(request, product_id,varient_id, action):
+    if request.user.is_authenticated and request.user.is_staff:
+        return redirect('admin_app:admin_home')
+    if request.user.is_authenticated and request.user.is_block:
+        return redirect('user_app:user_logout')
+    
+    user = request.user
+    product = get_object_or_404(Product, id=product_id)
+    varient = get_object_or_404(Varient, id=varient_id)
+    
+    
+    # Get the user's cart
+    cart, created = Cart.objects.get_or_create(user=user)
+    
+    # Get the cart item for the specified product
+    cart_item = get_object_or_404(Cart_item, cart=cart, product=product,varient=varient)
+    
+    # Update quantity based on action
+    if action == 'increment':
+        # Check if incrementing would exceed available stock
+        if cart_item.quantity >= varient.stock:
+            messages.error(request, f'Cannot add more {product.product_name}. Maximum available stock ({product.available_stock}) reached.')
+            return redirect('cart_app:view_cart')
+        cart_item.quantity += 1
+    elif action == 'decrement':
+        if cart_item.quantity > 1:
+            cart_item.quantity -= 1
+        else:
+            cart_item.delete()
+            return redirect('cart_app:view_cart')
+    
+    cart_item.save()
+    return redirect('cart_app:view_cart')
+def remove_cart_item(request,cart_id):
+    if request.user.is_authenticated and request.user.is_staff:
+        return redirect('admin_app:admin_home')
+    if request.user.is_authenticated and request.user.is_block:
+        return redirect('authentication_app:logout')
+    
+    cart_item = Cart_item.objects.get(id = cart_id)
+    cart_item.delete()
+    
+    return redirect('cart_app:view_cart')
 
+def checkout(request,cart_id):
+    if request.user.is_authenticated and request.user.is_staff:
+        return redirect('admin_app:admin_home')
+    if request.user.is_authenticated and request.user.is_block:
+        return redirect('user_app:user_logout')
+    if not request.user.is_authenticated:
+        return redirect('user_app:user_login')
+    user_email = request.user.email
+    user = CustomUser.objects.get(email = user_email)
+    cart = Cart.objects.get(id = cart_id)
+    cart_items = cart.items.all()
+    # request.session['cart_id'] = cart_id
+    
+    cart_items_with_prices = []
+    # Calculate the total price for each item
+    for item in cart_items:
+        if item.product.offer:
+            item.total_price = item.product.discount_price * item.quantity
+        else:
+            item.total_price = item.product.price * item.quantity
+    
+        cart_items_with_prices.append(item)
+    cart_total = sum(item.total_price for item in cart_items_with_prices)
+    
+    # # Apply coupon discount if applicable
+    # discount = Decimal(request.session.get('discount_amount', 0))
+    # cart_total_with_discount = float(cart_total) - float(discount)
+
+    
+    # request.session['cart_total'] = float(cart_total_with_discount)
+
+    # coupon_code = request.session.get('coupon_code', '')
+    
+    #  # Wallet payment
+    # wallet,created = Wallet.objects.get_or_create(user = user)
+    # wallet_balance = wallet.balance
+        
+    address = Address.objects.get(user=request.user,default=True)
+    print(address.phone)
+    
+    context = {
+        'user':user,
+        'cart_items':cart_items,
+        'cart_total':cart_total,
+        'address':address,
+        # 'cart_total_with_discount':cart_total_with_discount,
+        # 'coupon_code':coupon_code,
+        # 'wallet_balance':wallet_balance,
+    }
+    return render(request,'user/checkout.html',context)
 
 

@@ -17,26 +17,9 @@
                 <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
             </div>
 
-            <div class="mb-3">
-                <label for="product" class="form-label">Product:</label>
-                <select class="form-select" id="product" name="product_id" required>
-    
-                    {% for product in products %}
-                        <option value="{{product.id}}">{{ product.product_name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+           
 
-            <div class="mb-3">
-                <label for="price" class="form-label">Price:</label>
-                <input type="number" step="0.01" class="form-control" id="price" name="price" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="deal_price" class="form-label">Deal price:</label>
-                <input type="number" step="0.01" class="form-control" id="deal_price" name="deal_price" required>
-            </div>
-
+            
             <div class="mb-3">
                 <label for="banner-image" class="form-label">Banner Image:</label>
                 <input type="file" class="form-control" id="banner-image" name="banner_image" accept="image/*" required>

@@ -17,10 +17,20 @@
                 <input type="text" class="form-control" id="description" name="description" required>
 
             </div>
+            <div class="mb-3">
+                <label for="offer" class="form-label">Offer:</label>
+                <select class="form-select" id="offer" name="offer">
+    
+                    <option value="">None</option>
+                    {% for offer in offers %}
+                        <option value="{{ offer.id }}">{{ offer.offer_title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
             <div class="mb-3">
                 <label for="main-category" class="form-label">Sub Category</label>
-                <select id="sub_category" class="form-select"  name="sub_category">
+                <select id="sub_category" class="form-select"  name="sub_category" required>
                     <option value="">Select a category</option>
                     {% for i in sub_categories %}
                     <option value="{{i.id}}">{{i.sub_category_name}}</option>

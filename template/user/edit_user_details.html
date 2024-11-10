@@ -1,0 +1,86 @@
+{% extends 'user/index.html' %}
+{% load static %}
+{% block content %}
+        <!-- Breadcrumbs -->
+        <div class="breadcrumbs">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <p><a href="index.html">Home</a> / <a href="account.html">My Account</a>  /  Edit User</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Address Form Section -->
+        <div id="colorlib-address" class="colorlib-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h2 class="heading">Edit User</h2>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8 offset-md-2">
+                        <div class="contact-wrap">
+                            <form action="" method="POST" class="contact-form">
+                                {% csrf_token %}
+
+                          
+                                
+
+                               
+
+                                <!-- user nmae -->
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="username">USER NAME</label>
+                                            <input type="text" id="username" name="username" value="{{user_details.username}}" class="form-control" 
+                                                   >
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- user nmae -->
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="first_name">FIRST NAME</label>
+                                            <input type="text" id="first_name" name="first_name" value="{{user_details.first_name}}" class="form-control" 
+                                                   >
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="username">LAST NAME</label>
+                                            <input type="text" id="last_name" name="last_name" value="{{user_details.last_name}}" class="form-control" 
+                                                   >
+                                        </div>
+                                    </div>
+                                </div>
+
+                               
+        
+                                
+                                    
+
+                               \
+                                <!-- Form Buttons -->
+                                <div class="row mt-4">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <button type="submit" class="btn btn-primary px-4">Save Address</button>
+                                            <a href="{% url 'customer_app:account' %}" class="btn btn-outline-secondary ml-2">Cancel</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock %}

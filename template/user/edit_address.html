@@ -1,0 +1,153 @@
+{% extends 'user/index.html' %}
+{% load static %}
+{% block content %}
+        <!-- Breadcrumbs -->
+        <div class="breadcrumbs">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <p><a href="index.html">Home</a> / <a href="account.html">My Account</a>  /  Edit Address</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Address Form Section -->
+        <div id="colorlib-address" class="colorlib-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h2 class="heading">Edit Address</h2>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8 offset-md-2">
+                        <div class="contact-wrap">
+                            <form action="" method="POST" class="contact-form">
+                                {% csrf_token %}
+
+                                <!-- Address Type -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="address_type">Address Type *</label>
+                                            <select id="address_type" name="address_type" class="form-control" required>
+                                               
+                                                <option value='H'>Home</option>
+                                                <option value='O'>Work</option>
+                                                <option value='OT'>Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Country -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="country" >Country *</label>
+                                            <select id="country"   name="country" class="form-control" required>
+                                                
+                                                <option value="India">India</option>
+                                                <option value="pakistan">pakistan</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    </div>
+                                    <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="state">State *</label>
+                                            <select id="state" name="state"  class="form-control" required>
+                                               
+                                                <option value="kerala">kerala</option>
+                                                <option value="karnataka">karanataka</option>
+                                                <option value="goa">Goa</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Street Address -->
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="street_address">Street Address *</label>
+                                            <input type="text" id="street_address"value="{{address.street_address}}"  name="street_address" class="form-control" 
+                                                   placeholder="House number and street name" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Landmark -->
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="landmark">Landmark (Optional)</label>
+                                            <input type="text" id="landmark" name="landmark" value="{{address.landmark}}" class="form-control" 
+                                                   placeholder="Nearby landmark for easy location">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Postal Code -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="postal_code">Postal Code *</label>
+                                            <input type="text" id="postal_code" name="postal_code" value="{{address.postal_code}}"  class="form-control" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Phone Numbers -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="phone">Phone Number *</label>
+                                            <input type="tel" id="phone" name="phone" value="{{address.phone}}" class="form-control" required>
+                                            <small class="text-muted">Primary contact number</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="alternative_phone">Alternative Phone (Optional)</label>
+                                            <input type="tel" id="alternative_phone" name="alternative_phone" value="{{address.alternative_phone}}" class="form-control">
+                                            <small class="text-muted">Secondary contact number</small>
+                                        </div>
+                                    </div>
+                                    <p style="color: crimson;">{{error}}</p>
+                                </div>
+
+                                <!-- Default Address Option -->
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <div class="checkbox">
+                                                <label>
+                                                    <input type="checkbox" id="is_default" name="is_default"  {% if address.default %}checked{% endif %}>
+                                                    Make this my default address
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Form Buttons -->
+                                <div class="row mt-4">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <button type="submit" class="btn btn-primary px-4">Save Address</button>
+                                            <a href="{% url 'customer_app:account' %}" class="btn btn-outline-secondary ml-2">Cancel</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock %}

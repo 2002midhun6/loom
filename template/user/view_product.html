@@ -55,7 +55,12 @@
                 <div class="product-desc">
                     <h3>{{product.product_name}}</h3>
                     <p class="price">
-                        <span>${{product.price}}</span>
+                         {% if product.offer %}
+                            <h4><del>{{product.price}} Rs</del></h4>
+                            <h4>{{product.discount_price}} Rs</h4>
+                        {% else %}
+                            <h4>{{product.price}} Rs</h4>
+                        {% endif %}
                         <span class="rate">
                             <i class="icon-star-full"></i>
                             <i class="icon-star-full"></i>
@@ -65,16 +70,28 @@
                             (74 Rating)
                         </span>
                     </p>
+                    {% if  not product.is_listed or not product.category.is_listed or not product.sub_category.is_listed %}
+                    <h5 style="color: crimson;">sorry!  product is unavailable</h5>
+				
+                     {% else %}
                     <div class="size-wrap">
                         <div class="block-26 mb-2">
+                            
                             <h4>Avaialble Size</h4>
                             <ul>
                                 {% for i in varients %}
                                 {% if i.stock > 0 %}
-                                <li><button class="var_btn" value="{{i.id}}">{{i.size }}</button></li>
-                                {% endif %}
+                                <li><button class="var_btn btn btn-outline-danger" value="{{i.id}}">{{i.size }}</button></li>
+            
+				                {% endif %}
+                                
+                                
+                                
                                 {% endfor %}
+                               
                             </ul>
+                            
+
                         </div>
 
                     </div>
@@ -85,16 +102,32 @@
                         <div class="col-sm-6 text-center">
                             <form action="{% url 'cart_app:add_to_cart' product.id %}" method="post">
                                 {% csrf_token %}
-                            <input type="hidden" id="var_id" name="var_id">
-                            <p class="addtocart"><button type="submit" id="add_btn"  class="btn btn-primary btn-addtocart"><i
+                            <input type="hidden" id="var_id1" name="var_id">
+                            <p class="addtocart"><button type="submit" id="add_btn"  class="btn btn-outline-danger"><i
                                         class="icon-shopping-cart"></i> Add to Cart</button></p>
                             </form>
                         </div>
                         <div class="col-sm-6 text-center">
-                            <p class="addtowishlist"><a href="#" class="btn btn-danger"></i>Add to Wishlist</a>
+                            <form action="{% url 'wishlist_app:add_to_wishlist' product.id %}" method="post">
+                                {% csrf_token %}
+                            <input type="hidden" id="var_id" name="var_id">
+                            <p class="addtowishlist"><button type="submit" id="add_btn"  class="btn btn-outline-danger"><i
+                                class="icon-heart"></i>wishlist</button></p>
+                            </form>
+                            
                             </p>
+
                         </div>
                     </div>
+                    {% endif%}
+                    {% if messages %}
+    <div class="alert alert-danger">
+        {% for message in messages %}
+            <h6 style="color: crimson;">{{ message }}</h6>
+        {% endfor %}
+    </div>
+{% endif %}
+
                 </div>
             </div>
         </div>
@@ -295,6 +328,21 @@
         });
     });
 </script>
+<script>
+    // Select all buttons with the class "var_btn"
+    const variantButton = document.querySelectorAll('.var_btn');
+    const varIdInput1 = document.getElementById('var_id1');
+
+    // Add an event listener to each variant button
+    variantButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Set the hidden input field's value to the clicked button's value
+            varIdInput1.value = button.value;
+            console.log(`Selected variant ID: ${button.value}`);
+        });
+    });
+</script>
+
 
 
 <script>
