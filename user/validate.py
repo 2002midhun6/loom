@@ -1,6 +1,7 @@
 import re
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from . models import *
 
 
 class Authentication_check:
@@ -29,3 +30,10 @@ class Authentication_check:
         if password != confirm_password:
             return 'Passwords do not match'
         return None
+    
+        
+        
+
+
+       
+

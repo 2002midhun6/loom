@@ -1,0 +1,253 @@
+{% extends 'user/index.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-5">
+    <br><br><br>
+    <!-- alert box  -->
+   
+
+    <script>
+        setTimeout (() => {
+            $(".alert").alert("close")
+        },3000)
+    </script>
+    <h2>Order #{{ order.id }} Details</h2><br><br>
+    
+    <div class="row">
+       
+        <div class="col-md-6">
+            <h4>User Information</h4>
+            <p><strong>Name:</strong> {{ order.user.first_name }} {{ order.user.last_name }}</p>
+            <p><strong>Email:</strong> {{ order.user.email }}</p>
+            <p><strong>Phone:</strong> {{ order.address.phone }}</p>
+        </div>
+    </div>
+
+    <hr>
+    
+    <h4>Shipping Address</h4>
+    <p>
+        {{ order.address.street_address }} <br>
+        {{ order.address.city }}, {{ order.address.state }} - {{ order.address.postal_code }} <br>
+        Phone: {{ order.address.phone }}
+    </p>
+
+    <hr>
+
+    <h4>Order Items</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Image</th>
+                <th>Quantity</th>
+                <th>Price (₹)</th>
+                <th>Total (₹)</th>
+                <!-- {% for item in items %}
+                    {% if item.return_reason and item.return_status == 'pending' %}
+                        <th>Return Request</th>
+                    {% endif %}
+                    {% if item.return_reason and item.return_status == 'returned' %}
+                        <th></th>
+                    {% endif %}
+                    {% if item.return_reason %}
+                        <th>Reason</th>
+                    {% endif %}
+                {% endfor %} -->
+                
+                <th>Actions</th>
+
+                {% if order.order_status == 'delivered' %}
+                        <th>Add Review</th>
+                 {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item, item_total in order_items %}
+            <tr>
+                <td>{{ item.product.product_name }}</td>
+                <td><img src="{{item.product.image1.url}}" alt="{{item.product.product_name}}" width="100"/></td>
+                <td>{{ item.quantity }}</td>
+                {% if item.product.offer %}
+                <td>{{ item.product.discount_price }}</td>
+                {% else %}
+                <td>{{ item.product.price }}</td>
+                {% endif %}
+                <td>{{ item_total }}</td>
+                <!-- {% if item.return_reason and item.return_status == 'pending' %}
+                        <td>
+                            <form class="confirm_return" action="#" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    Confirm
+                                </button>
+                            </form>
+                        </td>
+                {% endif %}  -->
+                <!-- {% if item.return_reason and item.return_status == 'returned' %}
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-danger" disabled>
+                                Item Returned!
+                            </button>
+                        </td>
+                {% endif %} -->
+                <!-- {% if item.return_reason %}
+                    <td>{{item.return_reason}}</td>
+                {% endif %}  -->
+                {% if order.order_status == 'delivered' %}
+                <td>
+                    <!-- <a href="#" class="btn btn-sm btn-outline-danger">Return Item</a> -->
+                    <!-- <form action="#" method="post">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Return Item</button>
+                    </form> -->
+                {% if item.return_reason and item.return_status == 'returned' %}
+                <button type="button" class="btn btn-sm btn-outline-danger" disabled>
+                    Item Returned!
+                </button>
+
+                {% elif item.return_reason and item.return_status == 'pending' %}
+                <button type="button" class="btn btn-sm btn-outline-danger" disabled>
+                    Request sent!
+                </button>
+
+                {% else %}
+
+                <!-- Button to trigger return item modal -->
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#returnItemModal{{ item.id }}">
+                    Return Item
+                </button>
+                {% endif %}
+
+                <!-- Modal for return confirmation and reason input -->
+                <div class="modal fade" id="returnItemModal{{ item.id }}" tabindex="-1" aria-labelledby="returnItemModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="returnItemModalLabel">Return Item</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form class="return_item" id="returnItemForm{{ item.id }}" method="post" action="{% url 'order_app:return_order' item.id %}">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="return_reason" class="form-label">Reason for Return</label>
+                                        <textarea class="form-control" id="return_reason{{ item.id }}" name="return_reason" required></textarea>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-danger" form="returnItemForm{{ item.id }}">Confirm Return</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                </td>
+            {% endif %}
+            <td>
+                {% if order.order_status == 'delivered' %}
+                    <a href="{% url 'order_app:submit_review' item.product.id order.id %}" class="btn btn-sm btn-outline-success">Add Review</a>
+                {% endif %}
+            </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+    
+    <h4>Total Amount With Discount</h4>
+    <h3 class="font-weight-bold"> {{order.discount}} RS</h3>
+    <br>
+    {% if order.order_status != 'delivered' %}
+
+    {% if order.order_status == 'canceled' %}
+        <button disabled class="btn btn-outline-danger mt-3 ms-auto">Order Canceled</button>
+    {% else %}
+    <!-- Cancel Order Button -->
+    <button type="button" class="btn btn-outline-danger mt-3 ms-auto" style="display: inline-block;width: fit-content;" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
+        Cancel Order
+    </button>
+
+    <!-- Modal for cancel confirmation and reason input -->
+    <div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelOrderModalLabel">Cancel Order</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="cancelOrderForm" method="post" action="{% url 'order_app:cancel_order' order.id  %}" >
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="cancel_reason" class="form-label">Reason for cancellation</label>
+                            <textarea class="form-control" id="cancel_reason" name="cancel_reason" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-danger" form="cancelOrderForm">Confirm Cancellation</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+
+{% else %}
+    <a href="#"><button style="width: 66.2rem;" class="btn btn-outline-danger mt-3">Download Invoice as PDF</button></a>
+    <button class="btn btn-outline-success mt-3" disabled>Delivered</button>
+{% endif %}
+
+    
+{% if messages %}
+<div class="alert alert-success">
+    {% for message in messages %}
+        <h6 style="color: rgb(128, 207, 158);">{{ message }}</h6>
+    {% endfor %}
+</div>
+{% endif %} 
+</div>
+<br><br><br><br><br>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const stars = document.querySelectorAll('.rating input');
+        
+        stars.forEach(star => {
+            star.addEventListener('change', function() {
+                const selectedRating = this.value;
+                console.log(`Rating selected: ${selectedRating}`);
+            });
+        });
+    });
+    </script>
+    <!-- swal cdn  -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+        <script>
+            document.querySelectorAll(".return_item").forEach(form => {
+                form.addEventListener("submit", function(event) {
+                    event.preventDefault(); 
+            // Show SweetAlert confirmation
+            swal.fire({
+                title: "Return request has been sent",
+                icon: "success",
+                timer: 1500,
+                buttons: false,
+            }).then(() => {
+                this.submit(); // Submit the form after the alert
+            });
+        });
+    });
+        </script>
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.js"
+      integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+      crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock content %}

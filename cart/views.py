@@ -5,6 +5,10 @@ from django.contrib.auth.decorators import login_required
 from decimal import Decimal
 from django.contrib import messages
 from address.models import Address
+from order.models import Order
+from django.views.decorators.cache import never_cache
+
+
 
 
 # def add_to_cart(request,id):
@@ -151,7 +155,6 @@ def add_to_cart(request, id):
             return HttpResponse("Variant not found")
         except Exception as e:
             print(f"Error occurred: {str(e)}")
-           
     error_message = "select a size"
 
            # Add an error message 
@@ -172,6 +175,8 @@ def view_cart(request):
     # Get the user's cart
     cart, created = Cart.objects.get_or_create(user=request.user)
     cart_items = cart.items.all()
+    if 'cart_total_with_discount' in request.session:
+        del request.session['cart_total_with_discount']
     
     # List to hold the items that should stay in the cart
     filtered_cart_items = []
@@ -234,7 +239,7 @@ def update_cart_item_quantity(request, product_id,varient_id, action):
     if action == 'increment':
         # Check if incrementing would exceed available stock
         if cart_item.quantity >= varient.stock:
-            messages.error(request, f'Cannot add more {product.product_name}. Maximum available stock ({product.available_stock}) reached.')
+            messages.error(request, f'Cannot add more {product.product_name}. Maximum available stock {varient.stock} reached.')
             return redirect('cart_app:view_cart')
         cart_item.quantity += 1
     elif action == 'decrement':
@@ -256,7 +261,7 @@ def remove_cart_item(request,cart_id):
     cart_item.delete()
     
     return redirect('cart_app:view_cart')
-
+@never_cache
 def checkout(request,cart_id):
     if request.user.is_authenticated and request.user.is_staff:
         return redirect('admin_app:admin_home')
@@ -268,7 +273,7 @@ def checkout(request,cart_id):
     user = CustomUser.objects.get(email = user_email)
     cart = Cart.objects.get(id = cart_id)
     cart_items = cart.items.all()
-    # request.session['cart_id'] = cart_id
+  
     
     cart_items_with_prices = []
     # Calculate the total price for each item
@@ -281,10 +286,11 @@ def checkout(request,cart_id):
         cart_items_with_prices.append(item)
     cart_total = sum(item.total_price for item in cart_items_with_prices)
     
-    # # Apply coupon discount if applicable
-    # discount = Decimal(request.session.get('discount_amount', 0))
-    # cart_total_with_discount = float(cart_total) - float(discount)
+    # Apply coupon discount if applicable
+    request.session['cart_total_with_discount'] = float(request.session.get('cart_total_with_discount', cart_total))
+    cart_total_with_discount=request.session['cart_total_with_discount']
 
+    
     
     # request.session['cart_total'] = float(cart_total_with_discount)
 
@@ -298,14 +304,120 @@ def checkout(request,cart_id):
     print(address.phone)
     
     context = {
+        'cart':cart,
         'user':user,
         'cart_items':cart_items,
+        'cart_id':cart_id,
         'cart_total':cart_total,
         'address':address,
-        # 'cart_total_with_discount':cart_total_with_discount,
+        'cart_total_with_discount':cart_total_with_discount,
         # 'coupon_code':coupon_code,
         # 'wallet_balance':wallet_balance,
     }
     return render(request,'user/checkout.html',context)
 
 
+# def coupon(request):
+    # if request.user.is_authenticated and request.user.is_staff:
+    #     return redirect('admin_app:admin_home')
+    # if request.user.is_authenticated and request.user.is_block:
+    #     return redirect('user_app:user_logout')
+    # if request.method=='POST':
+    #     cart_id=request.POST.get('cart_id')
+    #     cart_total = float(request.POST.get('cart_total', 0))
+    #     customer_coupen=request.POST.get('coupon')
+    #     if not customer_coupen:
+    #         return redirect('cart_app:checkout',id=cart_id)
+    #     else:
+    #         coupen_obj=Coupen.objects.filter(code=customer_coupen)
+    #         for coupon in coupen_obj:
+    #             if coupon.code == customer_coupen:
+    #                 request.session['cart_total_with_discount']=cart_total-coupon.discount_amount 
+    #                 return redirect('cart_app:checkout',id=cart_id)
+    #             else:
+    #                 messages.error(request, "Invalid coupon code. Please try again.")
+    #                 return redirect('cart_app:checkout', id=cart_id)
+    
+
+# def coupon(request):
+#         if request.user.is_authenticated:
+#             if request.user.is_staff:
+#                 return redirect('admin_app:admin_home')
+#             if request.user.is_block:
+#                 return redirect('user_app:user_logout')
+        
+#         if request.method == 'POST':
+#             cart_id = request.POST.get('cart_id')
+#             cart_total = float(request.POST.get('cart_total', 0))  # Convert cart_total to a float
+#             customer_coupon = request.POST.get('coupon')
+            
+#             if not customer_coupon:
+#                 return redirect('cart_app:checkout', cart_id=cart_id)
+#             else:
+#                 # Retrieve coupon object based on the entered code
+#                 coupon_obj = Coupen.objects.filter(code=customer_coupon).first()
+#                 if coupon_obj and coupon_obj.code == customer_coupon:
+#                     # Apply discount and save it in the session
+#                     request.session['cart_total_with_discount'] = cart_total - coupon_obj.discount_amount
+#                     return redirect('cart_app:checkout', cart_id=cart_id)
+#                 else:
+#                     # Invalid coupon code
+#                     messages.error(request, "Invalid coupon code. Please try again.")
+#                     return redirect('cart_app:checkout', cart_id=cart_id)
+        
+#         # Handle non-POST requests by redirecting or providing an appropriate response
+#         return redirect('user_app:index')
+def coupon(request):
+    if request.user.is_authenticated:
+        if request.user.is_staff:
+            return redirect('admin_app:admin_home')
+        if request.user.is_block:
+            return redirect('user_app:user_logout')
+    
+    if request.method == 'POST':
+        cart_id = request.POST.get('cart_id')
+        cart_total = float(request.POST.get('cart_total', 0))  # Convert cart_total to a float
+        customer_coupon = request.POST.get('coupon')
+        
+        if not customer_coupon:
+            print('not customer_coupon' )
+            return redirect('cart_app:checkout', cart_id=cart_id)
+        else:
+            # Retrieve coupon object based on the entered code
+            coupon_obj  = Coupen.objects.filter(code=customer_coupon).first()
+            user = request.user
+
+            counter=0
+            
+            if coupon_obj and coupon_obj.code == customer_coupon:
+                    order = Order.objects.filter(user=user,coupons=coupon_obj)
+                    print(order)
+                    limit=int(coupon_obj.used_limit)
+                    for i in order:
+                        if i.coupons.code == customer_coupon:
+                            counter+=1
+                    if counter < limit:
+                        if cart_total < coupon_obj.maximum_order_amount and cart_total > coupon_obj.minimum_order_amount:
+                        # Apply discount and save it in the session
+                            print(coupon_obj.code)
+                            
+                            request.session['coupon']=coupon_obj.code
+                            request.session['cart_total_with_discount'] = cart_total - float(coupon_obj.discount_amount)
+                            print(request.session['cart_total_with_discount'])
+                            messages.success(request, "Coupon applied successfully.")
+                            return redirect('cart_app:checkout', cart_id=cart_id)
+                        else:
+                            messages.error(request, "coupen cannotbe able to applied in this amount")
+                            return redirect('cart_app:checkout', cart_id=cart_id)
+                    else:
+                        messages.error(request, "coupen limit exceed")
+                        return redirect('cart_app:checkout', cart_id=cart_id)
+
+
+            else:
+                            # Invalid coupon code
+                            messages.error(request, "Invalid coupon code. Please try again.")
+                            return redirect('cart_app:checkout', cart_id=cart_id)
+    
+    # Handle non-POST requests by redirecting to a safe page
+    return redirect('user_app:index')

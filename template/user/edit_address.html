@@ -75,7 +75,7 @@
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <label for="street_address">Street Address *</label>
-                                            <input type="text" id="street_address"value="{{address.street_address}}"  name="street_address" class="form-control" 
+                                            <input type="text" id="street_address"value="{{street_address}}"  name="street_address" class="form-control" 
                                                    placeholder="House number and street name" required>
                                         </div>
                                     </div>
@@ -86,7 +86,7 @@
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <label for="landmark">Landmark (Optional)</label>
-                                            <input type="text" id="landmark" name="landmark" value="{{address.landmark}}" class="form-control" 
+                                            <input type="text" id="landmark" name="landmark" value="{{landmark}}" class="form-control" 
                                                    placeholder="Nearby landmark for easy location">
                                         </div>
                                     </div>
@@ -97,7 +97,7 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="postal_code">Postal Code *</label>
-                                            <input type="text" id="postal_code" name="postal_code" value="{{address.postal_code}}"  class="form-control" required>
+                                            <input type="text" id="postal_code" name="postal_code" value="{{postal_code}}"  class="form-control" required>
                                         </div>
                                     </div>
                                 </div>
@@ -107,14 +107,14 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="phone">Phone Number *</label>
-                                            <input type="tel" id="phone" name="phone" value="{{address.phone}}" class="form-control" required>
+                                            <input type="tel" id="phone" name="phone" value="{{phone}}" class="form-control" required>
                                             <small class="text-muted">Primary contact number</small>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="alternative_phone">Alternative Phone (Optional)</label>
-                                            <input type="tel" id="alternative_phone" name="alternative_phone" value="{{address.alternative_phone}}" class="form-control">
+                                            <input type="tel" id="alternative_phone" name="alternative_phone" value="{{alternative_phone}}" class="form-control">
                                             <small class="text-muted">Secondary contact number</small>
                                         </div>
                                     </div>
@@ -127,7 +127,7 @@
                                         <div class="form-group">
                                             <div class="checkbox">
                                                 <label>
-                                                    <input type="checkbox" id="is_default" name="is_default"  {% if address.default %}checked{% endif %}>
+                                                    <input type="checkbox" id="is_default" name="is_default"  {% if default %}checked{% endif %}>
                                                     Make this my default address
                                                 </label>
                                             </div>

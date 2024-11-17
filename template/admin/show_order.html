@@ -110,7 +110,7 @@
     <hr>
     
     <h4>Total Amount</h4>
-    <p>₹{{total_price}}</p>
+    <p>₹{{order.discount}}</p>
     <br>
     {% if order.order_status != 'canceled' and order.order_status != 'delivered' %}
     <form action="" method="post">

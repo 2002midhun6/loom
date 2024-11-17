@@ -79,7 +79,7 @@
 								</li>
 								<li><a href="{% url 'customer_app:women_product' %}">Women</a></li>
 								<li><a href="{% url 'customer_app:account' %}">Account</a></li>
-								<li><a href="contact.html">Contact</a></li>
+								<li><a href="{% url 'wishlist_app:wishlist_view'%}">Wishlist</a></li>
 								<li>{% if request.user.is_authenticated %}
 									<form class="nav-link" action="{% url 'user_app:user_logout' %}" method="post" style="display: inline;">
 										{% csrf_token %}
@@ -91,6 +91,7 @@
 								
 								
 								<li class="cart"><a href="{% url 'cart_app:view_cart' %}"><i class="icon-shopping-cart"></i> Cart [0]</a></li>
+								<li><a href="{% url 'customer_app:view_wallet' %}">Wallet</a></li>
 							</ul>
 						</div>
 					</div>

@@ -46,9 +46,7 @@ INSTALLED_APPS = [
     'address',
     'wishlist',
     'order',
-
-   
-     
+    'offer',
     # Google sign in 
     'django.contrib.sites',
     'allauth',

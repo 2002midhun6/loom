@@ -22,6 +22,7 @@
     #block:hover{
         background-color: #d4a373;
     }
+   
     #search{
 		color: black;
 		font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
@@ -30,18 +31,8 @@
         border: 1px solid #666;
 		padding-left: 13px;
 		width: 12rem;
-		height: 30px;
+		height: 40px;
 		
-	}
-	#search_btn{
-		color: #000;
-		background-color: violet;
-		height: 30px;
-        width: 5rem;
-		border-radius: 15px;
-		border: #666;
-		font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-		font-weight: 500;
 	}
     #tdiv{
         position: sticky;
@@ -57,7 +48,7 @@
             <h2 class="mb-4">Orders</h2>
             <form action="" method="get">
                 <input id="search" type="search" name="search_query" placeholder="Search category..." {% if query %} value="{{query}}" {% endif %} >
-                <button id="search_btn" type="submit">Search</button>
+                <button  class="btn btn-outline-primary"  type="submit">Search</button>
             </form>
         </div><br><br>
         
@@ -86,7 +77,7 @@
                 <th scope="col">Delivering Date</th>
                 <th scope="col">Status</th>
                 <th scope="col">Show</th>
-                <th scope="col">Action</th>
+               
             </tr>
         </thead>
         <tbody>
@@ -109,12 +100,7 @@
                 <td>
                     <a href="{% url 'admin_app:show_order' order.id %}" ><button id="unblock" type="button" >Show</button></a>
                 </td>
-                <td>
-                    <form action="" method="post">
-                        {% csrf_token %}
-                        <button id="block" type="submit" class="btn_3">Edit</button>
-                    </form>
-                </td>
+                
             </tr>
             {% endfor %}
         </tbody>

@@ -28,6 +28,8 @@ class Order(models.Model):
     delivery_date = models.DateTimeField()
     address = models.ForeignKey(Address,on_delete=models.SET_NULL, null=True)
     cancellation_reason = models.TextField(null=True, blank=True)
+    coupons = models.ForeignKey(Coupen, on_delete=models.SET_NULL, null=True, blank=True)
+    discount=models.DecimalField(max_digits=10, decimal_places=2,null=True, blank=True)
     
     def __str__(self) -> str:
         return f'{self.user.first_name}-{self.order_status}'
@@ -37,6 +39,8 @@ class OrderItems(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    varient = models.ForeignKey(Varient, on_delete=models.CASCADE,null=True, blank=True)
+   
     return_reason = models.TextField(null=True, blank=True)
     return_date = models.DateTimeField(auto_now_add=True,null=True)
     return_status = models.CharField(max_length=10,default='pending',null=True,blank=True)
@@ -53,5 +57,22 @@ class Payment(models.Model):
     razor_pay_payment_id = models.CharField(max_length=100, null=True, blank=True)
     razor_pay_payment_signature = models.CharField(max_length=100, null=True, blank=True)
     payment_date = models.DateTimeField(auto_now_add=True)
-    # payment_status = models.CharField(max_length=50)
+    payment_status = models.CharField(max_length=50,null=True, blank=True)
+
+
+class Wallet(models.Model):
+    user = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
+    balance=models.DecimalField(max_digits=10,decimal_places=2,default=0.00)
+class WalletTransation(models.Model):
+    TRANSACTION_TYPE_CHOICES = [
+        ('refund', 'Refund'),
+        ('cancellation', 'Cancellation'),
+        ('debited', 'Debited'),
+        
+    ]
+
+    wallet = models.ForeignKey(Wallet,on_delete=models.CASCADE,related_name='transactions')
+    transaction_type = models.CharField(max_length=20,choices=TRANSACTION_TYPE_CHOICES)
+    amount = models.DecimalField(max_digits=10,decimal_places=2)
+    created_at =  models.DateField(auto_now_add=True)
 

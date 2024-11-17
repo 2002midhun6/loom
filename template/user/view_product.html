@@ -55,20 +55,17 @@
                 <div class="product-desc">
                     <h3>{{product.product_name}}</h3>
                     <p class="price">
-                         {% if product.offer %}
+                         {% if product.offer or product.sub_category.offer%}
                             <h4><del>{{product.price}} Rs</del></h4>
                             <h4>{{product.discount_price}} Rs</h4>
                         {% else %}
                             <h4>{{product.price}} Rs</h4>
                         {% endif %}
-                        <span class="rate">
-                            <i class="icon-star-full"></i>
-                            <i class="icon-star-full"></i>
-                            <i class="icon-star-full"></i>
-                            <i class="icon-star-full"></i>
-                            <i class="icon-star-half"></i>
-                            (74 Rating)
-                        </span>
+                            {{average_rating.get_rating_display}}
+                            {{average_rating}}
+                            
+                            ({{total_review}} Ratings)
+                      
                     </p>
                     {% if  not product.is_listed or not product.category.is_listed or not product.sub_category.is_listed %}
                     <h5 style="color: crimson;">sorry!  product is unavailable</h5>
@@ -77,17 +74,24 @@
                     <div class="size-wrap">
                         <div class="block-26 mb-2">
                             
-                            <h4>Avaialble Size</h4>
+                           
                             <ul>
+                                {% if varients %}
+                                <h4>Avaialble Size</h4>
                                 {% for i in varients %}
                                 {% if i.stock > 0 %}
                                 <li><button class="var_btn btn btn-outline-danger" value="{{i.id}}">{{i.size }}</button></li>
-            
+                                {% else %}
+                                <li><button class="var_btn  btn btn-primary" value="{{i.id}} disabled">{{i.size }}</button></li>
+                                
 				                {% endif %}
                                 
                                 
-                                
                                 {% endfor %}
+                                {% else %}
+                                
+                              <h4 style="color: red;">product is available</h4> 
+                                {% endif %}
                                
                             </ul>
                             
@@ -166,142 +170,33 @@
                                     aria-labelledby="pills-review-tab">
                                     <div class="row">
                                         <div class="col-md-8">
-                                            <h3 class="head">23 Reviews</h3>
+                                            <h3 class="head">{{total_review}} Reviews</h3>
+                                            {% for review in reviews%}
                                             <div class="review">
                                                 <div class="user-img" style="background-image: url(images/person1.jpg)">
                                                 </div>
                                                 <div class="desc">
                                                     <h4>
-                                                        <span class="text-left">Jacob Webb</span>
-                                                        <span class="text-right">14 March 2018</span>
+                                                        <span class="text-left">{{review.user.first_name}}</span>
+                                                        <span class="text-right">{{review.created_at}}</span>
                                                     </h4>
                                                     <p class="star">
                                                         <span>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-half"></i>
-                                                            <i class="icon-star-empty"></i>
+                                                            <p>Average Rating: {{ average_rating }}</p>
+                                                            <p>Rating Label: {{ rating_label }}</p>
+                                                            {{review.get_rating_display}}
+                                                            {{review.rating}}
                                                         </span>
                                                         <span class="text-right"><a href="#" class="reply"><i
                                                                     class="icon-reply"></i></a></span>
                                                     </p>
-                                                    <p>When she reached the first hills of the Italic Mountains, she had
-                                                        a last view back on the skyline of her hometown Bookmarksgrov
-                                                    </p>
+                                                    
+                                                    <p>{{review.comment}}</p>
                                                 </div>
                                             </div>
-                                            <div class="review">
-                                                <div class="user-img" style="background-image: url(images/person2.jpg)">
-                                                </div>
-                                                <div class="desc">
-                                                    <h4>
-                                                        <span class="text-left">Jacob Webb</span>
-                                                        <span class="text-right">14 March 2018</span>
-                                                    </h4>
-                                                    <p class="star">
-                                                        <span>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-half"></i>
-                                                            <i class="icon-star-empty"></i>
-                                                        </span>
-                                                        <span class="text-right"><a href="#" class="reply"><i
-                                                                    class="icon-reply"></i></a></span>
-                                                    </p>
-                                                    <p>When she reached the first hills of the Italic Mountains, she had
-                                                        a last view back on the skyline of her hometown Bookmarksgrov
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div class="review">
-                                                <div class="user-img" style="background-image: url(images/person3.jpg)">
-                                                </div>
-                                                <div class="desc">
-                                                    <h4>
-                                                        <span class="text-left">Jacob Webb</span>
-                                                        <span class="text-right">14 March 2018</span>
-                                                    </h4>
-                                                    <p class="star">
-                                                        <span>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-half"></i>
-                                                            <i class="icon-star-empty"></i>
-                                                        </span>
-                                                        <span class="text-right"><a href="#" class="reply"><i
-                                                                    class="icon-reply"></i></a></span>
-                                                    </p>
-                                                    <p>When she reached the first hills of the Italic Mountains, she had
-                                                        a last view back on the skyline of her hometown Bookmarksgrov
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="rating-wrap">
-                                                <h3 class="head">Give a Review</h3>
-                                                <div class="wrap">
-                                                    <p class="star">
-                                                        <span>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-full"></i>
-                                                            (98%)
-                                                        </span>
-                                                        <span>20 Reviews</span>
-                                                    </p>
-                                                    <p class="star">
-                                                        <span>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-empty"></i>
-                                                            (85%)
-                                                        </span>
-                                                        <span>10 Reviews</span>
-                                                    </p>
-                                                    <p class="star">
-                                                        <span>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-empty"></i>
-                                                            <i class="icon-star-empty"></i>
-                                                            (70%)
-                                                        </span>
-                                                        <span>5 Reviews</span>
-                                                    </p>
-                                                    <p class="star">
-                                                        <span>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-empty"></i>
-                                                            <i class="icon-star-empty"></i>
-                                                            <i class="icon-star-empty"></i>
-                                                            (10%)
-                                                        </span>
-                                                        <span>0 Reviews</span>
-                                                    </p>
-                                                    <p class="star">
-                                                        <span>
-                                                            <i class="icon-star-full"></i>
-                                                            <i class="icon-star-empty"></i>
-                                                            <i class="icon-star-empty"></i>
-                                                            <i class="icon-star-empty"></i>
-                                                            <i class="icon-star-empty"></i>
-                                                            (0%)
-                                                        </span>
-                                                        <span>0 Reviews</span>
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                            {% endfor %}
+                                           
+                                        
                                     </div>
                                 </div>
                             </div>

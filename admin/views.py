@@ -6,6 +6,8 @@ from django.views.decorators.cache import never_cache
 from product.models import *
 from django.contrib import messages
 from order.models import *
+import re
+from offer.models import *
 
 
 # Create your views here.
@@ -73,6 +75,26 @@ def add_offer(request):
             start_date = request.POST.get('start_date')
             end_date = request.POST.get('end_date')
             
+            context={
+                'offer_title':offer_title,
+                'offer_description':offer_description,
+                'offer_percentage':offer_percentage,
+                'start_date':start_date,
+                'end_date':end_date,
+
+           
+            }
+            if not re.match(r'^[a-zA-Z]+[0-9]*(\s+[a-zA-Z0-9]*)*$', offer_title):
+                    context['error'] = "offer  is not readable"
+                    return render(request, 'admin/add_offer.html', context)
+            if not re.match(r'^[a-zA-Z]+(\s+[a-zA-Z]*)*$', offer_description):
+                    context['error'] = "discription should is not readable"
+                    return render(request, 'admin/add_offer.html', context)
+            if not re.match(r'^[0-9]+$', offer_percentage):
+                    context['error'] = "percentage should be number"
+                    return render(request, 'admin/add_offer.html', context)
+          
+            
             offer = Offer(
                 offer_title = offer_title,
                 offer_description = offer_description,
@@ -97,6 +119,27 @@ def edit_offer(request,id):
             offer_percentage = request.POST.get('offer_percentage')
             start_date = request.POST.get('start_date')
             end_date = request.POST.get('end_date')
+
+
+            context={
+                'offer_title':offer_title,
+                'offer_description':offer_description,
+                'offer_percentage':offer_percentage,
+                'start_date':start_date,
+                'end_date':end_date,
+
+           
+            }
+            if not re.match(r'^[a-zA-Z]+[0-9]*(\s+[a-zA-Z0-9]*)*$', offer_title):
+                    context['error'] = "offer  is not readable"
+                    return render(request, 'admin/add_offer.html', context)
+            if not re.match(r'^[a-zA-Z]+(\s+[a-zA-Z]*)*$', offer_description):
+                    context['error'] = "discription should is not readable"
+                    return render(request, 'admin/add_offer.html', context)
+            if not re.match(r'^[0-9]+$', offer_percentage):
+                    context['error'] = "percentage should be number"
+                    return render(request, 'admin/add_offer.html', context)
+          
             
             offer.offer_title = offer_title
             offer.offer_description = offer_description
@@ -156,6 +199,32 @@ def add_coupon(request):
             # Converting naive datetime to timezone-aware datetime
             expiry_date = timezone.make_aware(expiry_date_naive, timezone.get_current_timezone())
             
+
+            context={
+                'code':code,
+                'minimum_order_amount':minimum_order_amount,
+                'maximum_order_amount':maximum_order_amount,
+                'used_limit':used_limit,
+                'discount_amount':discount_amount,
+
+           
+            }
+            if not re.match(r'^([a-zA-Z]+[0-9]*)+$', code):
+                    context['error'] = "should not contain symbols"
+                    return render(request, 'admin/add_coupen.html', context)
+            if not re.match(r'^[0-9]+$',minimum_order_amount ):
+                    context['error'] = "minimum amound must be a number"
+                    return render(request, 'admin/add_coupen.html', context)
+            if not re.match(r'^[0-9]+$', maximum_order_amount):
+                    context['error'] = "maximum amount be a number"
+                    return render(request, 'admin/add_coupen.html', context)
+            if not re.match(r'^[1-9]+[0-9]*$',used_limit):
+                    context['error'] = "user limit should be one or more than"
+                    return render(request, 'admin/add_coupen.html', context)
+            if not re.match(r'^[1-9]+[0-9]*$',discount_amount):
+                    context['error'] = "discount should be a number"
+                    return render(request, 'admin/add_coupen.html', context)
+          
             coupon = Coupen(
                 code = code,
                 minimum_order_amount = minimum_order_amount,
@@ -169,7 +238,7 @@ def add_coupon(request):
             messages.success(request,f'New coupon {code} has added.')
             return redirect('admin_app:admin_coupon')
          
-        return render(request,'admin/add_coupon.html')
+        return render(request,'admin/add_coupen.html')
     
     else:
         return redirect('user_app:index')
@@ -192,6 +261,41 @@ def edit_coupon(request,id):
             
             # Converting naive datetime to timezone-aware datetime
             expiry_date = timezone.make_aware(expiry_date_naive, timezone.get_current_timezone())
+            context={
+                'code':code,
+                'minimum_order_amount':minimum_order_amount,
+                'maximum_order_amount':maximum_order_amount,
+                'used_limit':used_limit,
+                'discount_amount':discount_amount,
+
+           
+                    }
+            min_amount = float(minimum_order_amount)
+            max_amount = float(maximum_order_amount)
+            discount = float(discount_amount)
+            limit = int(used_limit)
+            if not re.match(r'^([a-zA-Z]+[0-9]*)+$', code):
+                    context['error'] = "should not contain symbols"
+                    return render(request, 'admin/add_coupen.html', context)
+            if not re.match(r'^\d*\.?\d+$',minimum_order_amount):
+                    context['error'] = "minimum amound must be a number"
+                    return render(request, 'admin/add_coupen.html', context)
+            if not re.match(r'^\d*\.?\d+$',maximum_order_amount):
+                    context['error'] = "maximum amount be a number"
+                    return render(request, 'admin/add_coupen.html', context)
+            if not re.match(r'^[1-9]+[0-9]*$',used_limit):
+                    context['error'] = "user limit should be one or more than"
+                    return render(request, 'admin/add_coupen.html', context)
+            
+            if not re.match(r'^\d*\.?\d+$',discount_amount):
+                    context['error'] = "discount should be greter than zero"
+                    return render(request, 'admin/add_coupen.html', context)
+            
+            if  max_amount < min_amount: 
+                context['error'] = "minimum order amount cannnot be greater"
+                return render(request, 'admin/add_coupen.html', context)
+                    
+            
             
             coupon.code = code
             coupon.minimum_order_amount = minimum_order_amount
@@ -208,7 +312,7 @@ def edit_coupon(request,id):
         context = {
             'coupon':coupon
         }
-        return render(request,'admin/edit_coupon.html',context)
+        return render(request,'admin/edit_coupen.html',context)
     
     else:
         return redirect('user_app:index')

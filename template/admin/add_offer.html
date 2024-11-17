@@ -10,33 +10,33 @@
         <!-- Offer Title -->
         <div class="mb-3">
             <label for="offer-title" class="form-label">Offer Title:</label>
-            <input type="text" class="form-control" id="offer-title" name="offer_title" required>
+            <input type="text" class="form-control" id="offer-title" value="{{offer_title}}" name="offer_title" required>
         </div>
 
         <!-- Offer Description -->
         <div class="mb-3">
             <label for="offer-description" class="form-label">Offer Description:</label>
-            <textarea class="form-control" id="offer-description" name="offer_description" rows="4" required></textarea>
+            <textarea class="form-control" id="offer-description"  name="offer_description" rows="4" required>{{ offer_description }}</textarea>
         </div>
 
         <!-- Offer Percentage -->
         <div class="mb-3">
             <label for="offer-percentage" class="form-label">Offer Percentage:</label>
-            <input type="number" class="form-control" id="offer-percentage" name="offer_percentage" min="0" max="100" required>
+            <input type="number" class="form-control" value="{{offer_percentage}}" id="offer-percentage" name="offer_percentage" min="0" max="100" required>
         </div>
 
         <!-- Start Date -->
         <div class="mb-3">
             <label for="start-date" class="form-label">Start Date:</label>
-            <input type="datetime" class="form-control" id="start-date" name="start_date" required>
+            <input type="datetime" class="form-control" value="{{start_date}}" id="start-date" name="start_date" required>
         </div>
 
         <!-- End Date -->
         <div class="mb-3">
             <label for="end-date" class="form-label">End Date:</label>
-            <input type="datetime" class="form-control" id="end-date" name="end_date" required>
+            <input type="datetime" class="form-control" id="end-date" value="{{end_date}}" name="end_date" required>
         </div>
-
+<p style="color: red;">{{error}}</p>
         <!-- Submit Button -->
         <button type="submit" class="btn btn-primary">Add Offer</button>
     </form>

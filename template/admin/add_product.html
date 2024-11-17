@@ -9,12 +9,12 @@
 
             <div class="mb-3">
                 <label for="sub_category-name" class="form-label">Poduct Name:</label>
-                <input type="text" class="form-control" id="product_name" name="product_name" required>
+                <input type="text" class="form-control" id="product_name" value="{{product_name}}" name="product_name" required>
 
             </div>
             <div class="mb-3">
                 <label for="description" class="form-label">description:</label>
-                <input type="text" class="form-control" id="description" name="description" required>
+                <input type="text" class="form-control" id="description" value="{{description}}" name="description" required>
 
             </div>
             <div class="mb-3">
@@ -39,24 +39,35 @@
                 </select>
             </div>
             
-
-
             <div class="mb-3">
                 <label for="image" class="form-label">Product Image 1:</label>
+                {% if image1 %}
+        <div class="mb-2">
+            <img src="{{ image1.url }}" alt="Uploaded Image" style="max-width: 200px; max-height: 200px; display: block;">
+        </div>
+    {% endif %}
                 <input type="file" class="form-control" id="image1" name="image1" accept="image/*" required>
             </div>
             <div class="mb-3">
                 <label for="-image" class="form-label">Product Image 2:</label>
+                {% if image1 %}
+                <div class="mb-2">
+                    <img src="{{ image2.url }}" alt="Uploaded Image" style="max-width: 200px; max-height: 200px; display: block;">
+                </div>
+            {% endif %}
                 <input type="file" class="form-control" id="image2" name="image2" accept="image/*" required>
             </div>
             <div class="mb-3">
                 <label for="category-image" class="form-label">Product Image 2:</label>
-                <input type="file" class="form-control" id="image3" name="image3" accept="image/*" required>
+                <div class="mb-2">
+                    <img src="{{ image3.url }}" alt="Uploaded Image" style="max-width: 200px; max-height: 200px; display: block;">
+                </div>
+                <input type="file" class="form-control" id="image3" value="{{image3}}" name="image3" accept="image/*" required>
             </div>
 
             <div class="mb-3">
                 <label for="price" class="form-label">Price:</label>
-                <input type="text" class="form-control" id="price" name="price" required>
+                <input type="text" class="form-control" id="price" value="{{price}}" name="price" required>
 
             </div>
 
@@ -69,7 +80,7 @@
                 </select>
             </div>
 
-
+<p style="color: red;">{{error}}</p>
             <!-- Submit Button -->
             <button type="submit" class="btn btn-primary">Add Product</button>
         </form>

@@ -1,6 +1,11 @@
 {% extends 'user/index.html' %}
 {% load static %}
 {% block content %}
+<style>
+	.alert-success { color: green; background-color: #d4edda; }
+    .alert-error { color: red; background-color: #f8c2c7; }
+
+</style>
 <div class="container">
     <div class="breadcrumb">
         <nav>
@@ -71,6 +76,7 @@
                     <div class="subtotal d-flex justify-content-between mb-2">
                         <span>Subtotal</span>
                         <span>{{cart_total}}</span>
+						
                     </div>
                     
                     {% for item in cart_items %}
@@ -88,7 +94,13 @@
                     <div class="total d-flex justify-content-between font-weight-bold mt-3">
                         <span>Order Total</span>
                         <span>{{cart_total}}</span>
+						
+						
                     </div>
+					<div class="total d-flex justify-content-between font-weight-bold mt-3">
+						<span>discount_Total</span>
+						<span>{{cart_total_with_discount}}</span>
+					</div>
                 </div>
             </div>
 
@@ -104,8 +116,8 @@
                     </div>
                     
                     <div class="form-check mb-2">
-                        <input type="radio" class="form-check-input" name="payment_method" id="check" required>
-                        <label class="form-check-label" for="check">Check Payment</label>
+                        <input type="radio" class="form-check-input" name="payment_method" id="wallet" value="wallet" required>
+                        <label class="form-check-label" for="check">Wallet</label>
                     </div>
                     
                     <div class="form-check mb-3">
@@ -121,8 +133,35 @@
                 </div>
 				
 			</form>
-            </div>
 
+            </div>
+			{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+			<div class="col-sm-8">
+				<form action="{% url 'cart_app:coupon' %}" method="post">
+					{% csrf_token %}
+					<div class="row form-group d-flex align-items-center">
+		
+							<div class="col-sm-9">
+								<input type="text" style="width: auto;border-radius: 20px;" value="{{coupon}}" name="coupon" id="coupon" class="form-control input-number" placeholder="Your Coupon Number...">
+							</div>
+							
+							<div class="col-sm-3">
+								<input type="hidden" id="cart_total" value="{{cart_total}}" name="cart_total">
+								<input type="hidden" id="cart_total" value="{{cart_id}}" name="cart_id">
+								<input type="submit" value="Apply Coupon" class="btn btn-primary" style="margin-left: 10px;">
+							</div>
+						
+					
+					</div>
+				</form>
+			</div>
+			
           
         </div>
     </div>

@@ -6,7 +6,7 @@
 			<div class="container">
 				<div class="row">
 					<div class="col">
-						<p class="bread"><span><a href="index.html">Home</a></span> / <span>My Wishlist</span></p>
+						<p class="bread"><span><a href="{% url 'user_app:index' %}">Home</a></span> / <span>My Wishlist</span></p>
 					</div>
 				</div>
 			</div>
@@ -70,6 +70,7 @@
 								<div class="display-tc">
 									<span class="price">{{item.varient.size}}</span>
 								</div>
+								
 							</div>
 							
 							<div class="one-eight text-center">
@@ -81,6 +82,14 @@
 			
 									
 								</div>
+							</div>
+							<div class="one-eight text-center">
+								<form action="{% url 'cart_app:add_to_cart' item.product.id %}" method="post">
+									{% csrf_token %}
+								<input type="hidden" value="{{item.varient.id}}" name="var_id">
+								<p class="addtocart"><button type="submit" id="add_btn"  class="btn btn-outline-danger">
+											 Add to Cart</button></p>
+								</form>
 							</div>
 						</div>
 						{% endfor %}

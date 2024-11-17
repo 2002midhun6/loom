@@ -4,16 +4,12 @@ from datetime import datetime
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from user.models import CustomUser
+from offer.models import *
 
 
 
 # Create your models here.
-class Offer(models.Model):
-    offer_title=models.CharField(max_length=150)
-    offer_description=models.TextField()
-    offer_percentage=models.IntegerField()
-    start_date=models.DateField()
-    end_date=models.DateField()
+
 class Product(models.Model):
     product_name = models.CharField(max_length=100)
     description = models.TextField()
@@ -26,12 +22,25 @@ class Product(models.Model):
     is_listed=models.BooleanField(default=True)
     offer = models.ForeignKey(Offer,on_delete=models.SET_NULL, null=True)
     sold_count = models.PositiveIntegerField(blank=True, default=0)
+
     @property
     def discount_price(self):
+        # Start with the base price
+        price = self.price
+        
+        # Check for product's offer
         if self.offer:
-            discount = self.price - (self.offer.offer_percentage * self.price / 100)
-            return round(discount, 2)
-        return self.price
+            discount = self.offer.offer_percentage * price / 100
+            price -= discount
+        # Fallback to the sub-category's offer if the product offer is not present
+        elif self.sub_category and self.sub_category.offer:
+            discount = self.sub_category.offer.offer_percentage * price / 100
+            price -= discount
+        else:
+            # No offer, return original price
+            return price
+
+        return round(price, 2)
 RATING = (
     (1,"⭐☆☆☆☆"),
     (2,"⭐⭐☆☆☆"),

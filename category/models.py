@@ -1,4 +1,5 @@
 from django.db import models
+from offer.models import *
 
 # Create your models here.
 class Category(models.Model):
@@ -13,6 +14,7 @@ class Sub_Category(models.Model):
      is_listed=models.BooleanField(default=True)
      created_at=models.DateTimeField(auto_now_add=True)
      category=models.ForeignKey(Category,on_delete=models.CASCADE,related_name='sub_category')
+     offer= models.ForeignKey(Offer, on_delete=models.SET_NULL, null=True, blank=True)
      
 
    

@@ -6,7 +6,7 @@
 			<div class="container">
 				<div class="row">
 					<div class="col">
-						<p class="bread"><span><a href="index.html">Home</a></span> / <span>Shopping Cart</span></p>
+						<p class="bread"><span><a href="{% url 'user_app:index' %}">Home</a></span> / <span>Shopping Cart</span></p>
 					</div>
 				</div>
 			</div>
@@ -116,21 +116,7 @@
 					<div class="col-md-12">
 						<div class="total-wrap">
 							<div class="row">
-								<div class="col-sm-8">
-									<form action="#">
-										<div class="row form-group">
-											{% if cart_items %}
-											<div class="col-sm-9">
-												<input type="text" name="quantity" class="form-control input-number" placeholder="Your Coupon Number...">
-											</div>
-											
-											<div class="col-sm-3">
-												<input type="submit" value="Apply Coupon" class="btn btn-primary">
-											</div>
-											{% endif %}
-										</div>
-									</form>
-								</div>
+								
 								<div class="col-sm-4 text-center">
 									<div class="total">
 										<div class="sub">
@@ -156,13 +142,16 @@
 					</div>
 				</div>
 				
-				{% if messages %}
-				{% for message in messages %}
-					<div class="alert  mt-3">
-				{{ message }}
-				 </div>
-				{% endfor %}
-			 {% endif %}
+		{% if messages %}
+<div class="alert alert-danger">
+	{% for message in messages %}
+		<h6 style="color: crimson;">{{ message }}</h6>
+	{% endfor %}
+</div>
+{% endif %}
+
+				
+				
 			
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 

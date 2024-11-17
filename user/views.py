@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect
 from . validate import Authentication_check
-from . models import CustomUser
+from . models import *
 import random
 from django.core.mail import EmailMessage
 from django.contrib import messages
@@ -10,8 +10,8 @@ from django.contrib.auth import get_user_model
 from django.views.decorators.cache import never_cache
 from product.models import *
 from django.utils import timezone
-
-
+from order.models import *
+from django.db.models import F
 User = get_user_model()
 
 # Create your views here.
@@ -66,9 +66,16 @@ def sign_up(request):
         last_name = request.POST.get('last_name')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
+        
+        referral = request.POST.get('referral')
+        error = {}
         error=validation_view(request,email,first_name,last_name,password,confirm_password)
+        code = UserReferral.objects.filter(referral_code=referral)
+        if not code:
+             error['referral'] = 'Invalid referral'
+        
         if error:
-         return render(request,'user/sign_up.html',{"error":error,"email":email,"username":username,"first_name":first_name,"last_name":last_name,"password":password,"confirm_password":confirm_password})
+            return render(request,'user/sign_up.html',{"error":error,"email":email,"username":username,"first_name":first_name,"last_name":last_name,"password":password,"confirm_password":confirm_password})
         elif CustomUser.objects.filter(email = email).exists():
                 print('hi')
                 error1=None
@@ -80,6 +87,8 @@ def sign_up(request):
                     # Save the OTP to session
                     request.session['registration_otp'] = otp
                     request.session['registered_email'] = email
+                    
+                    request.session['referral'] = referral
 
                     # Send the OTP via email
                     mail_subject = 'Your OTP for email verification'
@@ -170,6 +179,9 @@ def validation_view(request,email,first_name,last_name,password,confirm_password
     password_mismatch = user_validation.password_mismatch(password, confirm_password)
     if password_mismatch:
         errors['password_mismatch'] = password_mismatch
+    
+   
+    
     return errors
 @never_cache   
 def enter_otp(request):
@@ -331,9 +343,43 @@ def password_check(request):
         user = CustomUser.objects.get(email = email)
         user.set_password(password)
         user.save()
-            
+        new_referral_code = generate_referral_code(user.id)
+        print('New user referral code: ',new_referral_code)
+        UserReferral.objects.create(
+                user=user,
+                referral_code = new_referral_code,
+            )
+        referral_code=request.session.get('referral')    
+        if referral_code:
+                try:
+                    # If signup is using a referral code, credit both users
+                    # Creating/Updating wallet for the new user
+                    wallet, created = Wallet.objects.get_or_create(user=user)
+                    
+                    WalletTransation.objects.create(
+                        wallet=wallet,
+                        transaction_type='referral',
+                        amount=1000,  # Amount for the referral reward
+                    )
+                    wallet.balance = F('balance') + 1000
+                    wallet.save()
+
+                    # Credit referrer’s wallet
+                    referred_user = UserReferral.objects.get(referral_code=referral_code)
+                    referrer_wallet, created = Wallet.objects.get_or_create(user=referred_user.user)
+                    WalletTransation.objects.create(
+                        wallet=referrer_wallet,
+                        transaction_type='referral',
+                        amount=1000,
+                    )
+                    referrer_wallet.balance = F('balance') + 1000
+                    referrer_wallet.save()
+
+                except UserReferral.DoesNotExist:
+                    messages.error(request, "Invalid referral code.")
+        
         del request.session['registered_email']
-            
+        del request.session['referral']  
         messages.success(request,'Password changed successfully')
         
         return redirect('user_app:user_login')
@@ -341,6 +387,13 @@ def password_check(request):
    else:
        
         return render(request,'user/password_check.html')
+import hashlib
+
+def generate_referral_code(user_id, salt="my_secret_salt"):
+    hash_input = f"{user_id}{salt}".encode()
+    code = hashlib.md5(hash_input).hexdigest()[:6].upper()  # Take first 8 characters
+    return code
+
 @never_cache
 def index(request):
         if request.user.is_authenticated and request.user.is_staff:

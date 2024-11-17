@@ -141,6 +141,7 @@
                                         <th>Date</th>
                                         <th>Status</th>
                                         <th>address</th>
+                                        <th>show details</th>
                                         
                                     </tr>
                                 </thead>
@@ -155,6 +156,9 @@
                                            
                                             {{order.address.postal_code}} <br>
                                         </td>
+                                        <td>  <div>
+                                            <a href="{% url 'customer_app:item_order' order.id %}"><button class="btn btn-outline-primary">VIEW</button></a>
+                                        </div></td>
                                        
                                     </tr>
                                     {% endfor %}

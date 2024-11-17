@@ -12,6 +12,8 @@ urlpatterns = [
      path('edit_address/<int:id>/',views.edit_address,name='edit_address'),
      path('remove_address/<int:address_id>/',views.remove_address,name='remove_address'),
      path('edit_user/<int:id>/',views.edit_user,name='edit_user'),
+     path('item_order/<int:id>/',views.item_order,name='item_order'),
+     path('view_wallet/',views.view_wallet,name='view_wallet'),
    
 
 

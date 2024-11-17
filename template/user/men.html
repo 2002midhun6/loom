@@ -75,12 +75,12 @@
 						<h2><a href="#">{{i.product_name}}</a></h2>
 							
 
-						{% if i.offer %}
-						<h4><del>{{ i.price}} Rs</del></h4>
-						<h4>{{i.discount_price}} Rs</h4>
-					{% else %}
-						<h4>{{i.price}} Rs</h4>
-					{% endif %}
+						{% if i.offer or i.sub_category.offer%}
+                            <h4><del>{{i.price}} Rs</del></h4>
+                            <h4>{{i.discount_price}} Rs</h4>
+                        {% else %}
+                            <h4>{{i.price}} Rs</h4>
+                        {% endif %}
 						
 					</div>
 				</div>

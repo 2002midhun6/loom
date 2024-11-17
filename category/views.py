@@ -2,6 +2,7 @@ from django.shortcuts import render,redirect
 from  . models import *
 from django.views.decorators.cache import never_cache
 from django.contrib import messages
+from offer.models import *
 
 
 # Create your views here.
@@ -96,24 +97,26 @@ def sub_category_list(request,id):
 def sub_category_edit(request,id):
 
     if request.user.is_authenticated and request.user.is_staff:
-        sub_category = Sub_Category.objects.get(id = id)    # Retrive data of the catgory
+        sub_category = Sub_Category.objects.get(id = id) 
+        offer = Offer.objects.all()   # Retrive data of the catgory
         if request.method == 'POST':
             sub_category_name = request.POST.get('sub_category_name')
             sub_category_image = request.FILES.get('sub_category_image')
             is_listed = request.POST.get('available')
-            
-            
+            offer=request.POST.get('offer')
             sub_category.sub_category_name = sub_category_name
             sub_category.is_listed = is_listed
-            
+           
             if sub_category_image:
                 sub_category.sub_category_image = sub_category_image
             
-            sub_category.save()
             
+            if offer:
+                   sub_category.offer = Offer.objects.get(id = offer)
+            sub_category.save()
             id=request.session['category_obj_id']
             return redirect('category_app:sub_category',id=id)
-        return render(request,'admin/sub_category_edit.html',{'category':sub_category})
+        return render(request,'admin/sub_category_edit.html',{'category':sub_category,'offer':offer})
     else:
         return redirect('user_app:index')
 @never_cache

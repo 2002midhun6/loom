@@ -2,6 +2,7 @@ from django.shortcuts import render,redirect
 from  . models import *
 from category.models import *
 from django.db.models import F
+import re
 
 
 # Create your views here.
@@ -42,8 +43,51 @@ def add_product(request,id):
                 sub_category=Sub_Category.objects.get(id=sub_category_id)
                 category_id=sub_category.category.id
                 category=Category.objects.get(id=category_id)
+                category=Category.objects.get(id=id)
+                sub_categories=category.sub_category.all()
+                offers=Offer.objects.all()
                 
                 
+                context ={
+                        'product_name':product_name,
+                        'image1':image1,
+                        'image2' :image2,
+                        'image3' :image3,
+                       'is_listed':is_listed,
+                        'price' :price,
+                        'description':description,
+                        'sub_category_id':sub_category,
+                        'sub_categories':sub_categories,
+                        'offers':offers
+                
+
+                }
+                
+                if not re.match(r'^[a-zA-Z]+[0-9]*(\s+[a-zA-Z0-9]*)*$', product_name):
+                    context['error'] = "Product name is not readable"
+                    return render(request, 'admin/add_product.html', context)
+                valid_extensions = ['jpg', 'jpeg', 'png', 'gif']
+                if not image1.name.lower().endswith(tuple(valid_extensions)):
+                        context['error'] = "Uploaded file must be an image (jpg, jpeg, png, gif)."
+                        return render(request, 'admin/add_product.html', context)
+                valid_extensions = ['jpg', 'jpeg', 'png', 'gif']
+                if not image2.name.lower().endswith(tuple(valid_extensions)):
+                        context['error'] = "Uploaded file must be an image (jpg, jpeg, png, gif)."
+                        return render(request, 'admin/add_product.html', context)
+
+                valid_extensions = ['jpg', 'jpeg', 'png', 'gif']
+                if not image3.name.lower().endswith(tuple(valid_extensions)):
+                        context['error'] = "Uploaded file must be an image (jpg, jpeg, png, gif)."
+                        return render(request, 'admin/add_product.html', context)
+                if not re.match(r'^(0|[1-9]\d*)(\.\d{1,2})?$',price):
+                    context['error'] = "price cannot be character"
+                    return render(request, 'admin/add_product.html', context)
+
+                if not re.match(r'^[a-zA-Z]+[0-9]*(\s+[a-zA-Z0-9]*)*$',description):
+                    context['error'] = "discription should contain letters"
+                    return render(request, 'admin/add_product.html', context)
+ 
+
                 
                 
                 new_product = Product(
@@ -74,6 +118,7 @@ def add_product(request,id):
             
                 'sub_categories':sub_categories,
                 'offers':offers
+
 
             }
         return render(request,'admin/add_product.html',context)
