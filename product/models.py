@@ -5,6 +5,8 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from user.models import CustomUser
 from offer.models import *
+from datetime import datetime
+import pytz
 
 
 
@@ -22,13 +24,20 @@ class Product(models.Model):
     is_listed=models.BooleanField(default=True)
     offer = models.ForeignKey(Offer,on_delete=models.SET_NULL, null=True)
     sold_count = models.PositiveIntegerField(blank=True, default=0)
+    created_at = models.DateTimeField(auto_now_add=True,null=True,blank=True)
+    class Meta:
+        ordering = ['-created_at']
 
     @property
     def discount_price(self):
         # Start with the base price
         price = self.price
-        
+        kolkata_tz = pytz.timezone('Asia/Kolkata')
+        # Get the current time in Asia/Kolkata timezone
+        now = datetime.now(kolkata_tz)
         # Check for product's offer
+
+        
         if self.offer:
             discount = self.offer.offer_percentage * price / 100
             price -= discount

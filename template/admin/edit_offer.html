@@ -28,13 +28,13 @@
         <!-- Start Date -->
         <div class="mb-3">
             <label for="start-date" class="form-label">Start Date:</label>
-            <input type="date" class="form-control" id="start-date" name="start_date" required value="{{offer.start_date}}">
+            <input type="datetime-local" class="form-control" id="start-date" name="start_date" required value="{{offer.start_date|date:'Y-m-d\\TH:i'}}">
         </div>
 
         <!-- End Date -->
         <div class="mb-3">
             <label for="end-date" class="form-label">End Date:</label>
-            <input type="date" class="form-control" id="end-date" name="end_date" required value="{{offer.end_date}}">
+            <input type="datetime-local" class="form-control" id="end-date" name="end_date" required value="{{offer.end_date|date:'Y-m-d\\TH:i'}}">
         </div>
         <p style="color: crimson;">{{error}}</p>
 

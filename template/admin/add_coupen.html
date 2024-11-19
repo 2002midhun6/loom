@@ -34,7 +34,7 @@
         <!-- Expiry Date -->
         <div class="mb-3">
             <label for="expiry-date" class="form-label">Expiry Date:</label>
-            <input type="datetime-local" class="form-control" id="expiry-date" name="expiry_date" required>
+            <input type="datetime-local" class="form-control" id="expiry-date" name="expiry_date" value="{{expiry_date|date:'Y-m-d\\TH:i'}}" required>
         </div>
         
         <!-- Discount amount -->

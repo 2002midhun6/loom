@@ -1,0 +1,142 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Report Header -->
+    <div class="card shadow mb-5">
+        <div class="card-body">
+            <h1 class="card-title h3 text-dark font-weight-bold mb-4">📊 Sales Report</h1>
+
+            <!-- Report Filters -->
+            <form method="GET" class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <label for="report_type" class="form-label font-weight-bold">Report Type</label>
+                    <select id="report_type" name="report_type" class="form-control">
+                        <option value="daily" {% if report_type == 'daily' %}selected{% endif %}>Daily</option>
+                        <option value="weekly" {% if report_type == 'weekly' %}selected{% endif %}>Weekly</option>
+                        <option value="monthly" {% if report_type == 'monthly' %}selected{% endif %}>Monthly</option>
+                        <option value="yearly" {% if report_type == 'yearly' %}selected{% endif %}>Yearly</option>
+                        <option value="custom" {% if report_type == 'custom' %}selected{% endif %}>Custom</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3 custom-dates {% if report_type != 'custom' %}d-none{% endif %}">
+                    <label for="start_date" class="form-label font-weight-bold">Start Date</label>
+                    <input type="date" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}" class="form-control">
+                </div>
+                <div class="col-md-3 mb-3 custom-dates {% if report_type != 'custom' %}d-none{% endif %}">
+                    <label for="end_date" class="form-label font-weight-bold">End Date</label>
+                    <input type="date" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}" class="form-control">
+                </div>
+                <div class="col-md-3 mb-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary mr-2">Apply Filters</button>
+                    <a href="?download_format=excel" class="btn btn-success mr-2">Export Excel</a>
+                    <a href="?download_format=pdf" class="btn btn-danger">Export PDF</a>
+                </div>
+            </form>
+
+            <!-- Overall Statistics -->
+            <div class="row text-center mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-light shadow-sm">
+                        <div class="card-body">
+                            <h5 class="text-primary">Total Orders</h5>
+                            <h3 class="font-weight-bold">{{ overall_stats.total_orders }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light shadow-sm">
+                        <div class="card-body">
+                            <h5 class="text-success">Total Amount</h5>
+                            <h3 class="font-weight-bold">₹{{ overall_stats.total_amount|floatformat:2 }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light shadow-sm">
+                        <div class="card-body">
+                            <h5 class="text-warning">Total Discount</h5>
+                            <h3 class="font-weight-bold">₹{{ overall_stats.total_discount|floatformat:2 }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light shadow-sm">
+                        <div class="card-body">
+                            <h5 class="text-danger">Net Amount</h5>
+                            <h3 class="font-weight-bold">₹{{ overall_stats.net_amount|floatformat:2 }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sales Data Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Period</th>
+                            <th class="text-right">Total Orders</th>
+                            <th class="text-right">Delivered</th>
+                            <th class="text-right">Pending</th>
+                            <th class="text-right">Cancelled</th>
+                            <th class="text-right">Total Amount</th>
+                            <th class="text-right">Discount</th>
+                            <th class="text-right">Net Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in sales_data %}
+                        <tr>
+                            <td>{{ item.period|date:"Y-m-d" }}</td>
+                            <td class="text-right">{{ item.total_orders }}</td>
+                            <td class="text-right">{{ item.delivered_orders }}</td>
+                            <td class="text-right">{{ item.pending_orders }}</td>
+                            <td class="text-right">{{ item.cancelled_orders }}</td>
+                            <td class="text-right">₹{{ item.total_amount|floatformat:2 }}</td>
+                            <td class="text-right">₹{{ item.discount|floatformat:2 }}</td>
+                            <td class="text-right">₹{{ item.net_amount|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">No sales data available for the selected period.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="thead-light">
+                        <tr>
+                            <th>Total</th>
+                            <th class="text-right">{{ overall_stats.total_orders }}</th>
+                            <th class="text-right">{{ overall_stats.delivered_orders }}</th>
+                            <th class="text-right">{{ overall_stats.pending_orders }}</th>
+                            <th class="text-right">{{ overall_stats.cancelled_orders }}</th>
+                            <th class="text-right">₹{{ overall_stats.total_amount|floatformat:2 }}</th>
+                            <th class="text-right">₹{{ overall_stats.total_discount|floatformat:2 }}</th>
+                            <th class="text-right">₹{{ overall_stats.net_amount|floatformat:2 }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for handling custom date inputs -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const reportTypeSelect = document.getElementById('report_type');
+    const customDateInputs = document.querySelectorAll('.custom-dates');
+
+    function toggleCustomDates() {
+        const isCustom = reportTypeSelect.value === 'custom';
+        customDateInputs.forEach(input => input.classList.toggle('d-none', !isCustom));
+    }
+
+    reportTypeSelect.addEventListener('change', toggleCustomDates);
+    toggleCustomDates(); // Initial state
+});
+</script>
+
+{% endblock %}
+

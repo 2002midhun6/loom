@@ -9,5 +9,4 @@ urlpatterns = [
     path('edit_varient/<int:id>/',views.edit_varient,name='edit_varient'),
     path('add_varient',views.add_varient,name='add_varient'),
     path('edit_product/<int:id>/',views.edit_product,name='edit_product'),
-
 ]

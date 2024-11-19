@@ -3,9 +3,11 @@ from  . models import *
 from category.models import *
 from django.db.models import F
 import re
+from django.views.decorators.cache import never_cache
 
 
 # Create your views here.
+@never_cache
 def admin_product_view(request):
     if request.user.is_authenticated and request.user.is_staff:
         product = Product.objects.all()
@@ -13,7 +15,7 @@ def admin_product_view(request):
         return render(request,'admin/product.html',{'product':product,'categories':category})
     else:
         return redirect('user_app:index')
-
+@never_cache
 def product_list(request,id):
     if request.user.is_authenticated and request.user.is_staff:
         if request.method == 'POST':
@@ -27,7 +29,7 @@ def product_list(request,id):
         return redirect('product_app:admin_product_view')
     else:
         return redirect('user_app:index')
-
+@never_cache
 def add_product(request,id):
     if request.user.is_authenticated and request.user.is_staff:
         if request.method=="POST":
@@ -124,6 +126,7 @@ def add_product(request,id):
         return render(request,'admin/add_product.html',context)
     else:
         return redirect('user_app:index')
+@never_cache
 def product_varients(request,id):
     if request.user.is_authenticated and request.user.is_staff:
         product =  Product.objects.get(id = id)
@@ -139,6 +142,7 @@ def product_varients(request,id):
 
     else:
         return redirect('user_app:index')
+@never_cache
 def edit_varient(request,id):
     if request.user.is_authenticated and request.user.is_staff:
          varient= Varient.objects.get(id=id)
@@ -159,6 +163,7 @@ def edit_varient(request,id):
             return render(request,'admin/edit_varient.html',context)
     else:
         return redirect('user_app:index')
+@never_cache
 def add_varient(request):
     if request.user.is_authenticated and request.user.is_staff:
         if request.method=='POST':
@@ -186,6 +191,7 @@ def add_varient(request):
 
     else:
         return redirect('user_app:index')
+@never_cache
 def edit_product(request,id):
     if request.user.is_authenticated and request.user.is_staff:
         product=Product.objects.get(id=id)

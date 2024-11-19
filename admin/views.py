@@ -72,8 +72,21 @@ def add_offer(request):
             offer_title = request.POST.get('offer_title')
             offer_description = request.POST.get('offer_description')
             offer_percentage = request.POST.get('offer_percentage')
-            start_date = request.POST.get('start_date')
-            end_date = request.POST.get('end_date')
+            start_date_str = request.POST.get('start_date')
+            end_date_str = request.POST.get('end_date')
+
+
+            end_date_naive = datetime.strptime(end_date_str, '%Y-%m-%dT%H:%M')
+            
+            # Converting naive datetime to timezone-aware datetime
+            end_date = timezone.make_aware(end_date_naive, timezone.get_current_timezone())
+            
+            start_date_naive = datetime.strptime(start_date_str, '%Y-%m-%dT%H:%M')
+            
+            # Converting naive datetime to timezone-aware datetime
+            start_date = timezone.make_aware(start_date_naive, timezone.get_current_timezone())
+            
+            
             
             context={
                 'offer_title':offer_title,
@@ -81,18 +94,20 @@ def add_offer(request):
                 'offer_percentage':offer_percentage,
                 'start_date':start_date,
                 'end_date':end_date,
-
-           
             }
-            if not re.match(r'^[a-zA-Z]+[0-9]*(\s+[a-zA-Z0-9]*)*$', offer_title):
+            if not re.match(r'^[a-zA-Z]+[0-9]*(\s+[a-zA-Z0-9]*)*$',offer_title):
                     context['error'] = "offer  is not readable"
-                    return render(request, 'admin/add_offer.html', context)
+                    return render(request, 'admin/add_offer.html',context)
             if not re.match(r'^[a-zA-Z]+(\s+[a-zA-Z]*)*$', offer_description):
                     context['error'] = "discription should is not readable"
-                    return render(request, 'admin/add_offer.html', context)
+                    return render(request, 'admin/add_offer.html',context)
             if not re.match(r'^[0-9]+$', offer_percentage):
                     context['error'] = "percentage should be number"
-                    return render(request, 'admin/add_offer.html', context)
+                    return render(request, 'admin/add_offer.html',context)
+            if end_date < timezone.now() or start_date < timezone.now() or end_date < start_date:
+                    context['error'] = 'please check start and end date'
+                    return render(request,'admin/add_offer.html',context)
+          
           
             
             offer = Offer(
@@ -117,8 +132,18 @@ def edit_offer(request,id):
             offer_title = request.POST.get('offer_title')
             offer_description = request.POST.get('offer_description')
             offer_percentage = request.POST.get('offer_percentage')
-            start_date = request.POST.get('start_date')
-            end_date = request.POST.get('end_date')
+            start_date_str = request.POST.get('start_date')
+            end_date_str = request.POST.get('end_date')
+            end_date_naive = datetime.strptime(end_date_str, '%Y-%m-%dT%H:%M')
+            
+            # Converting naive datetime to timezone-aware datetime
+            end_date = timezone.make_aware(end_date_naive, timezone.get_current_timezone())
+            
+            start_date_naive = datetime.strptime(start_date_str, '%Y-%m-%dT%H:%M')
+            
+            # Converting naive datetime to timezone-aware datetime
+            start_date = timezone.make_aware(end_date_naive, timezone.get_current_timezone())
+            
 
 
             context={
@@ -130,15 +155,15 @@ def edit_offer(request,id):
 
            
             }
-            if not re.match(r'^[a-zA-Z]+[0-9]*(\s+[a-zA-Z0-9]*)*$', offer_title):
+            if not re.match(r'^[a-zA-Z]+[0-9]*(\s+[a-zA-Z0-9]*)*$',context):
                     context['error'] = "offer  is not readable"
-                    return render(request, 'admin/add_offer.html', context)
+                    return render(request, 'admin/add_offer.html',context)
             if not re.match(r'^[a-zA-Z]+(\s+[a-zA-Z]*)*$', offer_description):
                     context['error'] = "discription should is not readable"
-                    return render(request, 'admin/add_offer.html', context)
+                    return render(request, 'admin/add_offer.html',context)
             if not re.match(r'^[0-9]+$', offer_percentage):
                     context['error'] = "percentage should be number"
-                    return render(request, 'admin/add_offer.html', context)
+                    return render(request, 'admin/add_offer.html',context)
           
             
             offer.offer_title = offer_title
@@ -193,6 +218,7 @@ def add_coupon(request):
             expiry_date_str = request.POST.get('expiry_date')
             discount_amount = request.POST.get('discount_amount')
             
+            
             # Converting string expiry date to datetime object.
             expiry_date_naive = datetime.strptime(expiry_date_str, '%Y-%m-%dT%H:%M')
             
@@ -205,10 +231,17 @@ def add_coupon(request):
                 'minimum_order_amount':minimum_order_amount,
                 'maximum_order_amount':maximum_order_amount,
                 'used_limit':used_limit,
+                'expiry_date':expiry_date,
                 'discount_amount':discount_amount,
+                  
+
 
            
             }
+            min= float(minimum_order_amount)
+            max= float(maximum_order_amount)
+            discount_am=float(discount_amount)
+                
             if not re.match(r'^([a-zA-Z]+[0-9]*)+$', code):
                     context['error'] = "should not contain symbols"
                     return render(request, 'admin/add_coupen.html', context)
@@ -224,7 +257,17 @@ def add_coupon(request):
             if not re.match(r'^[1-9]+[0-9]*$',discount_amount):
                     context['error'] = "discount should be a number"
                     return render(request, 'admin/add_coupen.html', context)
-          
+            if expiry_date < timezone.now():
+                    context['error'] = 'Expiry date cannot be a past time!'
+                    return render(request,'admin/add_coupen.html',context)
+            if max<min:
+                   context['error'] = 'minimum amount cannot be graeter than maximum amount'
+                   return render(request,'admin/add_coupen.html',context)
+                 
+            if min<=discount_am:
+                  context['error'] = 'minimum amount equal to discount'
+                  return render(request,'admin/add_coupen.html',context)
+                 
             coupon = Coupen(
                 code = code,
                 minimum_order_amount = minimum_order_amount,
@@ -267,12 +310,11 @@ def edit_coupon(request,id):
                 'maximum_order_amount':maximum_order_amount,
                 'used_limit':used_limit,
                 'discount_amount':discount_amount,
-
-           
+                'expiry_date':expiry_date,
                     }
             min_amount = float(minimum_order_amount)
             max_amount = float(maximum_order_amount)
-            discount = float(discount_amount)
+            discount_am=float(discount_amount)
             limit = int(used_limit)
             if not re.match(r'^([a-zA-Z]+[0-9]*)+$', code):
                     context['error'] = "should not contain symbols"
@@ -290,10 +332,17 @@ def edit_coupon(request,id):
             if not re.match(r'^\d*\.?\d+$',discount_amount):
                     context['error'] = "discount should be greter than zero"
                     return render(request, 'admin/add_coupen.html', context)
-            
+            if expiry_date < timezone.now():
+                    context['error'] = 'Expiry date cannot be a past time!'
+                    return render(request,'admin/add_coupen.html',context)
             if  max_amount < min_amount: 
                 context['error'] = "minimum order amount cannnot be greater"
                 return render(request, 'admin/add_coupen.html', context)
+            if min_amount<=discount_am:
+                  context['error'] = 'minimum amount equal to discount'
+                  return render(request,'admin/add_coupen.html',context)
+            
+                 
                     
             
             
@@ -345,16 +394,40 @@ def add_banner(request):
         if request.method == 'POST':
             banner_name = request.POST.get('banner_name')
             description = request.POST.get('description')
-           
             banner_image = request.FILES.get('banner_image')
-            start_date = request.POST.get('start_date')
-            end_date = request.POST.get('end_date')
+            start_date_str = request.POST.get('start_date')
+            end_date_str = request.POST.get('end_date')
            
+            end_date_naive = datetime.strptime(end_date_str, '%Y-%m-%dT%H:%M')
             
+            # Converting naive datetime to timezone-aware datetime
+            end_date = timezone.make_aware(end_date_naive, timezone.get_current_timezone())
+            
+            start_date_naive = datetime.strptime(start_date_str, '%Y-%m-%dT%H:%M')
+            
+            # Converting naive datetime to timezone-aware datetime
+            start_date = timezone.make_aware(start_date_naive, timezone.get_current_timezone())
+            context={
+                 'banner_name':banner_name,
+                 'description':description,
+                'start_date':start_date,
+                'end_date':end_date,
+                'banner_image':banner_image,
+                    }
+            if not re.match(r'^[a-zA-Z]+[0-9]*(\s+[a-zA-Z0-9]*)*$',banner_name):
+                    context['error'] = "banner  is not readable"
+                    return render(request, 'admin/add_banner.html',context)
+            if not re.match(r'^[a-zA-Z]+(\s+[a-zA-Z]*)*$', description):
+                    context['error'] = "discription should is not readable"
+                    return render(request, 'admin/add_banner.html',context)
+            
+            if end_date < timezone.now() or start_date < timezone.now() or end_date < start_date:
+                    context['error'] = 'please check start and end date'
+                    return render(request,'admin/add_banner.html',context)
+
             new_banner = Banner(
                 banner_name = banner_name,
                 banner_description = description,
-        
                 banner_image = banner_image,
                 start_date = start_date,
                 end_date = end_date,
@@ -383,10 +456,36 @@ def edit_banner(request,id):
             description = request.POST.get('description')
            
             banner_image = request.FILES.get('banner_image')
-            start_date = request.POST.get('start_date')
-            end_date = request.POST.get('end_date')
+            start_date_str = request.POST.get('start_date')
+            end_date_str = request.POST.get('end_date')
+            end_date_naive = datetime.strptime(end_date_str, '%Y-%m-%dT%H:%M')
             
-           
+            # Converting naive datetime to timezone-aware datetime
+            end_date = timezone.make_aware(end_date_naive, timezone.get_current_timezone())
+            
+            start_date_naive = datetime.strptime(start_date_str, '%Y-%m-%dT%H:%M')
+            
+            # Converting naive datetime to timezone-aware datetime
+            start_date = timezone.make_aware(end_date_naive, timezone.get_current_timezone())
+            
+            
+            context={
+                 'banner_name':banner_name,
+                 'description':description,
+                'start_date':start_date,
+                'end_date':end_date,
+                'banner_image':banner_image,
+                    }
+            if not re.match(r'^[a-zA-Z]+[0-9]*(\s+[a-zA-Z0-9]*)*$',banner_name):
+                    context['error'] = "banner  is not readable"
+                    return render(request, 'admin/add_banner.html',context)
+            if not re.match(r'^[a-zA-Z]+(\s+[a-zA-Z]*)*$', description):
+                    context['error'] = "discription should is not readable"
+                    return render(request, 'admin/add_banner.html',context)
+            
+            if end_date < timezone.now() or start_date < timezone.now() or end_date < start_date:
+                    context['error'] = 'please check start and end date'
+                    return render(request,'admin/add_banner.html',context)
             
             banner.banner_name = banner_name
             banner.banner_description = description
@@ -482,4 +581,205 @@ def show_order(request,id):
     
     else:
         return redirect('user_app:index')
+#------admin sale#
+from django.views.generic import TemplateView
+from django.http import HttpResponse
+from django.db.models import Sum, Count, F, Q
+from django.db.models.functions import TruncDate, TruncWeek, TruncMonth, TruncYear, Coalesce
+from django.utils import timezone
+from datetime import datetime, timedelta
+from decimal import Decimal
+import pandas as pd
+from io import BytesIO
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+import logging
+import pytz
 
+logger = logging.getLogger(__name__)
+
+class SalesReportView(TemplateView):
+    template_name = 'admin/sales_report.html'
+    timezone = pytz.timezone('Asia/Kolkata')
+
+    def get(self, request, *args, **kwargs):
+        download_format = request.GET.get('download_format')
+        if download_format:
+            start_date, end_date = self.get_date_range()
+            sales_data = self.get_sales_data(start_date, end_date)
+            
+            if download_format == 'excel':
+                return self.download_excel(sales_data)
+            elif download_format == 'pdf':
+                return self.download_pdf(sales_data)
+        
+        return super().get(request, *args, **kwargs)
+
+    def get_date_range(self):
+        report_type = self.request.GET.get('report_type', 'daily')
+        current_time = timezone.localtime(timezone.now(), self.timezone)
+        today = current_time.date()
+        
+        try:
+            if report_type == 'custom':
+                start_date = self.request.GET.get('start_date')
+                end_date = self.request.GET.get('end_date')
+                if start_date and end_date:
+                    start = datetime.strptime(start_date, '%Y-%m-%d').date()
+                    end = datetime.strptime(end_date, '%Y-%m-%d').date() + timedelta(days=1)
+                    return start, end
+
+            date_ranges = {
+                'daily': (today - timedelta(days=1), today + timedelta(days=1)),
+                'weekly': (today - timedelta(days=7), today + timedelta(days=1)),
+                'monthly': (today.replace(day=1), (today + timedelta(days=1))),
+                'yearly': (today.replace(month=1, day=1), today + timedelta(days=1))
+            }
+            
+            return date_ranges.get(report_type, (today, today + timedelta(days=1)))
+        except Exception as e:
+            logger.error(f"Error in get_date_range: {str(e)}")
+            return today, today + timedelta(days=1)
+
+    def get_sales_data(self, start_date, end_date):
+        try:
+            start_datetime = timezone.make_aware(
+                datetime.combine(start_date, datetime.min.time()),
+                self.timezone
+            )
+            end_datetime = timezone.make_aware(
+                datetime.combine(end_date, datetime.min.time()),
+                self.timezone
+            )
+
+            # Get the appropriate truncation function
+            trunc_func = self.get_trunc_function()
+            
+            # Base queryset for orders
+            base_queryset = OrderItems.objects.filter(
+                order__order_date__gte=start_datetime,
+                order__order_date__lt=end_datetime
+            )
+
+            # Aggregate sales data
+            sales_data = base_queryset.annotate(
+                period=trunc_func('order__order_date', tzinfo=self.timezone)
+            ).values('period').annotate(
+                total_orders=Count('order', distinct=True),
+                delivered_orders=Count('order', distinct=True, 
+                    filter=Q(order__order_status='delivered')),
+                pending_orders=Count('order', distinct=True, 
+                    filter=Q(order__order_status='pending')),
+                cancelled_orders=Count('order', distinct=True, 
+                    filter=Q(order__order_status='cancelled')),
+                total_amount=Coalesce(
+                    Sum(F('price') * F('quantity')),
+                    Decimal('0.00')
+                ),
+                total_discount=Coalesce(
+                    Sum('order__discount'),
+                    Decimal('0.00')
+                )
+            ).order_by('period')
+
+            processed_data = []
+            for item in sales_data:
+                processed_item = {
+                    'period': item['period'],
+                    'total_orders': item['total_orders'],
+                    'delivered_orders': item['delivered_orders'],
+                    'pending_orders': item['pending_orders'],
+                    'cancelled_orders': item['cancelled_orders'],
+                    'total_amount': item['total_amount'],
+                    'discount': item['total_discount'],
+                    'net_amount': item['total_amount'] - item['total_discount']
+                }
+                processed_data.append(processed_item)
+
+            return processed_data
+
+        except Exception as e:
+            logger.error(f"Error in get_sales_data: {str(e)}", exc_info=True)
+            return []
+
+    def get_trunc_function(self):
+        report_type = self.request.GET.get('report_type', 'daily')
+        trunc_functions = {
+            'daily': TruncDate,
+            'weekly': TruncWeek,
+            'monthly': TruncMonth,
+            'yearly': TruncYear
+        }
+        return trunc_functions.get(report_type, TruncDate)
+
+    def prepare_data_for_excel(self, sales_data):
+        excel_data = []
+        for item in sales_data:
+            row = {
+                'Period': item['period'].strftime('%Y-%m-%d'),
+                'Total Orders': item['total_orders'],
+                'Delivered Orders': item['delivered_orders'],
+                'Pending Orders': item['pending_orders'],
+                'Cancelled Orders': item['cancelled_orders'],
+                'Total Amount': float(item['total_amount']),
+                'Discount': float(item['discount']),
+                'Net Amount': float(item['net_amount'])
+            }
+            excel_data.append(row)
+        return excel_data
+
+    def download_excel(self, sales_data):
+        try:
+            df = pd.DataFrame(self.prepare_data_for_excel(sales_data))
+            output = BytesIO()
+            
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                df.to_excel(writer, index=False, sheet_name='Sales Report')
+            
+            output.seek(0)
+            response = HttpResponse(
+                output.read(),
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = 'attachment; filename="sales_report.xlsx"'
+            return response
+        except Exception as e:
+            logger.error(f"Error generating Excel file: {str(e)}", exc_info=True)
+            return HttpResponse("Error generating Excel file", status=500)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            start_date, end_date = self.get_date_range()
+            sales_data = self.get_sales_data(start_date, end_date)
+            
+            # Calculate overall statistics
+            overall_stats = {
+                'total_orders': sum(item['total_orders'] for item in sales_data),
+                'delivered_orders': sum(item['delivered_orders'] for item in sales_data),
+                'pending_orders': sum(item['pending_orders'] for item in sales_data),
+                'cancelled_orders': sum(item['cancelled_orders'] for item in sales_data),
+                'total_amount': sum(Decimal(str(item['total_amount'])) for item in sales_data),
+                'total_discount': sum(Decimal(str(item['discount'])) for item in sales_data),
+                'net_amount': sum(Decimal(str(item['net_amount'])) for item in sales_data),
+            }
+
+            context.update({
+                'sales_data': sales_data,
+                'report_type': self.request.GET.get('report_type', 'daily'),
+                'start_date': start_date,
+                'end_date': end_date - timedelta(days=1),
+                'overall_stats': overall_stats
+            })
+            
+        except Exception as e:
+            logger.error(f"Error in get_context_data: {str(e)}", exc_info=True)
+            context.update({
+                'error_message': 'An error occurred while generating the report.',
+                'sales_data': [],
+                'overall_stats': {}
+            })
+        
+        return context

@@ -263,6 +263,7 @@ def remove_cart_item(request,cart_id):
     return redirect('cart_app:view_cart')
 @never_cache
 def checkout(request,cart_id):
+    
     if request.user.is_authenticated and request.user.is_staff:
         return redirect('admin_app:admin_home')
     if request.user.is_authenticated and request.user.is_block:
@@ -272,6 +273,9 @@ def checkout(request,cart_id):
     user_email = request.user.email
     user = CustomUser.objects.get(email = user_email)
     cart = Cart.objects.get(id = cart_id)
+    if request.user.id != cart.user.id:
+        return redirect('user_app:user_logout')
+
     cart_items = cart.items.all()
   
     

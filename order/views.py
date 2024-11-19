@@ -27,16 +27,20 @@ def order_complete(request):
     delivery_date = timezone.now() + timedelta(days=7)
     address=Address.objects.get(default=True,user=user)
     coupon_code=request.session.get('coupon')
-    coupon_obj=Coupen.objects.get(code=coupon_code)
+    if coupon_code:
+        coupon_obj=Coupen.objects.get(code=coupon_code)
     discount=request.session['cart_total_with_discount']
     order = Order(
             user = user,
             order_status = 'confirmed',
             delivery_date = delivery_date,
             address = address,
-            coupons = coupon_obj,
+            
             discount = discount,
         )
+    if coupon_code:
+        order.coupons=coupon_obj
+    
     order.save() 
     for item in cart_item:
             # product price if it has offer or not.

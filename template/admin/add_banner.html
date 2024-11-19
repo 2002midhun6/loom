@@ -9,12 +9,12 @@
 
             <div class="mb-3">
                 <label for="banner-name" class="form-label">Banner Name:</label>
-                <input type="text" class="form-control" id="banner-name" name="banner_name" required>
+                <input type="text" class="form-control" id="banner-name" name="banner_name" value="{{banner_name}}" required>
             </div>
             
             <div class="mb-3">
                 <label for="description" class="form-label">Description:</label>
-                <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                <textarea class="form-control" id="description" name="description" rows="4" required>{{description}}</textarea>
             </div>
 
            
@@ -27,16 +27,17 @@
 
             <div class="mb-3">
                 <label for="start-date" class="form-label">Start Date:</label>
-                <input type="datetime-local" class="form-control" id="start-date" name="start_date" required>
+                <input type="datetime-local" class="form-control" id="start-date" name="start_date" value="{{start_date|date:'Y-m-d\\TH:i'}}"  required>
             </div>
 
             <div class="mb-3">
                 <label for="end-date" class="form-label">End Date:</label>
-                <input type="datetime-local" class="form-control" id="end-date" name="end_date" required>
+                <input type="datetime-local" class="form-control" id="end-date" name="end_date" value="{{end_date|date:'Y-m-d\\TH:i'}}"  required>
             </div>
 
             <!-- Submit Button -->
             <button type="submit" class="btn btn-primary">Add Banner</button>
+            <p style="color: red;">{{error}}</p>
         </form>
     </div>
 <br><br>

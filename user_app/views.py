@@ -11,32 +11,57 @@ from cart.models import *
 from order.models import *
 from django.contrib import messages
 import math
+from django.contrib.auth.decorators import login_required
 
 
 # Create your views here.
 def men_product(request):
-                if request.user.is_authenticated and request.user.is_staff:
-                    return redirect('admin_app:admin_home')
-                if request.user.is_authenticated and request.user.is_block:
-                    return redirect('user_app:user_logout')
-                
-                
-                page = 1
-                page = request.GET.get('page',1)
-                products = Product.objects.filter(category_id=1)
-                sub_category=Sub_Category.objects.filter(category_id=1)
-                product_paginator = Paginator(products,8)
-                
-
-
-                products = product_paginator.get_page(page)
-                context = {
-                        'products':products,
-                        'sub_category':sub_category,
-                       
-                    }
-                return render(request,'user/men.html', context)
+    if request.user.is_authenticated and request.user.is_staff:
+        return redirect('admin_app:admin_home')
+    if request.user.is_authenticated and request.user.is_block:
+        return redirect('user_app:user_logout')
+    
+    # Get all products and subcategories for men
+    products = Product.objects.filter(category_id=1)
+    sub_category = Sub_Category.objects.filter(category_id=1)
+    
+    # Search functionality
+    search_query = request.GET.get('search', '')
+    if search_query:
+        products = products.filter(product_name__icontains=search_query)
+    
+    # Category filtering
+    selected_subcategory = request.GET.get('subcategory')
+    if selected_subcategory:
+        products = products.filter(sub_category_id=selected_subcategory)
+    
+    # Sorting
+    sort_by = request.GET.get('sort', 'newest')  # Default to newest
+    if sort_by == 'newest':
+        products = products.order_by('-created_at')  # Assuming you have a created_at field
+    elif sort_by == 'name_asc':
+        products = products.order_by('product_name')
+    elif sort_by == 'name_desc':
+        products = products.order_by('-product_name')
+    
+    # Pagination
+    page = request.GET.get('page', 1)
+    product_paginator = Paginator(products, 8)
+    products = product_paginator.get_page(page)
+    
+    context = {
+        'products': products,
+        'sub_category': sub_category,
+        'search_query': search_query,
+        'selected_subcategory': selected_subcategory,
+        'sort_by': sort_by,
+    }
+    return render(request, 'user/men.html', context)
 def men_category(request,id):
+        if request.user.is_authenticated and request.user.is_staff:
+            return redirect('admin_app:admin_home')
+        if request.user.is_authenticated and request.user.is_block:
+            return redirect('user_app:user_logout')
         products = Product.objects.filter(Q(category_id=1) & Q(sub_category=id) )
         
         context= {
@@ -57,25 +82,48 @@ def women_category(request,id):
         
         return render(request,'user/casual.html',context)
 def women_product(request):
-                if request.user.is_authenticated and request.user.is_staff:
-                    return redirect('admin_app:admin_home')
-                if request.user.is_authenticated and request.user.is_block:
-                    return redirect('user_app:user_logout')
-                page = 1
-                page = request.GET.get('page',1)
-                products = Product.objects.filter(category_id=2)
-                sub_category=Sub_Category.objects.filter(category_id=2)
-                product_paginator = Paginator(products,8)
                 
-
-
-                products = product_paginator.get_page(page)
-                context = {
-                        'products':products,
-                        'sub_category':sub_category,
-                       
-                    }
-                return render(request,'user/women.html', context)
+    if request.user.is_authenticated and request.user.is_staff:
+        return redirect('admin_app:admin_home')
+    if request.user.is_authenticated and request.user.is_block:
+        return redirect('user_app:user_logout')
+    
+    # Get all products and subcategories for men
+    products = Product.objects.filter(category_id=2)
+    sub_category = Sub_Category.objects.filter(category_id=2)
+    
+    # Search functionality
+    search_query = request.GET.get('search', '')
+    if search_query:
+        products = products.filter(product_name__icontains=search_query)
+    
+    # Category filtering
+    selected_subcategory = request.GET.get('subcategory')
+    if selected_subcategory:
+        products = products.filter(sub_category_id=selected_subcategory)
+    
+    # Sorting
+    sort_by = request.GET.get('sort', 'newest')  # Default to newest
+    if sort_by == 'newest':
+        products = products.order_by('-created_at')  # Assuming you have a created_at field
+    elif sort_by == 'name_asc':
+        products = products.order_by('product_name')
+    elif sort_by == 'name_desc':
+        products = products.order_by('-product_name')
+    
+    # Pagination
+    page = request.GET.get('page', 1)
+    product_paginator = Paginator(products, 8)
+    products = product_paginator.get_page(page)
+    
+    context = {
+        'products': products,
+        'sub_category': sub_category,
+        'search_query': search_query,
+        'selected_subcategory': selected_subcategory,
+        'sort_by': sort_by,
+    }
+    return render(request, 'user/women.html', context)
 def view_product(request,id):
           if request.user.is_authenticated and request.user.is_staff:
             return redirect('admin_app:admin_home')
@@ -116,6 +164,7 @@ def view_product(request,id):
                 
           }
           return render(request,'user/view_product.html',context)
+@login_required
 def account(request):
         if request.user.is_authenticated and request.user.is_staff:
             return redirect('admin_app:admin_home')
@@ -137,7 +186,7 @@ def account(request):
         }
         
         return render(request,'user/account.html',context)
-        
+@login_required       
 def add_address(request):
         if request.user.is_authenticated and request.user.is_staff:
             return redirect('admin_app:admin_home')
@@ -208,12 +257,15 @@ def add_address(request):
                return redirect('customer_app:account')
         
         return render(request,'user/add_address.html')
+@login_required
 def edit_address(request,id):
         if request.user.is_authenticated and request.user.is_staff:
             return redirect('admin_app:admin_home')
         if request.user.is_authenticated and request.user.is_block:
             return redirect('user_app:user_logout')
         address_obj=Address.objects.get(id=id)
+        if request.user.id != address_obj.id:
+             return redirect('user_app:user_logout')
         print(address_obj.default)
         context={
                 'landmark':address_obj.landmark,
@@ -278,6 +330,7 @@ def edit_address(request,id):
                address_obj.save()
                return redirect('customer_app:account')
         return render(request,'user/edit_address.html',context)
+@login_required
 def remove_address(request,address_id):
     if request.user.is_authenticated and request.user.is_staff:
         return redirect('admin_app:admin_home')
@@ -287,6 +340,7 @@ def remove_address(request,address_id):
     address_item.delete()
     
     return redirect('customer_app:account')
+@login_required
 def edit_user(request,id):
     if request.user.is_authenticated and request.user.is_staff:
         return redirect('admin_app:admin_home')
@@ -330,13 +384,17 @@ def edit_user(request,id):
                
                return redirect('customer_app:account')
     return render(request,'user/edit_user_details.html',context)
+@login_required
 def item_order(request,id):
     if request.user.is_authenticated and request.user.is_staff:
         return redirect('admin_app:admin_home')
     if request.user.is_authenticated and request.user.is_block:
         return redirect('user_app:user_logout')
     
+    
     order = Order.objects.get(id = id)
+    if request.user.id != order.user.id:
+        return redirect('user_app:user_logout')
     
     order_items = order.items.all().order_by('-id')
     print(order_items )
@@ -381,6 +439,7 @@ def item_order(request,id):
             'items':order_items,
         }
     return render(request,'user/item_details.html',context)
+@login_required
 def view_wallet(request):
         wallet, created = Wallet.objects.get_or_create(user=request.user)
         wallet_transaction = wallet.transactions.all()
