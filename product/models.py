@@ -36,8 +36,6 @@ class Product(models.Model):
         # Get the current time in Asia/Kolkata timezone
         now = datetime.now(kolkata_tz)
         # Check for product's offer
-
-        
         if self.offer:
             discount = self.offer.offer_percentage * price / 100
             price -= discount

@@ -33,6 +33,18 @@ class Order(models.Model):
     
     def __str__(self) -> str:
         return f'{self.user.first_name}-{self.order_status}'
+class OrderAddress(models.Model):
+    order = models.ForeignKey(Order,on_delete=models.CASCADE, related_name="orderaddress")
+   
+    street_address = models.CharField(max_length=255)
+   
+    landmark = models.CharField(max_length=255, null=True, blank=True)
+    postal_code = models.CharField(max_length=20)
+    phone = models.CharField(max_length=20)
+    alternative_phone = models.CharField(max_length=20, null=True, blank=True)
+    
+  
+
 
 class OrderItems(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
@@ -40,8 +52,8 @@ class OrderItems(models.Model):
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     varient = models.ForeignKey(Varient, on_delete=models.CASCADE,null=True, blank=True)
-   
-    return_reason = models.TextField(null=True, blank=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2,null=True, blank=True)
+    item_price =  models.DecimalField(max_digits=10, decimal_places=2,null=True, blank=True)
     return_date = models.DateTimeField(auto_now_add=True,null=True)
     return_status = models.CharField(max_length=10,default='pending',null=True,blank=True)
 

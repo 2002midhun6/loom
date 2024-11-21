@@ -1,0 +1,24 @@
+{% extends 'user/index.html' %}
+{% load static %}
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{% if alert %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        Swal.fire({
+            title: 'Success!',
+            text: 'Add to Cart is Successfull',
+            icon: 'success',
+            confirmButtonText: 'OK',
+            timer: 3000, 
+            showConfirmButton: false 
+        });
+
+        setTimeout(() => {
+            window.location.href = "{% url 'customer_app:view_product' id %}"; 
+        }, 3000);
+    });
+</script>
+{% endif %}
+{% endblock %}

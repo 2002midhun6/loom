@@ -541,9 +541,12 @@ def admin_orders(request):
 def show_order(request,id):
     if request.user.is_authenticated and request.user.is_staff:
         order = Order.objects.get(id = id)
+         
+        order_details=OrderAddress.objects.get(order=order)
         order_items = order.items.all()
         print(order_items )
-        
+       
+
         # Handling the form submission to change order status
         if request.method == "POST":
             new_status = request.POST.get('order_status')
@@ -561,10 +564,9 @@ def show_order(request,id):
         
         for item in order_items:
             # Check if product has an offer and calculate the item total
-            if item.product.offer:
-                item_total = item.quantity * item.product.discount_price
-            else:
-                item_total = item.quantity * item.product.price
+            
+            item_total = item.quantity * item.product.discount_price
+            
                 
             # Add item total to total order price
             total_price += item_total
@@ -576,6 +578,7 @@ def show_order(request,id):
             'total_price': total_price,
             'status_choices': STATUS,
             'items':order_items,
+            'order_details':order_details
         }
         return render(request,'admin/show_order.html',context)
     

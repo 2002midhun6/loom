@@ -9,6 +9,7 @@ urlpatterns = [
     # path('check_coupon/',views.check_coupon,name='check_coupon'),
     path('checkout/<int:cart_id>/',views.checkout,name='checkout'),
     path('coupon/',views.coupon,name='coupon'),
+    path('update-cart-item-quantity/', views.update_cart_item_quantity_ajax, name='update_cart_item_quantity_ajax'),
     
 
 

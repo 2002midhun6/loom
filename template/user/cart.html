@@ -70,7 +70,7 @@
 							</div>
 							<div class="one-eight text-center">
 								<div class="display-tc">
-									<span class="price">{{item.product.price}}</span>
+									<span class="price">{{item.product.discount_price}}</span>
 								</div>
 							</div>
 							<div class="one-eight text-center">
@@ -80,20 +80,25 @@
 							</div>
 							<div class="one-eight text-center">
 								<div class="display-tc">
-									<a href="{% url 'cart_app:update_cart_item_quantity' item.product.id item.varient.id 'decrement' %}">
-										<span class="input-number-decrement">-</span> <!-- Changed to a simple minus sign -->
-									</a>
-								
-									<input type="text" id="quantity" name="quantity" class="form-control input-number text-center" value="{{ item.quantity }}" min="1" max="100">
-									
-									<a href="{% url 'cart_app:update_cart_item_quantity' item.product.id item.varient.id 'increment' %}">
-										<span class="input-number-increment">+</span> <!-- Changed to a simple plus sign -->
-									</a>
+									<button class="btn btn-sm btn-outline-secondary update-quantity" 
+											data-action="decrement" 
+											data-product-id="{{ item.product.id }}" 
+											data-varient-id="{{ item.varient.id }}">
+										-
+									</button>
+									<input type="text" id="quantity-{{ item.product.id }}-{{ item.varient.id }}" name="quantity" class="form-control input-number text-center" 
+										   value="{{ item.quantity }}" readonly>
+									<button class="btn btn-sm btn-outline-secondary update-quantity" 
+											data-action="increment" 
+											data-product-id="{{ item.product.id }}" 
+											data-varient-id="{{ item.varient.id }}">
+										+
+									</button>
 								</div>
 							</div>
 							<div class="one-eight text-center">
 								<div class="display-tc">
-									<span class="price">{{item.total_price}}</span>
+									<span id="total-price-{{ item.product.id }}-{{ item.varient.id }}">{{ item.total_price }}</span>
 								</div>
 							</div>
 							<div class="one-eight text-center">
@@ -125,7 +130,7 @@
 											<!-- <p><span>Discount:</span> <span>$45.00</span></p> -->
 										</div>
 										<div class="grand-total">
-											<p><span><strong>Total:</strong></span> <span>{{cart_total}}</span></p>
+											<p><span><strong>Total:</strong><span id="cart-total">{{ cart_total }}</span></p>
 
 										</div>
 										
@@ -186,5 +191,68 @@
     });
     });
 </script>
+
+
+<script>
+    document.querySelectorAll('.update-quantity').forEach(button => {
+        button.addEventListener('click', function () {
+            const action = this.dataset.action;
+            const productId = this.dataset.productId;
+            const varientId = this.dataset.varientId;
+
+            fetch("{% url 'cart_app:update_cart_item_quantity_ajax' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({
+                    action: action,
+                    product_id: productId,
+                    varient_id: varientId,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the quantity input
+					console.log(data.new_quantity)
+                    const quantityInput = document.querySelector(`#quantity-${productId}-${varientId}`);
+                    if (quantityInput) {
+                        quantityInput.value = data.new_quantity;
+
+                    }
+
+                    // Update the total price for this item
+                    const totalPriceElement = document.querySelector(`#total-price-${productId}-${varientId}`);
+                    if (totalPriceElement) {
+                        totalPriceElement.textContent = data.item_total_price;
+                    }
+
+                    // Update the cart subtotal
+                    const cartTotalElement = document.querySelector('#cart-total');
+                    if (cartTotalElement) {
+                        cartTotalElement.textContent = data.cart_total;
+                    }
+
+                    // Optionally, display a success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Cart updated',
+                        showConfirmButton: false,
+                        timer: 1000
+                    });
+                } else {
+                    Swal.fire('Error', data.error || 'Unable to update quantity', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error', 'Something went wrong', 'error');
+            });
+        });
+    });
+</script>
+
 
 {% endblock %}

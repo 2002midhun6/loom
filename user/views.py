@@ -343,43 +343,45 @@ def password_check(request):
         user = CustomUser.objects.get(email = email)
         user.set_password(password)
         user.save()
-        new_referral_code = generate_referral_code(user.id)
-        print('New user referral code: ',new_referral_code)
-        UserReferral.objects.create(
-                user=user,
-                referral_code = new_referral_code,
-            )
-        referral_code=request.session.get('referral')    
-        if referral_code:
-                try:
-                    # If signup is using a referral code, credit both users
-                    # Creating/Updating wallet for the new user
-                    wallet, created = Wallet.objects.get_or_create(user=user)
-                    
-                    WalletTransation.objects.create(
-                        wallet=wallet,
-                        transaction_type='referral',
-                        amount=1000,  # Amount for the referral reward
-                    )
-                    wallet.balance = F('balance') + 1000
-                    wallet.save()
+        users=UserReferral.objects.filter(user=user)
+        if users == None:
+            new_referral_code = generate_referral_code(user.id)
+            print('New user referral code: ',new_referral_code)
+            UserReferral.objects.create(
+                    user=user,
+                    referral_code = new_referral_code,
+                )
+            referral_code=request.session.get('referral')    
+            if referral_code:
+                    try:
+                        # If signup is using a referral code, credit both users
+                        # Creating/Updating wallet for the new user
+                        wallet, created = Wallet.objects.get_or_create(user=user)
+                        
+                        WalletTransation.objects.create(
+                            wallet=wallet,
+                            transaction_type='referral',
+                            amount=1000,  # Amount for the referral reward
+                        )
+                        wallet.balance = F('balance') + 1000
+                        wallet.save()
 
-                    # Credit referrer’s wallet
-                    referred_user = UserReferral.objects.get(referral_code=referral_code)
-                    referrer_wallet, created = Wallet.objects.get_or_create(user=referred_user.user)
-                    WalletTransation.objects.create(
-                        wallet=referrer_wallet,
-                        transaction_type='referral',
-                        amount=1000,
-                    )
-                    referrer_wallet.balance = F('balance') + 1000
-                    referrer_wallet.save()
+                        # Credit referrer’s wallet
+                        referred_user = UserReferral.objects.get(referral_code=referral_code)
+                        referrer_wallet, created = Wallet.objects.get_or_create(user=referred_user.user)
+                        WalletTransation.objects.create(
+                            wallet=referrer_wallet,
+                            transaction_type='referral',
+                            amount=1000,
+                        )
+                        referrer_wallet.balance = F('balance') + 1000
+                        referrer_wallet.save()
 
-                except UserReferral.DoesNotExist:
-                    messages.error(request, "Invalid referral code.")
-        
-        del request.session['registered_email']
-        del request.session['referral']  
+                    except UserReferral.DoesNotExist:
+                        messages.error(request, "Invalid referral code.")
+            
+            del request.session['registered_email']
+            del request.session['referral']  
         messages.success(request,'Password changed successfully')
         
         return redirect('user_app:user_login')

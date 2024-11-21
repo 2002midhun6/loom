@@ -200,3 +200,5 @@ SOCIALACCOUNT_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
 )
+RAZORPAY_KEY_ID = 'rzp_test_J3amNIPTwTSnXZ'
+RAZORPAY_KEY_SECRET = 'xEYtOf1aKPol7HMlR9sJImNI'

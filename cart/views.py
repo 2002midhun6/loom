@@ -7,6 +7,10 @@ from django.contrib import messages
 from address.models import Address
 from order.models import Order
 from django.views.decorators.cache import never_cache
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404
+from django.db.models import Sum
 
 
 
@@ -144,8 +148,9 @@ def add_to_cart(request, id):
                 print(f"Cart item saved with ID: {cart_item.id}")
                 print(f"Final quantity: {cart_item.quantity}")
                 print(f"Final total price: {cart_item.total_price}")
-                
-            return redirect('cart_app:view_cart')
+                alert = True
+
+                return render(request,'user/view_product.html',{'product':product,'id':id,'alert':alert})
             
         except Product.DoesNotExist:
             print("Product not found")
@@ -190,17 +195,16 @@ def view_cart(request):
             if item.quantity > item.varient.stock:
                 item.quantity = item.varient.stock
                 item.save()
-                messages.warning(request, f'Quantity for {item.product.product_name} has been adjusted to match available stock ({item.product.stock}).')
+                messages.warning(request, f'Quantity for {item.product.product_name} has been adjusted to match available stock ({item.variant.stock}).')
             filtered_cart_items.append(item)
     
     cart_items_with_prices = []
    
     # Calculate the total price for each item
     for item in filtered_cart_items:
-        if item.product.offer:
-            item.total_price = item.product.discount_price * item.quantity
-        else:
-           item.total_price = item.product.price * item.quantity
+      
+        item.total_price = item.product.discount_price * item.quantity
+        
            
         
         cart_items_with_prices.append(item)
@@ -282,11 +286,9 @@ def checkout(request,cart_id):
     cart_items_with_prices = []
     # Calculate the total price for each item
     for item in cart_items:
-        if item.product.offer:
-            item.total_price = item.product.discount_price * item.quantity
-        else:
-            item.total_price = item.product.price * item.quantity
-    
+       
+        item.total_price = item.product.discount_price * item.quantity
+        
         cart_items_with_prices.append(item)
     cart_total = sum(item.total_price for item in cart_items_with_prices)
     
@@ -425,3 +427,37 @@ def coupon(request):
     
     # Handle non-POST requests by redirecting to a safe page
     return redirect('user_app:index')
+
+
+def update_cart_item_quantity_ajax(request):
+    if request.method == 'POST':
+        try:
+            import json
+            data = json.loads(request.body)
+            product_id = data.get('product_id')
+            varient_id = data.get('varient_id')
+            action = data.get('action')
+            varient_obj=Varient.objects.get(id=varient_id)
+
+            cart_item = get_object_or_404(Cart_item, product_id=product_id, varient_id=varient_id)
+
+            if action == 'increment':
+                if cart_item.quantity >= varient_obj.stock:
+                    return JsonResponse({'success': False, 'error': 'Invalid action or quantity'})
+                else:
+                    cart_item.quantity += 1
+            elif action == 'decrement' and cart_item.quantity > 1:
+                cart_item.quantity -= 1
+            else:
+                return JsonResponse({'success': False, 'error': 'Invalid action or quantity'})
+
+            cart_item.total_price = cart_item.quantity * cart_item.product.discount_price
+            cart_item.save()
+            cart_total = Cart_item.objects.filter(cart=cart_item.cart).aggregate(total=Sum('total_price'))['total']
+            
+            return JsonResponse({'success': True, 'new_quantity': cart_item.quantity, 'item_total_price': cart_item.total_price,'cart_total': cart_total})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+

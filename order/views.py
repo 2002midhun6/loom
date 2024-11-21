@@ -9,6 +9,9 @@ from django.contrib import messages
 from django.db.models import F
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
+import razorpay
+from django.http import JsonResponse
 
 
 # Create your views here.
@@ -26,6 +29,7 @@ def order_complete(request):
     cart_item = cart.items.all()
     delivery_date = timezone.now() + timedelta(days=7)
     address=Address.objects.get(default=True,user=user)
+   
     coupon_code=request.session.get('coupon')
     if coupon_code:
         coupon_obj=Coupen.objects.get(code=coupon_code)
@@ -35,24 +39,34 @@ def order_complete(request):
             order_status = 'confirmed',
             delivery_date = delivery_date,
             address = address,
-            
             discount = discount,
         )
+   
     if coupon_code:
         order.coupons=coupon_obj
     
     order.save() 
+    OrderAddress.objects.create(
+        order=order,
+        landmark=address.landmark,
+        postal_code=address.postal_code,
+        phone=address.phone,
+        street_address=address.street_address,
+        alternative_phone=address.alternative_phone,
+    )
+   
     for item in cart_item:
             # product price if it has offer or not.
             item_price = 0
-            if item.product.offer:
-                item_price = item.product.discount_price
-            else:
-                item_price = item.product.price
+           
+            item_price = item.product.discount_price
+          
             OrderItems.objects.create(
                 order = order,
                 product = item.product,
                 quantity = item.quantity,
+                item_price=item_price,
+                
                 price = item.quantity * Decimal(item_price),
                 varient = item.varient
                 
@@ -98,7 +112,26 @@ def order_complete(request):
                 payment_method = 'wallet',  
                 payment_status = 'success',     
             )
-           
+    if payment_method=='razer_pay':
+        razorpay_order = razorpay_client.order.create({
+        'amount': int(discount * 100),  # Razorpay requires amount in paise
+        'currency': 'INR',
+        'receipt': f'order_{order.id}',
+        'payment_capture': 1,
+    })
+
+    order.razorpay_order_id = razorpay_order['id']
+    order.save()
+
+    # Render Razorpay checkout page
+    context = {
+        'razorpay_key_id': settings.RAZORPAY_KEY_ID,
+        'order': order,
+        'razorpay_order_id': razorpay_order['id'],
+        'amount': discount * 100,  # Razorpay expects paise
+        'currency': 'INR',
+    }
+    return render(request, 'user/payment.html', context)
     return redirect('order_app:complete')
 def complete(request):
      return render(request,'user/order-complete.html')
@@ -204,9 +237,7 @@ def return_confirm(request,item_id,order_id):
         total_price = (item.price * item.quantity)-deducted
         print(item.price,item.quantity)
         print(total_price)
-       
-        item.varient.stock = F('stock') + item.quantity
-        item.varient.save()
+      
         # getting the user of the order.
         order = Order.objects.get(id = order_id)
         user_id = order.user.id
@@ -266,6 +297,34 @@ def submit_review(request, product_id,order_id):
     return render(request,'user/review.html',{'order_items':order_items,'order_id':order_id})
 
 
+
+@csrf_exempt
+def payment_callback(request):
+    if request.method == 'POST':
+        data = request.POST
+        razorpay_order_id = data.get('razorpay_order_id')
+        razorpay_payment_id = data.get('razorpay_payment_id')
+        razorpay_signature = data.get('razorpay_signature')
+
+        try:
+            # Verify payment signature
+            params_dict = {
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_payment_id': razorpay_payment_id,
+                'razorpay_signature': razorpay_signature,
+            }
+            razorpay_client.utility.verify_payment_signature(params_dict)
+
+            # Update payment status in the database
+            payment = Payment.objects.create(
+                order=Order.objects.get(razorpay_order_id=razorpay_order_id),
+                payment_method='razorpay',
+                payment_status='success',
+                total_price=request.session['cart_total_with_discount'],
+            )
+            return JsonResponse({'status': 'success'})
+        except razorpay.errors.SignatureVerificationError:
+            return JsonResponse({'status': 'failed'})
 
     
     

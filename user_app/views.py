@@ -32,7 +32,7 @@ def men_product(request):
     
     # Category filtering
     selected_subcategory = request.GET.get('subcategory')
-    if selected_subcategory:
+    if selected_subcategory and selected_subcategory !="None":
         products = products.filter(sub_category_id=selected_subcategory)
     
     # Sorting
@@ -174,6 +174,7 @@ def account(request):
                 return redirect('user_app:user_login')
          
         orders = request.user.orders.all().order_by('-id')
+        
         user_email=request.user
         user_details=CustomUser.objects.get(email=user_email)
         address_obj=Address.objects.filter(user=user_details,default=True)
@@ -183,6 +184,7 @@ def account(request):
                 'address':address_obj,
                 'address1':address_obj1,
                 'orders':orders,
+
         }
         
         return render(request,'user/account.html',context)
@@ -393,6 +395,9 @@ def item_order(request,id):
     
     
     order = Order.objects.get(id = id)
+    order_details=OrderAddress.objects.get(order=order)
+
+
     if request.user.id != order.user.id:
         return redirect('user_app:user_logout')
     
@@ -422,10 +427,9 @@ def item_order(request,id):
         
     for item in order_items:
             # Check if product has an offer and calculate the item total
-            if item.product.offer:
-                item_total = item.quantity * item.product.discount_price
-            else:
-                item_total = item.quantity * item.product.price
+            
+            item_total = item.quantity * item.product.discount_price
+            
                 
             # Add item total to total order price
             total_price += item_total
@@ -437,6 +441,7 @@ def item_order(request,id):
             'total_price': total_price,
             'discount_price':discount_price,
             'items':order_items,
+            'order_details': order_details,
         }
     return render(request,'user/item_details.html',context)
 @login_required
@@ -453,6 +458,6 @@ def view_wallet(request):
     
         
     
-               
+
                
     

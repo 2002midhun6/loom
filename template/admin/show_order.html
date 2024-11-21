@@ -33,7 +33,7 @@
             <h4>User Information</h4>
             <p><strong>Name:</strong> {{ order.user.first_name }} {{ order.user.last_name }}</p>
             <p><strong>Email:</strong> {{ order.user.email }}</p>
-            <p><strong>Phone:</strong> {{ order.address.phone }}</p>
+            <p><strong>Phone:</strong> {{ order_details.phone }}</p>
         </div>
     </div>
 
@@ -41,9 +41,9 @@
     
     <h4>Shipping Address</h4>
     <p>
-        {{ order.address.street_address }} <br>
-        {{ order.address.city }}, {{ order.address.state }} - {{ order.address.postal_code }} <br>
-        Phone: {{ order.address.phone }}
+        {{ order_details.street_address }} <br>
+        {{ order_details.city }}, {{ order_details.state }} - {{ order_details.postal_code }} <br>
+        Phone: {{ order_details.phone }}
     </p>
 
     <hr>
@@ -76,12 +76,10 @@
                 <td>{{ item.product.product_name }}</td>
                 <td><img src="{{item.product.image1.url}}" alt="{{item.product.product_name}}" width="100"/></td>
                 <td>{{ item.quantity }}</td>
-                {% if item.product.offer %}
-                <td>{{ item.product.discount_price }}</td>
-                {% else %}
-                <td>{{ item.product.price }}</td>
-                {% endif %}
-                <td>{{ item_total }}</td>
+                
+                <td>{{item.item_price }}</td>
+                
+                <td>{{ item.price  }}</td>
                 {% if item.return_reason and item.return_status == 'pending' %}
                         <td>
                             <form class="confirm_return" action="{% url 'order_app:return_confirm' item.id order.id %}" method="post">
