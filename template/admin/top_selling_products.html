@@ -1,0 +1,202 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+{% block content%}
+    <style>
+        .dashboard {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .product-table th, .product-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .product-table th {
+            background-color: #f8f9fa;
+        }
+        .product-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .filters {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            border: none;
+            background: #f8f9fa;
+            cursor: pointer;
+        }
+        .tab.active {
+            background: #007bff;
+            color: white;
+        }
+        .chart-container {
+            margin-top: 30px;
+            height: 400px;
+        }
+        .product-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h1 class="mt-5">Top Selling Products Dashboard</h1>
+        
+        <!-- Quick Stats -->
+        <div class="stats-cards">
+            <div class="card">
+                <h3>Total Sales</h3>
+                <p class="total-sales">{{ total_sales }}</p>
+            </div>
+           
+<!--            
+            <div class="card">
+                <h3>Average Price</h3>
+                <p class="avg-price">₹{{ avg_price }}</p>
+            </div> -->
+        </div>
+
+       
+      
+       
+
+        <!-- Product Table -->
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Discounted Price</th>
+                    <th>Units Sold</th>
+                 
+                    <th>Listed Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td><img src="{{ product.image1.url }}" class="product-image" alt="{{ product.product_name }}"></td>
+                    <td>{{ product.product_name }}</td>
+                    <td>{{ product.category.category_name }}</td>
+                    <td>₹{{ product.price }}</td>
+                    <td>₹{{ product.discount_price }}</td>
+                    <td>{{ product.sold_count }}</td>
+                   
+                    <td>
+                        <span class="status-badge {% if product.is_listed %}listed{% else %}unlisted{% endif %}">
+                            {{ product.is_listed|yesno:"Listed,Unlisted" }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Sales Chart -->
+        <div class="chart-container">
+            <canvas id="salesChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Initialize sales chart
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        const salesChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ product_names|safe }},
+                datasets: [{
+                    label: 'Units Sold',
+                    data: {{ sold_counts|safe }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Filter functionality
+        $('#categoryFilter, #timeRange').change(function() {
+            // Add AJAX call to refresh data
+            const category = $('#categoryFilter').val();
+            const timeRange = $('#timeRange').val();
+            
+            $.get(`/admin/top-selling-products/filter/?category=${category}&time_range=${timeRange}`, 
+                function(data) {
+                    // Update table and chart with new data
+                    updateDashboard(data);
+                });
+        });
+
+        // Search functionality
+        $('#searchProduct').on('input', function() {
+            const searchTerm = $(this).val().toLowerCase();
+            $('.product-table tbody tr').each(function() {
+                const productName = $(this).find('td:nth-child(2)').text().toLowerCase();
+                $(this).toggle(productName.includes(searchTerm));
+            });
+        });
+
+        // View switching
+        $('.tab').click(function() {
+            $('.tab').removeClass('active');
+            $(this).addClass('active');
+            const view = $(this).data('view');
+            // Implement view switching logic
+        });
+
+        function updateDashboard(data) {
+            // Update stats cards
+            $('.total-sales').text(data.total_sales);
+            $('.top-category').text(data.top_category);
+            $('.monthly-growth').text(data.monthly_growth + '%');
+            $('.avg-price').text('₹' + data.avg_price);
+
+            // Update chart
+            salesChart.data.labels = data.product_names;
+            salesChart.data.datasets[0].data = data.sold_counts;
+            salesChart.update();
+
+            // Update table
+            // ... table update logic ...
+        }
+    </script>
+{% endblock %}

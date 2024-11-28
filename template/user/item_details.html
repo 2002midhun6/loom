@@ -33,6 +33,9 @@
     </p>
 
     <hr>
+ 
+              
+             
 
     <h4>Order Items</h4>
     <table class="table table-bordered">
@@ -116,6 +119,7 @@
                     Return Item
                 </button>
                 {% endif %}
+                
 
                 <!-- Modal for return confirmation and reason input -->
                 <div class="modal fade" id="returnItemModal{{ item.id }}" tabindex="-1" aria-labelledby="returnItemModalLabel" aria-hidden="true">
@@ -198,9 +202,9 @@
     
 
 {% else %}
-    <a href="#"><button style="width: 66.2rem;" class="btn btn-outline-danger mt-3">Download Invoice as PDF</button></a>
-    <button class="btn btn-outline-success mt-3" disabled>Delivered</button>
-{% endif %}
+     <a href="{% url 'customer_app:item_order' order.id %}?download_pdf=true">
+                    <button style="width: 66.2rem;" class="btn btn-outline-danger mt-3">Download Invoice as PDF</button>
+                </a>{% endif %}
 
     
 {% if messages %}
@@ -211,6 +215,7 @@
 </div>
 {% endif %} 
 </div>
+
 <br><br><br><br><br>
 <script>
     document.addEventListener('DOMContentLoaded', function() {

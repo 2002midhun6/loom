@@ -36,11 +36,11 @@ class Product(models.Model):
         # Get the current time in Asia/Kolkata timezone
         now = datetime.now(kolkata_tz)
         # Check for product's offer
-        if self.offer:
+        if self.offer and self.offer.end_date > now:
             discount = self.offer.offer_percentage * price / 100
             price -= discount
         # Fallback to the sub-category's offer if the product offer is not present
-        elif self.sub_category and self.sub_category.offer:
+        elif self.sub_category and self.sub_category.offer and self.sub_category.offer.end_date > now:
             discount = self.sub_category.offer.offer_percentage * price / 100
             price -= discount
         else:

@@ -4,6 +4,8 @@ from category.models import *
 from django.db.models import F
 import re
 from django.views.decorators.cache import never_cache
+from datetime import datetime
+import pytz
 
 
 # Create your views here.
@@ -32,7 +34,11 @@ def product_list(request,id):
 @never_cache
 def add_product(request,id):
     if request.user.is_authenticated and request.user.is_staff:
+        kolkata_tz = pytz.timezone('Asia/Kolkata')
+        # Get the current time in Asia/Kolkata timezone
+        now = datetime.now(kolkata_tz)
         if request.method=="POST":
+                
                 product_name = request.POST.get('product_name')
                 image1 = request.FILES.get('image1')
                 image2 = request.FILES.get('image2')
@@ -47,7 +53,7 @@ def add_product(request,id):
                 category=Category.objects.get(id=category_id)
                 category=Category.objects.get(id=id)
                 sub_categories=category.sub_category.all()
-                offers=Offer.objects.all()
+                offers = Offer.objects.filter(end_date__gt=now)
                 
                 
                 context ={
@@ -115,7 +121,7 @@ def add_product(request,id):
                 return redirect('product_app:admin_product_view')
         category=Category.objects.get(id=id)
         sub_categories=category.sub_category.all()
-        offers=Offer.objects.all()
+        offers = Offer.objects.filter(end_date__gt=now)
         context={
             
                 'sub_categories':sub_categories,
@@ -194,8 +200,11 @@ def add_varient(request):
 @never_cache
 def edit_product(request,id):
     if request.user.is_authenticated and request.user.is_staff:
+        kolkata_tz = pytz.timezone('Asia/Kolkata')
+        # Get the current time in Asia/Kolkata timezone
+        now = datetime.now(kolkata_tz)
         product=Product.objects.get(id=id)
-        offers=Offer.objects.all()
+        offers = Offer.objects.filter(end_date__gt=now)
         context={
             'product':product,
             'offers':offers,

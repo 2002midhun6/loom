@@ -11,6 +11,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from django.db.models import Sum
+from datetime import datetime
+import pytz
 
 
 
@@ -85,6 +87,9 @@ from django.db import transaction
 from django.http import HttpResponse
 
 def add_to_cart(request, id):
+    kolkata_tz = pytz.timezone('Asia/Kolkata')
+        # Get the current time in Asia/Kolkata timezone
+    now = datetime.now(kolkata_tz)
     print("=== Starting add_to_cart function ===")
     
     if not request.user.is_authenticated:
@@ -108,6 +113,16 @@ def add_to_cart(request, id):
             print(f"User: {user.username}")
             
             product = get_object_or_404(Product, id=id)
+            offer_ended=False
+            if product.offer and product.offer.end_date < now:
+                    product.offer = None
+                    product.save()
+                    offer_ended = True
+            elif product.sub_category.offer and product.sub_category.offer.end_date < now:
+                    product.offer = None
+                    product.sub_category.offer = None
+                    product.sub_category.save()
+                    offer_ended = True
             print(f"Product found: {product.product_name}")
            
             varients_id = request.POST.get('var_id')
@@ -149,7 +164,8 @@ def add_to_cart(request, id):
                 print(f"Final quantity: {cart_item.quantity}")
                 print(f"Final total price: {cart_item.total_price}")
                 alert = True
-
+                if request.POST.get('wishlist'):
+                    return redirect('wishlist_app:wishlist_view')
                 return render(request,'user/view_product.html',{'product':product,'id':id,'alert':alert})
             
         except Product.DoesNotExist:
@@ -169,6 +185,10 @@ def add_to_cart(request, id):
 
 @login_required
 def view_cart(request):
+    kolkata_tz = pytz.timezone('Asia/Kolkata')
+        # Get the current time in Asia/Kolkata timezone
+    now = datetime.now(kolkata_tz)
+    
     if request.user.is_authenticated and request.user.is_staff:
         return redirect('admin_app:admin_home')
     if request.user.is_authenticated and request.user.is_block:
@@ -176,12 +196,14 @@ def view_cart(request):
     if not request.user.is_authenticated:
         return redirect('user_app:user_login')
     
-    
+    offer_ended = False
     # Get the user's cart
     cart, created = Cart.objects.get_or_create(user=request.user)
     cart_items = cart.items.all()
     if 'cart_total_with_discount' in request.session:
         del request.session['cart_total_with_discount']
+    if 'coupon' in request.session:
+        del request.session['coupon']
     
     # List to hold the items that should stay in the cart
     filtered_cart_items = []
@@ -191,6 +213,19 @@ def view_cart(request):
         if  not item.product.is_listed or not item.product.category.is_listed or not item.product.category.is_listed:
             item.delete()
         else:
+            
+            if item.product.offer and item.product.offer.end_date < now:
+                    item.product.offer = None
+                    item.product.save()
+                    offer_ended = True
+                    print(1)
+            elif item.product.sub_category.offer and item.product.sub_category.offer.end_date < now:
+                    item.product.offer = None
+                    item.product.sub_category.offer = None
+                    item.product.sub_category.save()
+                    offer_ended = True
+                    print(1,3)
+            
             # Check if quantity exceeds available stock
             if item.quantity > item.varient.stock:
                 item.quantity = item.varient.stock
@@ -202,7 +237,8 @@ def view_cart(request):
    
     # Calculate the total price for each item
     for item in filtered_cart_items:
-      
+        
+                
         item.total_price = item.product.discount_price * item.quantity
         
            
@@ -212,12 +248,16 @@ def view_cart(request):
     # Calculate total cart value
     cart_total = sum(item.total_price for item in cart_items_with_prices)
     
+    
     request.session['cart_total'] = float(cart_total)
+    cart_delivery=float(cart_total)+50
     
     return render(request, 'user/cart.html', {
         'cart': cart,
         'cart_items': filtered_cart_items,
         'cart_total': cart_total,
+        'cart_delivery': cart_delivery,
+        'offer_ended':offer_ended,
         
     })
 
@@ -267,6 +307,9 @@ def remove_cart_item(request,cart_id):
     return redirect('cart_app:view_cart')
 @never_cache
 def checkout(request,cart_id):
+    kolkata_tz = pytz.timezone('Asia/Kolkata')
+        # Get the current time in Asia/Kolkata timezone
+    now = datetime.now(kolkata_tz)
     
     if request.user.is_authenticated and request.user.is_staff:
         return redirect('admin_app:admin_home')
@@ -286,14 +329,24 @@ def checkout(request,cart_id):
     cart_items_with_prices = []
     # Calculate the total price for each item
     for item in cart_items:
+        offer_ended = False
+        if item.product.offer and item.product.offer.end_date < now:
+                    item.product.offer = None
+                    item.product.save()
+                    offer_ended = True
+        elif item.product.sub_category.offer and item.product.sub_category.offer.end_date < now:
+                    item.product.offer = None
+                    item.product.sub_category.offer = None
+                    item.product.sub_category.save()
+                    offer_ended = True
        
         item.total_price = item.product.discount_price * item.quantity
         
         cart_items_with_prices.append(item)
-    cart_total = sum(item.total_price for item in cart_items_with_prices)
+    cart_total = sum(item.total_price for item in cart_items_with_prices)+50
     
     # Apply coupon discount if applicable
-    request.session['cart_total_with_discount'] = float(request.session.get('cart_total_with_discount', cart_total))
+    request.session['cart_total_with_discount'] = float(request.session.get('cart_total_with_discount', cart_total)) 
     cart_total_with_discount=request.session['cart_total_with_discount']
 
     
@@ -317,6 +370,7 @@ def checkout(request,cart_id):
         'cart_total':cart_total,
         'address':address,
         'cart_total_with_discount':cart_total_with_discount,
+        'offer_ended':offer_ended
         # 'coupon_code':coupon_code,
         # 'wallet_balance':wallet_balance,
     }
@@ -408,6 +462,7 @@ def coupon(request):
                             print(coupon_obj.code)
                             
                             request.session['coupon']=coupon_obj.code
+                            request.session['total_without_coupon']=cart_total
                             request.session['cart_total_with_discount'] = cart_total - float(coupon_obj.discount_amount)
                             print(request.session['cart_total_with_discount'])
                             messages.success(request, "Coupon applied successfully.")
@@ -455,7 +510,7 @@ def update_cart_item_quantity_ajax(request):
             cart_item.save()
             cart_total = Cart_item.objects.filter(cart=cart_item.cart).aggregate(total=Sum('total_price'))['total']
             
-            return JsonResponse({'success': True, 'new_quantity': cart_item.quantity, 'item_total_price': cart_item.total_price,'cart_total': cart_total})
+            return JsonResponse({'success': True, 'new_quantity': cart_item.quantity, 'item_total_price': cart_item.total_price,'cart_subtotal': cart_total,'cart_total':cart_total+50})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})

@@ -3,7 +3,7 @@ from . import views
 from .views import SalesReportView
 app_name= 'admin_app'
 urlpatterns = [
-    path('admin_home',views.admin_home,name='admin_home'),
+    path('admin_home',views.admin_dashboard,name='admin_home'),
     path('user_details',views.user_details,name='user_details'),
     path('user_block/<id>/',views.user_block,name='user_block'),
     path('admin_logout',views.admin_logout,name='admin_logout'),
@@ -21,8 +21,12 @@ urlpatterns = [
     path('remove_banner/<int:id>/',views.remove_banner, name='remove_banner'),
     path('admin_orders/',views.admin_orders, name='admin_orders'),
     path('show_order/<int:id>/',views.show_order, name='show_order'),
-
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('top-selling-products/', views.top_selling_products, name='admin-top-selling'),
+    path('top-selling-categories/', views.top_selling_categories_and_products, name='top_selling_categories'),
     path('sales-report/',SalesReportView.as_view(), name='sales_report'),
+    
+   
 
 
 ]

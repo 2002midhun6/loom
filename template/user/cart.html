@@ -125,12 +125,12 @@
 								<div class="col-sm-4 text-center">
 									<div class="total">
 										<div class="sub">
-											<p><span>Subtotal:</span> <span>{{cart_total}}</span></p>
-											<p><span>Delivery:</span> <span>$0.00</span></p>
+											<p><span>Subtotal:</span> <span id="cart-subtotal">{{cart_total}}</span></p>
+											<p><span>Delivery:</span> <span>50.00</span></p>
 											<!-- <p><span>Discount:</span> <span>$45.00</span></p> -->
 										</div>
 										<div class="grand-total">
-											<p><span><strong>Total:</strong><span id="cart-total">{{ cart_total }}</span></p>
+											<p><span><strong>Total:</strong><span id="cart-total">{{cart_delivery}}</span></p>
 
 										</div>
 										
@@ -191,6 +191,31 @@
     });
     });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{% if messages %}
+<script>
+    {% for message in messages %}
+        Swal.fire({
+            title: "Coupon Error",
+            text: "{{ message }}",
+            icon: "error",
+            confirmButtonText: "OK"
+        });
+    {% endfor %}
+</script>
+{% endif %}
+<script>
+    // Check if offer has ended
+    {% if offer_ended %}
+    Swal.fire({
+        title: 'Offer Expired!',
+        text: 'The offer for this product has ended.',
+        icon: 'info',
+        confirmButtonText: 'OK'
+    });
+    {% endif %}
+</script>
 
 
 <script>
@@ -234,6 +259,11 @@
                     if (cartTotalElement) {
                         cartTotalElement.textContent = data.cart_total;
                     }
+					const cartSubTotalElement = document.querySelector('#cart-subtotal');
+                    if (cartSubTotalElement) {
+                        cartSubTotalElement.textContent = data.cart_subtotal;
+                    }
+					
 
                     // Optionally, display a success message
                     Swal.fire({

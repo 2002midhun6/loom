@@ -40,8 +40,8 @@
 <!-- breadcrumbs start-->
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="#">Orders</a></li>
-    <li class="breadcrumb-item"><a href="#">Order Details</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'customer_app:account' %}">Orders</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'customer_app:item_order' order_id %}">Order Details</a></li>
     <li class="breadcrumb-item active" aria-current="page"><a href="">Review</a></li>
     </ol>
   </nav>

@@ -8,16 +8,26 @@ from django.contrib import messages
 from order.models import *
 import re
 from offer.models import *
+#For dashboard chart
+from django.http import JsonResponse
+
+from django.utils import timezone
+from datetime import timedelta
+from product.models import Product, Category
+import calendar
+from django.db.models import Count,Sum, Avg, F
+from django.db.models.functions import ExtractMonth,ExtractDay,ExtractYear,ExtractWeekDay
+
 
 
 # Create your views here.
-@never_cache
-def admin_home(request):
-    if request.user.is_authenticated and request.user.is_staff:
+# @never_cache
+# def admin_home(request):
+#     if request.user.is_authenticated and request.user.is_staff:
          
-      return render(request,'admin/admin_index.html')
-    else:
-          return redirect('user_app:index')
+#       return render(request,'admin/admin_index.html')
+#     else:
+#           return redirect('user_app:index')
 @never_cache
 def user_details(request):
     if request.user.is_authenticated and request.user.is_staff:
@@ -104,7 +114,7 @@ def add_offer(request):
             if not re.match(r'^[0-9]+$', offer_percentage):
                     context['error'] = "percentage should be number"
                     return render(request, 'admin/add_offer.html',context)
-            if end_date < timezone.now() or start_date < timezone.now() or end_date < start_date:
+            if end_date < timezone.now()  or end_date < start_date:
                     context['error'] = 'please check start and end date'
                     return render(request,'admin/add_offer.html',context)
           
@@ -142,7 +152,7 @@ def edit_offer(request,id):
             start_date_naive = datetime.strptime(start_date_str, '%Y-%m-%dT%H:%M')
             
             # Converting naive datetime to timezone-aware datetime
-            start_date = timezone.make_aware(end_date_naive, timezone.get_current_timezone())
+            start_date = timezone.make_aware(start_date_naive, timezone.get_current_timezone())
             
 
 
@@ -155,7 +165,7 @@ def edit_offer(request,id):
 
            
             }
-            if not re.match(r'^[a-zA-Z]+[0-9]*(\s+[a-zA-Z0-9]*)*$',context):
+            if not re.match(r'^[a-zA-Z]+[0-9]*(\s+[a-zA-Z0-9]*)*$',offer_title):
                     context['error'] = "offer  is not readable"
                     return render(request, 'admin/add_offer.html',context)
             if not re.match(r'^[a-zA-Z]+(\s+[a-zA-Z]*)*$', offer_description):
@@ -164,6 +174,9 @@ def edit_offer(request,id):
             if not re.match(r'^[0-9]+$', offer_percentage):
                     context['error'] = "percentage should be number"
                     return render(request, 'admin/add_offer.html',context)
+            if end_date < timezone.now()  or end_date < start_date:
+                    context['error'] = 'please check start and end date'
+                    return render(request,'admin/add_offer.html',context)
           
             
             offer.offer_title = offer_title
@@ -536,7 +549,7 @@ def admin_orders(request):
         return render(request,'admin/order.html',context)
     
     else:
-        return redirect('user_app:home')
+        return redirect('user_app:index')
 
 def show_order(request,id):
     if request.user.is_authenticated and request.user.is_staff:
@@ -583,7 +596,14 @@ def show_order(request,id):
         return render(request,'admin/show_order.html',context)
     
     else:
-        return redirect('user_app:index')
+        return redirect('user_app:user_index')
+
+
+from django.db.models import Sum
+
+
+
+
 #------admin sale#
 from django.views.generic import TemplateView
 from django.http import HttpResponse
@@ -751,6 +771,108 @@ class SalesReportView(TemplateView):
         except Exception as e:
             logger.error(f"Error generating Excel file: {str(e)}", exc_info=True)
             return HttpResponse("Error generating Excel file", status=500)
+    def download_pdf(self, sales_data):
+        try:
+            # Create a buffer for the PDF
+            buffer = BytesIO()
+            
+            # Create the PDF document
+            doc = SimpleDocTemplate(
+                buffer,
+                pagesize=A4,
+                rightMargin=72,
+                leftMargin=72,
+                topMargin=72,
+                bottomMargin=72
+            )
+            
+            # Container for PDF elements
+            elements = []
+            
+            # Get styles
+            styles = getSampleStyleSheet()
+            
+            # Add title
+            title = Paragraph("Sales Report", styles['Heading1'])
+            elements.append(title)
+            elements.append(Spacer(1, 20))
+            
+            # Prepare data for table
+            table_data = [
+                ['Period', 'Total Orders', 'Delivered', 'Pending', 'Cancelled', 
+                'Total Amount', 'Discount', 'Net Amount']
+            ]
+            
+            for item in sales_data:
+                row = [
+                    item['period'].strftime('%Y-%m-%d'),
+                    str(item['total_orders']),
+                    str(item['delivered_orders']),
+                    str(item['pending_orders']),
+                    str(item['cancelled_orders']),
+                    f"₹{item['total_amount']:.2f}",
+                    f"₹{item['discount']:.2f}",
+                    f"₹{item['net_amount']:.2f}"
+                ]
+                table_data.append(row)
+            
+            # Calculate totals
+            totals = [
+                'Total',
+                str(sum(item['total_orders'] for item in sales_data)),
+                str(sum(item['delivered_orders'] for item in sales_data)),
+                str(sum(item['pending_orders'] for item in sales_data)),
+                str(sum(item['cancelled_orders'] for item in sales_data)),
+                f"₹{sum(item['total_amount'] for item in sales_data):.2f}",
+                f"₹{sum(item['discount'] for item in sales_data):.2f}",
+                f"₹{sum(item['net_amount'] for item in sales_data):.2f}"
+            ]
+            table_data.append(totals)
+            
+            # Create table
+            table = Table(table_data)
+            
+            # Style the table
+            style = TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, -1), (-1, -1), colors.lightgrey),
+                ('TEXTCOLOR', (0, -1), (-1, -1), colors.black),
+                ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, -1), (-1, -1), 10),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('BOX', (0, 0), (-1, -1), 2, colors.black),
+            ])
+            
+            # Add alternating row colors
+            for i in range(1, len(table_data) - 1):
+                if i % 2 == 0:
+                    style.add('BACKGROUND', (0, i), (-1, i), colors.lightgrey)
+            
+            table.setStyle(style)
+            elements.append(table)
+            
+            # Build PDF
+            doc.build(elements)
+            
+            # Get PDF value from buffer
+            pdf = buffer.getvalue()
+            buffer.close()
+            
+            # Create response
+            response = HttpResponse(content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename="sales_report.pdf"'
+            response.write(pdf)
+            
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error generating PDF file: {str(e)}", exc_info=True)
+            return HttpResponse("Error generating PDF file", status=500)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -786,3 +908,141 @@ class SalesReportView(TemplateView):
             })
         
         return context
+
+
+def top_selling_products(request):
+    # Get base queryset of products
+    products = Product.objects.all().order_by('-sold_count')[:10]
+
+    # Calculate basic stats
+    total_sales = products.aggregate(total=Sum('sold_count'))['total'] or 0
+    avg_price = products.aggregate(avg=Avg('price'))['avg'] or 0
+    
+    # Get top category
+    
+    # Calculate monthly growth
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    sixty_days_ago = timezone.now() - timedelta(days=60)
+    
+    current_month_sales = Product.objects.filter(
+        created_at__gte=thirty_days_ago
+    ).aggregate(total=Sum('sold_count'))['total'] or 0
+    
+    previous_month_sales = Product.objects.filter(
+        created_at__range=(sixty_days_ago, thirty_days_ago)
+    ).aggregate(total=Sum('sold_count'))['total'] or 1  # Avoid division by zero
+    
+    monthly_growth = ((current_month_sales - previous_month_sales) / previous_month_sales) * 100
+
+    # Prepare chart data
+    product_names = list(products.values_list('product_name', flat=True)[:10])
+    sold_counts = list(products.values_list('sold_count', flat=True)[:10])
+
+    context = {
+        'products': products,
+        'total_sales': total_sales,
+        'avg_price': round(avg_price, 2),
+      
+        'monthly_growth': round(monthly_growth, 1),
+        'categories': Category.objects.all(),
+        'product_names': product_names,
+        'sold_counts': sold_counts,
+    }
+
+    return render(request, 'admin/top_selling_products.html', context)
+
+
+def top_selling_categories_and_products(request):
+    if request.user.is_authenticated and request.user.is_staff:
+        # Calculate the total sold count for each category
+        categories = Category.objects.filter(is_listed=True).annotate(
+            total_sold=Sum('sub_category__product__sold_count')
+        ).order_by('-total_sold')[:10]  # Get the top 10 selling categories
+
+        # Prepare data for each category with its top-selling products
+        category_data = []
+        for category in categories:
+            if category.category_name=="kidsware":
+                 continue
+            top_products = Product.objects.filter(
+                category__sub_category__category=category
+            ).order_by('-sold_count').distinct()[:10]  # Get the top 5 selling products in each category
+            category_data.append({
+                'category': category,
+                'top_products': top_products,
+            })
+
+        context = {
+            'category_data': category_data,
+        }
+        return render(request, 'admin/top_selling_categories.html', context)
+    else:
+        return redirect('user_app:user_index')
+from django.http import JsonResponse
+
+def admin_dashboard(request):
+        orders = Order.objects.exclude(order_status='canceled')
+        
+        # Initializing count array (0=Monday to 6=Sunday as per Python's weekday())
+        days_count = [0] * 7
+        
+        # Counting orders by weekday using Python's date.weekday()
+        for order in orders:
+            # Converting UTC to local time
+            local_date = timezone.localtime(order.order_date)
+            weekday = local_date.weekday()  # Monday = 0, Sunday = 6
+            days_count[weekday] += 1
+        
+        # Creating day names starting with Monday
+        day_names = [calendar.day_name[i] for i in range(7)]  # Monday to Sunday
+
+        
+        # Processing monthly data
+        orders_monthly = Order.objects.annotate(
+            month=ExtractMonth('order_date', tzinfo=timezone.get_current_timezone())
+        ).values('month').annotate(
+            count_month=Count('id')
+        ).values('month', 'count_month').exclude(
+            order_status='canceled'
+        )
+        
+        # Processing yearly data
+        orders_yearly = Order.objects.annotate(
+            year=ExtractYear('order_date', tzinfo=timezone.get_current_timezone())
+        ).values('year').annotate(
+            count_year=Count('id')
+        ).values('year', 'count_year').exclude(
+            order_status='canceled'
+        )
+
+        # Processing monthly and yearly data
+        month = []
+        year = []
+        total_order_month = []
+        total_order_year = []
+        
+        for i in orders_monthly:
+            month.append(calendar.month_name[i['month']])
+            total_order_month.append(i['count_month'])
+            
+        for i in orders_yearly:
+            year.append(str(i['year']))
+            total_order_year.append(i['count_year'])
+
+        weekday_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        print("\nDetailed daily breakdown:")
+        for i, count in enumerate(days_count):
+            print(f"{weekday_names[i]}: {count} orders")
+
+        context = {
+            'total_order_day': days_count,
+            'day': day_names,
+            'total_order_month': total_order_month,
+            'month': month,
+            'total_order_year': total_order_year,
+            'year': year,
+        }
+        return render(request, 'admin/admin_index.html', context)
+    
+  
+    

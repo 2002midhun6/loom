@@ -45,30 +45,30 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <!-- <div class="col-md-3">
                     <div class="card bg-light shadow-sm">
                         <div class="card-body">
                             <h5 class="text-success">Total Amount</h5>
                             <h3 class="font-weight-bold">₹{{ overall_stats.total_amount|floatformat:2 }}</h3>
                         </div>
                     </div>
-                </div>
+                </div> -->
                 <div class="col-md-3">
                     <div class="card bg-light shadow-sm">
                         <div class="card-body">
-                            <h5 class="text-warning">Total Discount</h5>
+                            <h5 class="text-warning">Total Amount</h5>
                             <h3 class="font-weight-bold">₹{{ overall_stats.total_discount|floatformat:2 }}</h3>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <!-- <div class="col-md-3">
                     <div class="card bg-light shadow-sm">
                         <div class="card-body">
                             <h5 class="text-danger">Net Amount</h5>
                             <h3 class="font-weight-bold">₹{{ overall_stats.net_amount|floatformat:2 }}</h3>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
 
             <!-- Sales Data Table -->
@@ -81,9 +81,9 @@
                             <th class="text-right">Delivered</th>
                             <th class="text-right">Pending</th>
                             <th class="text-right">Cancelled</th>
+                            <!-- <th class="text-right">Total Amount</th> -->
                             <th class="text-right">Total Amount</th>
-                            <th class="text-right">Discount</th>
-                            <th class="text-right">Net Amount</th>
+                            <!-- <th class="text-right">Net Amount</th> -->
                         </tr>
                     </thead>
                     <tbody>
@@ -94,9 +94,9 @@
                             <td class="text-right">{{ item.delivered_orders }}</td>
                             <td class="text-right">{{ item.pending_orders }}</td>
                             <td class="text-right">{{ item.cancelled_orders }}</td>
-                            <td class="text-right">₹{{ item.total_amount|floatformat:2 }}</td>
+                            <!-- <td class="text-right">₹{{ item.total_amount|floatformat:2 }}</td> -->
                             <td class="text-right">₹{{ item.discount|floatformat:2 }}</td>
-                            <td class="text-right">₹{{ item.net_amount|floatformat:2 }}</td>
+                            <!-- <td class="text-right">₹{{ item.net_amount|floatformat:2 }}</td> -->
                         </tr>
                         {% empty %}
                         <tr>
@@ -111,9 +111,9 @@
                             <th class="text-right">{{ overall_stats.delivered_orders }}</th>
                             <th class="text-right">{{ overall_stats.pending_orders }}</th>
                             <th class="text-right">{{ overall_stats.cancelled_orders }}</th>
-                            <th class="text-right">₹{{ overall_stats.total_amount|floatformat:2 }}</th>
+                            <!-- <th class="text-right">₹{{ overall_stats.total_amount|floatformat:2 }}</th> -->
                             <th class="text-right">₹{{ overall_stats.total_discount|floatformat:2 }}</th>
-                            <th class="text-right">₹{{ overall_stats.net_amount|floatformat:2 }}</th>
+                            <!-- <th class="text-right">₹{{ overall_stats.net_amount|floatformat:2 }}</th> -->
                         </tr>
                     </tfoot>
                 </table>

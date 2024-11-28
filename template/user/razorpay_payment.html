@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Payment</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        .payment-container {
+            text-align: center;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <h2>Processing Your Payment</h2>
+        <p>Please do not close or refresh this page</p>
+        <p>Redirecting to payment gateway...</p>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var options = {
+            "key": "{{ razorpay_merchant_key }}",
+            "amount": "{{ razorpay_amount }}",
+            "currency": "INR",
+            "name": "Your Company Name",
+            "description": "Order Payment",
+            "order_id": "{{ razorpay_order_id }}",
+            "handler": function (response) {
+                // Create a form dynamically to submit payment verification
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = "{% url 'order_app:verify_payment' %}";
+                
+                // Add hidden fields for Razorpay response
+                var fields = [
+                    { name: 'razorpay_order_id', value: response.razorpay_order_id },
+                    { name: 'razorpay_payment_id', value: response.razorpay_payment_id },
+                    { name: 'razorpay_signature', value: response.razorpay_signature }
+                ];
+                
+                fields.forEach(function(field) {
+                    var input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = field.name;
+                    input.value = field.value;
+                    form.appendChild(input);
+                });
+                
+                document.body.appendChild(form);
+                form.submit();
+            },
+            "prefill": {
+                "name": "{{ request.user.first_name }} {{ request.user.last_name }}",
+                "email": "{{ request.user.email }}"
+            },
+            "theme": {
+                "color": "#3399cc"
+            },
+            "modal": {
+                "ondismiss": function() {
+                    window.location.href = "{% url 'order_app:payment_failed' %}";
+                }
+            }
+        };
+        var rzp1 = new Razorpay(options);
+        rzp1.open();
+    });
+    </script>
+</body>
+</html>

@@ -29,7 +29,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col">
-                        <p><a href="index.html">Home</a> / My Account</p>
+                        <p><a href="{% url 'user_app:index' %}">Home</a> / My Account</p>
                     </div>
                 </div>
             </div>
@@ -131,6 +131,11 @@
                 <div class="row mt-5">
                     <div class="col-md-12">
                         <div class="account-wrap">
+                            {% if attempts_remaining > 0 %}
+    <div class="alert alert-danger">
+        You have {{ attempts_remaining }} payment attempt{{ attempts_remaining|pluralize }} remaining.
+    </div>
+{% endif %}
                             <h3>Recent Orders</h3>
                             
                             <table class="table">
@@ -152,17 +157,25 @@
                                         <td>{{order.order_date}}</td>
                                         <td>{{order.order_status}}</td>
                                         
-
                                         
+
+
                                         <td>  <div>
                                             <a href="{% url 'customer_app:item_order' order.id %}"><button class="btn btn-outline-primary">VIEW</button></a>
                                         </div></td>
+                                        <td>{% if order.order_status == 'payment_pending' %}
+                                            <a href="{% url 'order_app:retry_payment' order.id %}" class="btn btn-primary">
+                                                Retry Payment
+                                            </a>
+                                        {% endif %}</td>
                                        
                                     </tr>
                                     {% endfor %}
                                     
                                 </tbody>
+
                             </table>
+                            
                         </div>
                     </div>
                 </div>

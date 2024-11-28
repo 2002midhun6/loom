@@ -12,10 +12,17 @@ from order.models import *
 from django.contrib import messages
 import math
 from django.contrib.auth.decorators import login_required
+from datetime import datetime
+import pytz
+
 
 
 # Create your views here.
 def men_product(request):
+    kolkata_tz = pytz.timezone('Asia/Kolkata')
+        # Get the current time in Asia/Kolkata timezone
+    now = datetime.now(kolkata_tz)
+    
     if request.user.is_authenticated and request.user.is_staff:
         return redirect('admin_app:admin_home')
     if request.user.is_authenticated and request.user.is_block:
@@ -23,22 +30,49 @@ def men_product(request):
     
     # Get all products and subcategories for men
     products = Product.objects.filter(category_id=1)
+    for i in products:
+        if i.offer and i.offer.end_date < now:
+            i.offer = None
+            i.save()
+        elif i.sub_category.offer and i.sub_category.offer.end_date < now:
+            i.offer = None
+            i.sub_category.offer = None
+            i.sub_category.save()
+             
     sub_category = Sub_Category.objects.filter(category_id=1)
     
     # Search functionality
     search_query = request.GET.get('search', '')
     if search_query:
         products = products.filter(product_name__icontains=search_query)
+        for i in products:
+            if i.offer and i.offer.end_date < now:
+                i.offer = None
+                i.save()
+            elif i.sub_category.offer and i.sub_category.offer.end_date < now:
+                i.offer = None
+                i.sub_category.offer = None
+                i.sub_category.save()
     
     # Category filtering
     selected_subcategory = request.GET.get('subcategory')
     if selected_subcategory and selected_subcategory !="None":
         products = products.filter(sub_category_id=selected_subcategory)
+        for i in products:
+            if i.offer and i.offer.end_date < now:
+                i.offer = None
+                i.save()
+            elif i.sub_category.offer and i.sub_category.offer.end_date < now:
+                i.offer = None
+                i.sub_category.offer = None
+                i.sub_category.save()
     
     # Sorting
     sort_by = request.GET.get('sort', 'newest')  # Default to newest
     if sort_by == 'newest':
-        products = products.order_by('-created_at')  # Assuming you have a created_at field
+        products = products.order_by('-created_at')
+         
+         # Assuming you have a created_at field
     elif sort_by == 'name_asc':
         products = products.order_by('product_name')
     elif sort_by == 'name_desc':
@@ -58,12 +92,24 @@ def men_product(request):
     }
     return render(request, 'user/men.html', context)
 def men_category(request,id):
+        kolkata_tz = pytz.timezone('Asia/Kolkata')
+        # Get the current time in Asia/Kolkata timezone
+        now = datetime.now(kolkata_tz)
+    
         if request.user.is_authenticated and request.user.is_staff:
             return redirect('admin_app:admin_home')
         if request.user.is_authenticated and request.user.is_block:
             return redirect('user_app:user_logout')
         products = Product.objects.filter(Q(category_id=1) & Q(sub_category=id) )
-        
+        for i in products:
+            if i.offer and i.offer.end_date < now:
+                i.offer = None
+                i.save()
+            elif i.sub_category.offer and i.sub_category.offer.end_date < now:
+                i.offer = None
+                i.sub_category.offer = None
+                i.save()
+       
         context= {
                 'products':products
         }
@@ -71,17 +117,31 @@ def men_category(request,id):
         return render(request,'user/casual.html',context)
 
 def women_category(request,id):
+        kolkata_tz = pytz.timezone('Asia/Kolkata')
+        # Get the current time in Asia/Kolkata timezone
+        now = datetime.now(kolkata_tz)
         if request.user.is_authenticated and request.user.is_staff:
                 return redirect('admin_app:admin_home')
         if request.user.is_authenticated and request.user.is_block:
             return redirect('user_app:user_logout')
         products = Product.objects.filter(Q(category_id=2) & Q(sub_category=id) )
+        for i in products:
+            if i.offer and i.offer.end_date < now:
+                i.offer = None
+                i.save()
+            elif i.sub_category.offer and i.sub_category.offer.end_date < now:
+                i.offer = None
+                i.sub_category.offer = None
+                i.sub_category.save()
         context= {
                 'products':products
         }
         
         return render(request,'user/casual.html',context)
 def women_product(request):
+    kolkata_tz = pytz.timezone('Asia/Kolkata')
+        # Get the current time in Asia/Kolkata timezone
+    now = datetime.now(kolkata_tz)
                 
     if request.user.is_authenticated and request.user.is_staff:
         return redirect('admin_app:admin_home')
@@ -90,6 +150,14 @@ def women_product(request):
     
     # Get all products and subcategories for men
     products = Product.objects.filter(category_id=2)
+    for i in products:
+            if i.offer and i.offer.end_date < now:
+                i.offer = None
+                i.save()
+            elif i.sub_category.offer and i.sub_category.offer.end_date < now:
+                i.offer = None
+                i.sub_category.offer = None
+                i.sub_category.save()
     sub_category = Sub_Category.objects.filter(category_id=2)
     
     # Search functionality
@@ -101,7 +169,15 @@ def women_product(request):
     selected_subcategory = request.GET.get('subcategory')
     if selected_subcategory:
         products = products.filter(sub_category_id=selected_subcategory)
-    
+        for i in products:
+            if i.offer and i.offer.end_date < now:
+                i.offer = None
+                i.save()
+            elif i.sub_category.offer and i.sub_category.offer.end_date < now:
+                i.offer = None
+                i.sub_category.offer = None
+                i.sub_category.save()
+        
     # Sorting
     sort_by = request.GET.get('sort', 'newest')  # Default to newest
     if sort_by == 'newest':
@@ -125,11 +201,25 @@ def women_product(request):
     }
     return render(request, 'user/women.html', context)
 def view_product(request,id):
+          kolkata_tz = pytz.timezone('Asia/Kolkata')
+        # Get the current time in Asia/Kolkata timezone
+          now = datetime.now(kolkata_tz)
           if request.user.is_authenticated and request.user.is_staff:
             return redirect('admin_app:admin_home')
           if request.user.is_authenticated and request.user.is_block:
             return redirect('user_app:user_logout')
           products = Product.objects.get(id=id)
+          
+          offer_ended=False
+          if products.offer and products.offer.end_date < now:
+                products.offer = None
+                products.save()
+                offer_ended = True
+          elif products.sub_category.offer and products.sub_category.offer.end_date < now:
+                products.offer = None
+                products.sub_category.offer = None
+                products.sub_category.save()
+                offer_ended = True
           review_data = Product.objects.filter(id=id).aggregate(
           total_reviews=Count('productreview'),
           total_stars=Sum('productreview__rating')
@@ -161,6 +251,7 @@ def view_product(request,id):
                   'average_rating':average_rating,
                   'total_review':total_reviews,
                   'reviews': review,
+                  'offer_ended':offer_ended,
                 
           }
           return render(request,'user/view_product.html',context)
@@ -266,7 +357,7 @@ def edit_address(request,id):
         if request.user.is_authenticated and request.user.is_block:
             return redirect('user_app:user_logout')
         address_obj=Address.objects.get(id=id)
-        if request.user.id != address_obj.id:
+        if request.user.id != address_obj.user.id:
              return redirect('user_app:user_logout')
         print(address_obj.default)
         context={
@@ -386,6 +477,128 @@ def edit_user(request,id):
                
                return redirect('customer_app:account')
     return render(request,'user/edit_user_details.html',context)
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from django.http import HttpResponse
+from io import BytesIO
+
+
+
+
+def generate_invoice_pdf(request, order, order_items, order_details):
+    """
+    Generate a PDF invoice for an order
+    """
+    # Create the HttpResponse object with PDF headers
+    buffer = BytesIO()
+    
+    # Create the PDF object using ReportLab
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=letter,
+        rightMargin=72,
+        leftMargin=72,
+        topMargin=72,
+        bottomMargin=72
+    )
+
+    # Container for the 'Flowable' objects
+    elements = []
+    
+    # Styles
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(
+        name='CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        spaceAfter=30
+    ))
+    
+    # Add the invoice header
+    elements.append(Paragraph("INVOICE", styles['CustomTitle']))
+    elements.append(Paragraph(f"Order #{order.id}", styles['Heading2']))
+    elements.append(Paragraph(f"Date: {datetime.now().strftime('%B %d, %Y')}", styles['Normal']))
+    elements.append(Spacer(1, 20))
+    
+    # Add customer information
+    elements.append(Paragraph("Bill To:", styles['Heading3']))
+    elements.append(Paragraph(f"{order.user.first_name} {order.user.last_name}", styles['Normal']))
+    elements.append(Paragraph(f"Email: {order.user.email}", styles['Normal']))
+    elements.append(Paragraph(f"Phone: {order_details.phone}", styles['Normal']))
+    elements.append(Spacer(1, 20))
+    
+    # Add shipping address
+    elements.append(Paragraph("Shipping Address:", styles['Heading3']))
+    elements.append(Paragraph(f"{order_details.street_address}", styles['Normal']))
+    elements.append(Paragraph(f" {order_details.postal_code}", styles['Normal']))
+    elements.append(Spacer(1, 20))
+    
+    # Create the items table
+    table_data = [
+        ['Product', 'Quantity', 'Price ($)', 'Total ($)']  # Header row
+    ]
+    
+    # Add items to the table
+    total_amount = 0
+    for item in order_items:
+        # Calculate item total using item_price if available, otherwise use product's discount_price
+        item_price = getattr(item, 'item_price', item.product.discount_price)
+        item_total = item.quantity * item_price
+        total_amount += item_total
+        table_data.append([
+            item.product.product_name,
+            str(item.quantity),
+            str(item_price),
+            str(item_total)
+        ])
+    
+    # Add total row
+    table_data.append(['', '', 'Subtotal:', str(total_amount)])
+    if hasattr(order, 'discount') and order.discount:
+        table_data.append(['', '', 'Final Total:', str(order.discount)])
+    else:
+        table_data.append(['', '', 'Final Total:', str(total_amount)])
+    
+    # Create the table
+    table = Table(table_data, colWidths=[4*inch, 1*inch, 1.25*inch, 1.25*inch])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 14),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 12),
+        ('ALIGN', (-1, 0), (-1, -1), 'RIGHT'),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    elements.append(table)
+    
+    # Add order status and thank you note
+    elements.append(Spacer(1, 30))
+    elements.append(Paragraph(f"Order Status: {order.order_status.upper()}", styles['Normal']))
+    elements.append(Spacer(1, 20))
+    elements.append(Paragraph("Thank you for your business!", styles['Heading3']))
+    
+    # Build the PDF document
+    doc.build(elements)
+    
+    # Get the value of the BytesIO buffer and write it to the response
+    pdf = buffer.getvalue()
+    buffer.close()
+    
+    # Create the HTTP response
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="invoice_order_{order.id}.pdf"'
+    response.write(pdf)
+    
+    return response
 @login_required
 def item_order(request,id):
     if request.user.is_authenticated and request.user.is_staff:
@@ -403,6 +616,8 @@ def item_order(request,id):
     
     order_items = order.items.all().order_by('-id')
     print(order_items )
+    if request.GET.get('download_pdf'):
+        return generate_invoice_pdf(request, order, order_items, order_details)
             
         # Handling the form submission to change order status
   

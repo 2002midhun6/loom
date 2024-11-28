@@ -61,10 +61,26 @@
                         {% else %}
                             <h4>{{product.price}} Rs</h4>
                         {% endif %}
-                            {{average_rating.get_rating_display}}
-                            {{average_rating}}
+                        <div>
+                            <p>Average Rating: {{ average_rating }}</p>
+                            <p>Rating Label: 
+                                {% if average_rating == 5 %}
+                                    ⭐⭐⭐⭐⭐
+                                {% elif average_rating == 4 %}
+                                    ⭐⭐⭐⭐☆
+                                {% elif average_rating == 3 %}
+                                    ⭐⭐⭐☆☆
+                                {% elif average_rating == 2 %}
+                                    ⭐⭐☆☆☆
+                                {% elif average_rating == 1 %}
+                                    ⭐☆☆☆☆
+                                {% else %}
+                                    No Ratings
+                                {% endif %}
+                            </p>
                             
-                            ({{total_review}} Ratings)
+                        </div>
+                        
                       
                     </p>
                     {% if  not product.is_listed or not product.category.is_listed or not product.sub_category.is_listed %}
@@ -207,7 +223,7 @@
         </div>
     </div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     // Select all buttons with the class "var_btn"
@@ -240,7 +256,17 @@
 </script>
 
 
-
+<script>
+    // Check if offer has ended
+    {% if offer_ended %}
+    Swal.fire({
+        title: 'Offer Expired!',
+        text: 'The offer for this product has ended.',
+        icon: 'info',
+        confirmButtonText: 'OK'
+    });
+    {% endif %}
+</script>
 <script>
     $(document).ready(function () {
 
@@ -277,7 +303,7 @@
 
     });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 {% if alert %}
 <script>

@@ -75,7 +75,7 @@
 							
 							<div class="one-eight text-center">
 								<div class="display-tc">
-									<form id="remove_item" action="{% url 'wishlist_app:remove_from_wishlist' item.id %}" method="post" >
+									<form class="remove_item" action="{% url 'wishlist_app:remove_from_wishlist' item.id %}" method="post" >
 										{% csrf_token %}
 										<button class="bg-secondary" id="block"   type="submit">X</button>
 									</form>
@@ -84,8 +84,10 @@
 								</div>
 							</div>
 							<div class="one-eight text-center">
-								<form action="{% url 'cart_app:add_to_cart' item.product.id %}" method="post">
+								<form class="add_to_cart" action="{% url 'cart_app:add_to_cart' item.product.id %}" method="post">
 									{% csrf_token %}
+
+								<input type="hidden" value="wishlist" name="wishlist">
 								<input type="hidden" value="{{item.varient.id}}" name="var_id">
 								<p class="addtocart"><button type="submit" id="add_btn"  class="btn btn-outline-danger">
 											 Add to Cart</button></p>
@@ -94,13 +96,38 @@
 						</div>
 						{% endfor %}
 
+
 		
 						<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 						<script>
-							document.getElementById('remove_item').addEventListener("submit", function(event) {
-								event.preventDefault(); // Prevent the form from submitting immediately
+							document.querySelectorAll('.add_to_cart').forEach(form => {
+								form.addEventListener('submit', function (event) {
+									event.preventDefault(); // Stop the default form submission
+									
+									Swal.fire({
+										title: 'Item Added to Cart!',
+										text: 'The item has been successfully added to your cart.',
+										icon: 'success',
+										showCancelButton: true,
+										confirmButtonText: 'Go to Cart',
+										cancelButtonText: 'Continue Shopping'
+									}).then((result) => {
+										if (result.isConfirmed) {
+											// Redirect to cart page
+											window.location.href = "{% url 'cart_app:view_cart' %}";
+										} else {
+											// Continue with the form submission
+											form.submit();
+										}
+									});
+								});
+							});
+						</script>
 						
+						<script>
+							document.querySelectorAll(".remove_item").forEach(form => {
+							  form.addEventListener("submit", function(event) {
+								  event.preventDefault(); 
 								Swal.fire({
 									title: "Are you sure?",
 									text: "You won't be able to revert this!",
@@ -114,7 +141,7 @@
 										// Show success alert after deletion confirmation
 										Swal.fire({
 											title: "Deleted!",
-											text: "Your address has been deleted.",
+											text: "Wishlist item has been deleted.",
 											icon: "success",
 											timer: 1500,
 											showConfirmButton: false
@@ -125,7 +152,14 @@
 									}
 								});
 							});
+							});
 						</script>
+						
+						
+						
+						 -->
+						
+						
 	
 
 	{% endblock %} 
