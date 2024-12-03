@@ -17,71 +17,7 @@ import pytz
 
 
 
-# def add_to_cart(request,id):
-#     if request.user.is_authenticated and request.user.is_staff:
-#         return redirect('admin_app:admin_home')
-#     if request.user.is_authenticated and request.user.is_block:
-#         return redirect('authentication_app:logout')
-    
-#     # Getting the user and the product
 
-#     if request.method == 'POST':
-#         user = request.user
-#         product = get_object_or_404(Product, id=id)
-        
-#         varients_id = request.POST.get('var_id')
-#         varient = Varient.objects.get(id=varients_id)
-        
-#         available_stock = varient.stock
-#         print('this is varient id ', varients_id, available_stock)
-
-#         # Check the user has already a cart or create new cart
-#         cart, created = Cart.objects.get_or_create(user=user)
-#         if created:
-#             print('cart created')
-#         else:
-#             print('cart not creating')
-
-#         # Calculate the total price (assuming product has a price field)
-#         unit_price = varient.price if hasattr(varient, 'price') else product.price
-#         total_price = unit_price  # For quantity 1
-
-#         # Check if the products is already in the cart
-#         cart_item, item_created = Cart_item.objects.get_or_create(
-#             cart=cart,
-#             product=product,
-#             varient=varient,
-#             defaults={
-#                 'quantity': 1,
-#                 'total_price': total_price
-#             }
-#         )
-
-#         if item_created:
-#             print(f"Created new item for product {cart_item.product.product_name} with quantity {cart_item.quantity}")
-#         else:
-#             # Increment the quantity if the item already exists in the cart
-#             cart_item.quantity += 1
-#             cart_item.total_price = unit_price * cart_item.quantity
-#             cart_item.save()
-#             print(f"Item already exists. Incrementing quantity to {cart_item.quantity}")
-
-#         # Save the cart item
-#         cart_item.save()
-#         print(f"Cart item saved: {cart_item.product.product_name} with quantity {cart_item.quantity} and price {cart_item.total_price}")
-
-#     # if product.offer:
-#     #     cart_item.total_price = cart_item.quantity * product.discount_price
-#     # else: 
-#     #     cart_item.total_price = cart_item.quantity * product.price 
-
-#         # cart_item.save()
-#     # print(f"Cart item saved: {cart_item.product.product_name} with quantity {cart_item.quantity}")
-        
-#     # # request.session['coupon_applied'] = False  # Reset coupon status to recalculate discount
-#     # # request.session['discount_amount'] = 0 
-    
-#     return redirect('cart_app:view_cart')
     
 from django.db import transaction
 from django.http import HttpResponse
@@ -355,13 +291,7 @@ def checkout(request,cart_id):
 
     
     
-    # request.session['cart_total'] = float(cart_total_with_discount)
-
-    # coupon_code = request.session.get('coupon_code', '')
     
-    #  # Wallet payment
-    # wallet,created = Wallet.objects.get_or_create(user = user)
-    # wallet_balance = wallet.balance
         
     try:
         address = Address.objects.get(user=request.user, default=True)
@@ -387,56 +317,7 @@ def checkout(request,cart_id):
     return render(request,'user/checkout.html',context)
 
 
-# def coupon(request):
-    # if request.user.is_authenticated and request.user.is_staff:
-    #     return redirect('admin_app:admin_home')
-    # if request.user.is_authenticated and request.user.is_block:
-    #     return redirect('user_app:user_logout')
-    # if request.method=='POST':
-    #     cart_id=request.POST.get('cart_id')
-    #     cart_total = float(request.POST.get('cart_total', 0))
-    #     customer_coupen=request.POST.get('coupon')
-    #     if not customer_coupen:
-    #         return redirect('cart_app:checkout',id=cart_id)
-    #     else:
-    #         coupen_obj=Coupen.objects.filter(code=customer_coupen)
-    #         for coupon in coupen_obj:
-    #             if coupon.code == customer_coupen:
-    #                 request.session['cart_total_with_discount']=cart_total-coupon.discount_amount 
-    #                 return redirect('cart_app:checkout',id=cart_id)
-    #             else:
-    #                 messages.error(request, "Invalid coupon code. Please try again.")
-    #                 return redirect('cart_app:checkout', id=cart_id)
-    
 
-# def coupon(request):
-#         if request.user.is_authenticated:
-#             if request.user.is_staff:
-#                 return redirect('admin_app:admin_home')
-#             if request.user.is_block:
-#                 return redirect('user_app:user_logout')
-        
-#         if request.method == 'POST':
-#             cart_id = request.POST.get('cart_id')
-#             cart_total = float(request.POST.get('cart_total', 0))  # Convert cart_total to a float
-#             customer_coupon = request.POST.get('coupon')
-            
-#             if not customer_coupon:
-#                 return redirect('cart_app:checkout', cart_id=cart_id)
-#             else:
-#                 # Retrieve coupon object based on the entered code
-#                 coupon_obj = Coupen.objects.filter(code=customer_coupon).first()
-#                 if coupon_obj and coupon_obj.code == customer_coupon:
-#                     # Apply discount and save it in the session
-#                     request.session['cart_total_with_discount'] = cart_total - coupon_obj.discount_amount
-#                     return redirect('cart_app:checkout', cart_id=cart_id)
-#                 else:
-#                     # Invalid coupon code
-#                     messages.error(request, "Invalid coupon code. Please try again.")
-#                     return redirect('cart_app:checkout', cart_id=cart_id)
-        
-#         # Handle non-POST requests by redirecting or providing an appropriate response
-#         return redirect('user_app:index')
 def coupon(request):
     if request.user.is_authenticated:
         if request.user.is_staff:

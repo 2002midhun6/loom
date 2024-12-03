@@ -76,32 +76,10 @@
             
                 
                 <td>{{ item.price }}</td>
-                <!-- {% if item.return_reason and item.return_status == 'pending' %}
-                        <td>
-                            <form class="confirm_return" action="#" method="post">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                    Confirm
-                                </button>
-                            </form>
-                        </td>
-                {% endif %}  -->
-                <!-- {% if item.return_reason and item.return_status == 'returned' %}
-                        <td>
-                            <button type="button" class="btn btn-sm btn-outline-danger" disabled>
-                                Item Returned!
-                            </button>
-                        </td>
-                {% endif %} -->
-                <!-- {% if item.return_reason %}
-                    <td>{{item.return_reason}}</td>
-                {% endif %}  -->
+                
                 {% if order.order_status == 'delivered' %}
                 <td>
-                    <!-- <a href="#" class="btn btn-sm btn-outline-danger">Return Item</a> -->
-                    <!-- <form action="#" method="post">
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Return Item</button>
-                    </form> -->
+                    
                 {% if item.return_reason and item.return_status == 'returned' %}
                 <button type="button" class="btn btn-sm btn-outline-danger" disabled>
                     Item Returned!
