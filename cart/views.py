@@ -152,21 +152,23 @@ def add_to_cart(request, id):
                     }
                 )
                 
+                
                 if not created:
-                    print("Updating existing cart item")
-                    cart_item.quantity += 1
-                    cart_item.total_price = unit_price * cart_item.quantity
-                    cart_item.save()
+                    print("Item already exists in cart")
+                    item_exists = True  # Indicate that the item already exists
                 else:
                     print("New cart item created")
-
+                    cart_item.quantity = 1
+                    cart_item.total_price = unit_price * cart_item.quantity
+                    cart_item.save()
+                    item_exists = False 
                 print(f"Cart item saved with ID: {cart_item.id}")
                 print(f"Final quantity: {cart_item.quantity}")
                 print(f"Final total price: {cart_item.total_price}")
                 alert = True
                 if request.POST.get('wishlist'):
                     return redirect('wishlist_app:wishlist_view')
-                return render(request,'user/view_product.html',{'product':product,'id':id,'alert':alert})
+                return render(request,'user/view_product.html',{'product':product,'id':id,'alert':alert,'item_exists': item_exists,})
             
         except Product.DoesNotExist:
             print("Product not found")
@@ -359,7 +361,13 @@ def checkout(request,cart_id):
     # wallet,created = Wallet.objects.get_or_create(user = user)
     # wallet_balance = wallet.balance
         
-    address = Address.objects.get(user=request.user,default=True)
+    try:
+        address = Address.objects.get(user=request.user, default=True)
+    except Address.DoesNotExist:
+        # Use SweetAlert to show a message and redirect to the address management page
+        messages.error(request, "Please add a default address to proceed.")
+        return redirect('customer_app:account')  # Replace 'customer:account' with your actual account URL name
+
     print(address.phone)
     
     context = {

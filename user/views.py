@@ -66,13 +66,18 @@ def sign_up(request):
         last_name = request.POST.get('last_name')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
-        
-        referral = request.POST.get('referral')
         error = {}
+        if request.POST.get('referral'):
+            referral = request.POST.get('referral')
+            code = UserReferral.objects.filter(referral_code=referral)
+            if not code:
+                error['referral'] = 'Invalid referral'
+            else:
+                  request.session['referral'] = referral
+       
         error=validation_view(request,email,first_name,last_name,password,confirm_password)
-        code = UserReferral.objects.filter(referral_code=referral)
-        if not code:
-             error['referral'] = 'Invalid referral'
+        
+        
         
         if error:
             return render(request,'user/sign_up.html',{"error":error,"email":email,"username":username,"first_name":first_name,"last_name":last_name,"password":password,"confirm_password":confirm_password})
@@ -88,7 +93,7 @@ def sign_up(request):
                     request.session['registration_otp'] = otp
                     request.session['registered_email'] = email
                     
-                    request.session['referral'] = referral
+                       
 
                     # Send the OTP via email
                     mail_subject = 'Your OTP for email verification'

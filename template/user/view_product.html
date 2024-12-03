@@ -223,6 +223,7 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
@@ -266,6 +267,24 @@
         confirmButtonText: 'OK'
     });
     {% endif %}
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        {% if item_exists %}
+        Swal.fire({
+            title: 'Product Already in Cart!',
+            text: 'This product is already in your cart.',
+            icon: 'info',
+            confirmButtonText: 'OK',
+            timer: 3000, 
+            showConfirmButton: false 
+        });
+
+        setTimeout(() => {
+            window.location.href = "{% url 'customer_app:view_product' id %}";
+        }, 3000);
+        {% endif %}
+    });
 </script>
 <script>
     $(document).ready(function () {

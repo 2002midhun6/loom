@@ -696,7 +696,7 @@ class SalesReportView(TemplateView):
                 pending_orders=Count('order', distinct=True, 
                     filter=Q(order__order_status='pending')),
                 cancelled_orders=Count('order', distinct=True, 
-                    filter=Q(order__order_status='cancelled')),
+                    filter=Q(order__order_status='canceled')),
                 total_amount=Coalesce(
                     Sum(F('price') * F('quantity')),
                     Decimal('0.00')
@@ -746,9 +746,9 @@ class SalesReportView(TemplateView):
                 'Delivered Orders': item['delivered_orders'],
                 'Pending Orders': item['pending_orders'],
                 'Cancelled Orders': item['cancelled_orders'],
-                'Total Amount': float(item['total_amount']),
-                'Discount': float(item['discount']),
-                'Net Amount': float(item['net_amount'])
+                'product amount': float(item['total_amount']),
+                'Total amount': float(item['discount']),
+              
             }
             excel_data.append(row)
         return excel_data
@@ -800,7 +800,7 @@ class SalesReportView(TemplateView):
             # Prepare data for table
             table_data = [
                 ['Period', 'Total Orders', 'Delivered', 'Pending', 'Cancelled', 
-                'Total Amount', 'Discount', 'Net Amount']
+                'product amount', 'Total']
             ]
             
             for item in sales_data:
@@ -810,9 +810,9 @@ class SalesReportView(TemplateView):
                     str(item['delivered_orders']),
                     str(item['pending_orders']),
                     str(item['cancelled_orders']),
-                    f"₹{item['total_amount']:.2f}",
-                    f"₹{item['discount']:.2f}",
-                    f"₹{item['net_amount']:.2f}"
+                    f"${item['total_amount']:.2f}",
+                    f"${item['discount']:.2f}"
+                    
                 ]
                 table_data.append(row)
             
