@@ -124,6 +124,7 @@
 								
 								<div class="col-sm-4 text-center">
 									<div class="total">
+										{% if cart_items %}
 										<div class="sub">
 											<p><span>Subtotal:</span> <span id="cart-subtotal">{{cart_total}}</span></p>
 											<p><span>Delivery:</span> <span>50.00</span></p>
@@ -133,7 +134,7 @@
 											<p><span><strong>Total:</strong><span id="cart-total">{{cart_delivery}}</span></p>
 
 										</div>
-										
+										{% endif %}
 									</div>
 								</div>
 								<div class="checkout_btn_inner float-right">

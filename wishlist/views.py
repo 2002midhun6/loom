@@ -48,10 +48,17 @@ def wishlist_view(request):
     user = request.user
     wishlist, created = Wishlist.objects.get_or_create(user=user)
     wishlist_items = wishlist.wishlist_items_set.all()  # Access the related Wishlist_items
-    
+    if request.session.get('exist_session'):
+        exist=True
+        del request.session['exist_session']
+    else:
+        exist=False
+        
+
     return render(request, 'user/wishlist.html', {
         'wishlist': wishlist,
         'wishlist_items': wishlist_items,
+        'exist':exist,
     })
 
 @login_required

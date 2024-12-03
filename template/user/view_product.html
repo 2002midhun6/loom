@@ -83,6 +83,7 @@
                         
                       
                     </p>
+                    
                     {% if  not product.is_listed or not product.category.is_listed or not product.sub_category.is_listed %}
                     <h5 style="color: crimson;">sorry!  product is unavailable</h5>
 				
@@ -186,6 +187,7 @@
                                     aria-labelledby="pills-review-tab">
                                     <div class="row">
                                         <div class="col-md-8">
+                                            
                                             <h3 class="head">{{total_review}} Reviews</h3>
                                             {% for review in reviews%}
                                             <div class="review">
@@ -268,24 +270,8 @@
     });
     {% endif %}
 </script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        {% if item_exists %}
-        Swal.fire({
-            title: 'Product Already in Cart!',
-            text: 'This product is already in your cart.',
-            icon: 'info',
-            confirmButtonText: 'OK',
-            timer: 3000, 
-            showConfirmButton: false 
-        });
 
-        setTimeout(() => {
-            window.location.href = "{% url 'customer_app:view_product' id %}";
-        }, 3000);
-        {% endif %}
-    });
-</script>
+
 <script>
     $(document).ready(function () {
 
@@ -324,23 +310,38 @@
 </script>
 
 
-{% if alert %}
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
+        {% if item_exists %}
+        // Item already in the cart
         Swal.fire({
-            title: 'Success!',
-            text: 'Add to Cart is Successfull',
-            icon: 'success',
+            title: 'Product Already in Cart!',
+            text: 'This product is already in your cart.',
+            icon: 'info',
             confirmButtonText: 'OK',
-            timer: 3000, 
-            showConfirmButton: false 
+            timer: 3000,
+            showConfirmButton: false
         });
 
         setTimeout(() => {
-            window.location.href = "{% url 'customer_app:view_product' id %}"; 
+            window.location.href = "{% url 'customer_app:view_product' id %}";
         }, 3000);
+        {% elif alert %}
+        // Item successfully added to the cart
+        Swal.fire({
+            title: 'Success!',
+            text: 'Add to Cart is Successful',
+            icon: 'success',
+            confirmButtonText: 'OK',
+            timer: 3000,
+            showConfirmButton: false
+        });
+
+        setTimeout(() => {
+            window.location.href = "{% url 'customer_app:view_product' id %}";
+        }, 3000);
+        {% endif %}
     });
 </script>
-{% endif %}
 
 {% endblock %}

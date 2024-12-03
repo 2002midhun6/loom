@@ -167,6 +167,7 @@ def add_to_cart(request, id):
                 print(f"Final total price: {cart_item.total_price}")
                 alert = True
                 if request.POST.get('wishlist'):
+                    request.session['exist_session']=item_exists
                     return redirect('wishlist_app:wishlist_view')
                 return render(request,'user/view_product.html',{'product':product,'id':id,'alert':alert,'item_exists': item_exists,})
             
@@ -329,6 +330,7 @@ def checkout(request,cart_id):
   
     
     cart_items_with_prices = []
+    offer_ended =''
     # Calculate the total price for each item
     for item in cart_items:
         offer_ended = False
