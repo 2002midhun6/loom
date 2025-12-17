@@ -94,11 +94,11 @@ WSGI_APPLICATION = 'loom.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'loom',         
-        'USER': 'postgres',              
-        'PASSWORD': '4040',     
-        'HOST': 'localhost',           
-        'PORT': '5432',    
+        'NAME': 'loom',
+        'USER': 'loomuser',
+        'PASSWORD': 'strongpassword',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
