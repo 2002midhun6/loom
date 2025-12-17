@@ -1,6 +1,6 @@
 # E-Commerce Website (Django + HTML/Bootstrap)
 
-A fully functional **online shopping platform** built with **Django (Python)** as the backend and pure **HTML, SCSS, Bootstrap 5, and vanilla JavaScript/jQuery** as the frontend.
+A fully functional **online shopping platform** built with **Django (Python)** as the backend and pure **HTML, SCSS, Bootstrap 5** as the frontend.
 
 ## Features
 
@@ -33,7 +33,7 @@ A fully functional **online shopping platform** built with **Django (Python)** a
 | Styling      | Bootstrap, SimpleBar, Owl Carousel, AOS          |
 | Icons        | IonIcons, Flaticon, Icomoon                      |
 | Payments     | Razorpay integration                             |
-| Database     | SQLite (default) / PostgreSQL (production ready) |
+| Database     | PostgreSQL |
 
 ## Project Structure (Key Folders)
 ├── node_modules/          # ApexCharts, Bootstrap, jQuery, SimpleBar
