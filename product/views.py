@@ -35,7 +35,7 @@ def product_list(request,id):
 def add_product(request,id):
     if request.user.is_authenticated and request.user.is_staff:
         kolkata_tz = pytz.timezone('Asia/Kolkata')
-        # Get the current time in Asia/Kolkata timezone
+        
         now = datetime.now(kolkata_tz)
         if request.method=="POST":
                 
@@ -201,7 +201,7 @@ def add_varient(request):
 def edit_product(request,id):
     if request.user.is_authenticated and request.user.is_staff:
         kolkata_tz = pytz.timezone('Asia/Kolkata')
-        # Get the current time in Asia/Kolkata timezone
+        
         now = datetime.now(kolkata_tz)
         product=Product.objects.get(id=id)
         offers = Offer.objects.filter(end_date__gt=now)

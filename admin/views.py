@@ -88,12 +88,12 @@ def add_offer(request):
 
             end_date_naive = datetime.strptime(end_date_str, '%Y-%m-%dT%H:%M')
             
-            # Converting naive datetime to timezone-aware datetime
+            
             end_date = timezone.make_aware(end_date_naive, timezone.get_current_timezone())
             
             start_date_naive = datetime.strptime(start_date_str, '%Y-%m-%dT%H:%M')
             
-            # Converting naive datetime to timezone-aware datetime
+            
             start_date = timezone.make_aware(start_date_naive, timezone.get_current_timezone())
             
             
@@ -146,12 +146,12 @@ def edit_offer(request,id):
             end_date_str = request.POST.get('end_date')
             end_date_naive = datetime.strptime(end_date_str, '%Y-%m-%dT%H:%M')
             
-            # Converting naive datetime to timezone-aware datetime
+            
             end_date = timezone.make_aware(end_date_naive, timezone.get_current_timezone())
             
             start_date_naive = datetime.strptime(start_date_str, '%Y-%m-%dT%H:%M')
             
-            # Converting naive datetime to timezone-aware datetime
+            
             start_date = timezone.make_aware(start_date_naive, timezone.get_current_timezone())
             
 
@@ -197,7 +197,7 @@ def delete_offer(request,id):
    
     if request.user.is_authenticated and request.user.is_staff:
         offer = Offer.objects.get(id = id)
-         # Retrive data of the offer
+         
         if request.method == 'POST':
             offer_title = offer.offer_title
             offer.delete()
@@ -232,10 +232,10 @@ def add_coupon(request):
             discount_amount = request.POST.get('discount_amount')
             
             
-            # Converting string expiry date to datetime object.
+            
             expiry_date_naive = datetime.strptime(expiry_date_str, '%Y-%m-%dT%H:%M')
             
-            # Converting naive datetime to timezone-aware datetime
+            
             expiry_date = timezone.make_aware(expiry_date_naive, timezone.get_current_timezone())
             
 
@@ -312,10 +312,10 @@ def edit_coupon(request,id):
             expiry_date_str = request.POST.get('expiry_date')
             discount_amount = request.POST.get('discount_amount')
             
-            # Converting string expiry date to datetime object.
+            
             expiry_date_naive = datetime.strptime(expiry_date_str, '%Y-%m-%dT%H:%M')
             
-            # Converting naive datetime to timezone-aware datetime
+            
             expiry_date = timezone.make_aware(expiry_date_naive, timezone.get_current_timezone())
             context={
                 'code':code,
@@ -413,12 +413,12 @@ def add_banner(request):
            
             end_date_naive = datetime.strptime(end_date_str, '%Y-%m-%dT%H:%M')
             
-            # Converting naive datetime to timezone-aware datetime
+            
             end_date = timezone.make_aware(end_date_naive, timezone.get_current_timezone())
             
             start_date_naive = datetime.strptime(start_date_str, '%Y-%m-%dT%H:%M')
             
-            # Converting naive datetime to timezone-aware datetime
+            
             start_date = timezone.make_aware(start_date_naive, timezone.get_current_timezone())
             context={
                  'banner_name':banner_name,
@@ -473,12 +473,12 @@ def edit_banner(request,id):
             end_date_str = request.POST.get('end_date')
             end_date_naive = datetime.strptime(end_date_str, '%Y-%m-%dT%H:%M')
             
-            # Converting naive datetime to timezone-aware datetime
+            
             end_date = timezone.make_aware(end_date_naive, timezone.get_current_timezone())
             
             start_date_naive = datetime.strptime(start_date_str, '%Y-%m-%dT%H:%M')
             
-            # Converting naive datetime to timezone-aware datetime
+            
             start_date = timezone.make_aware(end_date_naive, timezone.get_current_timezone())
             
             
@@ -525,7 +525,7 @@ def edit_banner(request,id):
     
 def remove_banner(request,id):
     if request.user.is_authenticated and request.user.is_staff:
-        banner = Banner.objects.get(id = id)    # Retrive Banner
+        banner = Banner.objects.get(id = id)    
         if request.method == 'POST':
             banner_name = banner.banner_name
             banner.delete()
@@ -560,10 +560,10 @@ def show_order(request,id):
         print(order_items )
        
 
-        # Handling the form submission to change order status
+        
         if request.method == "POST":
             new_status = request.POST.get('order_status')
-            if new_status in dict(STATUS):  # Ensure the status is valid
+            if new_status in dict(STATUS):  
                 order.order_status = new_status
                 order.save()
                 messages.success(request, "Order status updated successfully.")
@@ -571,23 +571,22 @@ def show_order(request,id):
                 messages.error(request, "Invalid order status.")
         
         
-        # Calculating total price
+       
         total_price = 0
         item_total_prices = []
         
         for item in order_items:
-            # Check if product has an offer and calculate the item total
-            
+           
             item_total = item.quantity * item.product.discount_price
             
                 
-            # Add item total to total order price
+            
             total_price += item_total
-            item_total_prices.append(item_total)  # Store each item's total price
+            item_total_prices.append(item_total) 
 
         context = {
             'order': order,
-            'order_items': zip(order_items, item_total_prices),  # Pass both items and their individual total prices
+            'order_items': zip(order_items, item_total_prices),  
             'total_price': total_price,
             'status_choices': STATUS,
             'items':order_items,
@@ -604,7 +603,7 @@ from django.db.models import Sum
 
 
 
-#------admin sale#
+
 from django.views.generic import TemplateView
 from django.http import HttpResponse
 from django.db.models import Sum, Count, F, Q
@@ -677,16 +676,16 @@ class SalesReportView(TemplateView):
                 self.timezone
             )
 
-            # Get the appropriate truncation function
+           
             trunc_func = self.get_trunc_function()
             
-            # Base queryset for orders
+            
             base_queryset = OrderItems.objects.filter(
                 order__order_date__gte=start_datetime,
                 order__order_date__lt=end_datetime
             )
 
-            # Aggregate sales data
+            
             sales_data = base_queryset.annotate(
                 period=trunc_func('order__order_date', tzinfo=self.timezone)
             ).values('period').annotate(
@@ -773,10 +772,10 @@ class SalesReportView(TemplateView):
             return HttpResponse("Error generating Excel file", status=500)
     def download_pdf(self, sales_data):
         try:
-            # Create a buffer for the PDF
+            
             buffer = BytesIO()
             
-            # Create the PDF document
+            
             doc = SimpleDocTemplate(
                 buffer,
                 pagesize=A4,
@@ -786,18 +785,18 @@ class SalesReportView(TemplateView):
                 bottomMargin=72
             )
             
-            # Container for PDF elements
+            
             elements = []
             
-            # Get styles
+            
             styles = getSampleStyleSheet()
             
-            # Add title
+            
             title = Paragraph("Sales Report", styles['Heading1'])
             elements.append(title)
             elements.append(Spacer(1, 20))
             
-            # Prepare data for table
+            
             table_data = [
                 ['Period', 'Total Orders', 'Delivered', 'Pending', 'Cancelled', 
                 'product amount', 'Total']
@@ -816,7 +815,7 @@ class SalesReportView(TemplateView):
                 ]
                 table_data.append(row)
             
-            # Calculate totals
+           
             totals = [
                 'Total',
                 str(sum(item['total_orders'] for item in sales_data)),
@@ -829,10 +828,10 @@ class SalesReportView(TemplateView):
             ]
             table_data.append(totals)
             
-            # Create table
+            
             table = Table(table_data)
             
-            # Style the table
+            
             style = TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -848,7 +847,7 @@ class SalesReportView(TemplateView):
                 ('BOX', (0, 0), (-1, -1), 2, colors.black),
             ])
             
-            # Add alternating row colors
+            
             for i in range(1, len(table_data) - 1):
                 if i % 2 == 0:
                     style.add('BACKGROUND', (0, i), (-1, i), colors.lightgrey)
@@ -856,14 +855,14 @@ class SalesReportView(TemplateView):
             table.setStyle(style)
             elements.append(table)
             
-            # Build PDF
+            
             doc.build(elements)
             
-            # Get PDF value from buffer
+            
             pdf = buffer.getvalue()
             buffer.close()
             
-            # Create response
+            
             response = HttpResponse(content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename="sales_report.pdf"'
             response.write(pdf)
@@ -880,7 +879,7 @@ class SalesReportView(TemplateView):
             start_date, end_date = self.get_date_range()
             sales_data = self.get_sales_data(start_date, end_date)
             
-            # Calculate overall statistics
+            
             overall_stats = {
                 'total_orders': sum(item['total_orders'] for item in sales_data),
                 'delivered_orders': sum(item['delivered_orders'] for item in sales_data),
@@ -911,16 +910,16 @@ class SalesReportView(TemplateView):
 
 
 def top_selling_products(request):
-    # Get base queryset of products
+    
     products = Product.objects.all().order_by('-sold_count')[:10]
 
-    # Calculate basic stats
+   
     total_sales = products.aggregate(total=Sum('sold_count'))['total'] or 0
     avg_price = products.aggregate(avg=Avg('price'))['avg'] or 0
     
-    # Get top category
     
-    # Calculate monthly growth
+    
+    
     thirty_days_ago = timezone.now() - timedelta(days=30)
     sixty_days_ago = timezone.now() - timedelta(days=60)
     
@@ -930,11 +929,11 @@ def top_selling_products(request):
     
     previous_month_sales = Product.objects.filter(
         created_at__range=(sixty_days_ago, thirty_days_ago)
-    ).aggregate(total=Sum('sold_count'))['total'] or 1  # Avoid division by zero
+    ).aggregate(total=Sum('sold_count'))['total'] or 1 
     
     monthly_growth = ((current_month_sales - previous_month_sales) / previous_month_sales) * 100
 
-    # Prepare chart data
+    #
     product_names = list(products.values_list('product_name', flat=True)[:10])
     sold_counts = list(products.values_list('sold_count', flat=True)[:10])
 
@@ -954,19 +953,19 @@ def top_selling_products(request):
 
 def top_selling_categories_and_products(request):
     if request.user.is_authenticated and request.user.is_staff:
-        # Calculate the total sold count for each category
+        
         categories = Category.objects.filter(is_listed=True).annotate(
             total_sold=Sum('sub_category__product__sold_count')
-        ).order_by('-total_sold')[:10]  # Get the top 10 selling categories
+        ).order_by('-total_sold')[:10]  
 
-        # Prepare data for each category with its top-selling products
+        
         category_data = []
         for category in categories:
             if category.category_name=="kidsware":
                  continue
             top_products = Product.objects.filter(
                 category__sub_category__category=category
-            ).order_by('-sold_count').distinct()[:10]  # Get the top 5 selling products in each category
+            ).order_by('-sold_count').distinct()[:10]  
             category_data.append({
                 'category': category,
                 'top_products': top_products,
@@ -983,21 +982,21 @@ from django.http import JsonResponse
 def admin_dashboard(request):
         orders = Order.objects.exclude(order_status='canceled')
         
-        # Initializing count array (0=Monday to 6=Sunday as per Python's weekday())
+        
         days_count = [0] * 7
         
-        # Counting orders by weekday using Python's date.weekday()
+        
         for order in orders:
-            # Converting UTC to local time
+            
             local_date = timezone.localtime(order.order_date)
-            weekday = local_date.weekday()  # Monday = 0, Sunday = 6
+            weekday = local_date.weekday() 
             days_count[weekday] += 1
         
-        # Creating day names starting with Monday
-        day_names = [calendar.day_name[i] for i in range(7)]  # Monday to Sunday
+        
+        day_names = [calendar.day_name[i] for i in range(7)]  
 
         
-        # Processing monthly data
+        
         orders_monthly = Order.objects.annotate(
             month=ExtractMonth('order_date', tzinfo=timezone.get_current_timezone())
         ).values('month').annotate(
@@ -1006,7 +1005,7 @@ def admin_dashboard(request):
             order_status='canceled'
         )
         
-        # Processing yearly data
+       
         orders_yearly = Order.objects.annotate(
             year=ExtractYear('order_date', tzinfo=timezone.get_current_timezone())
         ).values('year').annotate(
@@ -1015,7 +1014,7 @@ def admin_dashboard(request):
             order_status='canceled'
         )
 
-        # Processing monthly and yearly data
+       
         month = []
         year = []
         total_order_month = []

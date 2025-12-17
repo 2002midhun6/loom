@@ -4,7 +4,7 @@ from .models import *
 from product.models import *
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-# Create your views here.
+
 
 @login_required
 def add_to_wishlist(request, product_id):
@@ -18,7 +18,7 @@ def add_to_wishlist(request, product_id):
         if not  request.POST.get('var_id'):
             error_message = "select a size"
 
-           # Add an error message 
+           
             messages.error(request, error_message)
             return redirect('customer_app:view_product', id=product_id)
         varients_id = request.POST.get('var_id')
@@ -26,14 +26,14 @@ def add_to_wishlist(request, product_id):
                 
         varient = Varient.objects.get(id=varients_id)
         print(f"Variant found: {varient}")
-        # Check if the user already has a wishlist or create a new one
+        
         wishlist, created = Wishlist.objects.get_or_create(user=user)
         
-        # Check if the product is already in the wishlist
+       
         wishlist_item, item_created = Wishlist_items.objects.get_or_create(wishlist=wishlist, product=product,varient=varient)
         
         if not item_created:
-            # If the product already exists
+           
             pass
         
         return redirect('wishlist_app:wishlist_view')
@@ -47,7 +47,7 @@ def wishlist_view(request):
     
     user = request.user
     wishlist, created = Wishlist.objects.get_or_create(user=user)
-    wishlist_items = wishlist.wishlist_items_set.all()  # Access the related Wishlist_items
+    wishlist_items = wishlist.wishlist_items_set.all()  
     if request.session.get('exist_session'):
         exist=True
         del request.session['exist_session']

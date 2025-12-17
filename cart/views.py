@@ -24,7 +24,7 @@ from django.http import HttpResponse
 
 def add_to_cart(request, id):
     kolkata_tz = pytz.timezone('Asia/Kolkata')
-        # Get the current time in Asia/Kolkata timezone
+       
     now = datetime.now(kolkata_tz)
     print("=== Starting add_to_cart function ===")
     
@@ -44,7 +44,7 @@ def add_to_cart(request, id):
         try:
             print(f"Processing POST request for product ID: {id}")
             
-            # Get user and product
+            
             user = request.user
             print(f"User: {user.username}")
             
@@ -67,17 +67,17 @@ def add_to_cart(request, id):
             varient = Varient.objects.get(id=varients_id)
             print(f"Variant found: {varient}")
             
-            # Create or get cart with transaction
+            
             with transaction.atomic():
                 cart, cart_created = Cart.objects.get_or_create(user=user)
                 print(f"Cart {'created' if cart_created else 'retrieved'} for user")
                 print(f"Cart ID: {cart.id}")
                 
-                # Calculate price
+               
                 unit_price = varient.price if hasattr(varient, 'price') else product.price
                 print(f"Unit price: {unit_price}")
                 
-                # Try to get existing cart item or create new one
+                
                 cart_item, created = Cart_item.objects.get_or_create(
                     cart=cart,
                     product=product,
@@ -91,7 +91,7 @@ def add_to_cart(request, id):
                 
                 if not created:
                     print("Item already exists in cart")
-                    item_exists = True  # Indicate that the item already exists
+                    item_exists = True 
                 else:
                     print("New cart item created")
                     cart_item.quantity = 1
@@ -117,7 +117,7 @@ def add_to_cart(request, id):
             print(f"Error occurred: {str(e)}")
     error_message = "select a size"
 
-           # Add an error message 
+          
     messages.error(request, error_message)
     return redirect('customer_app:view_product', id=id )
 
@@ -125,7 +125,7 @@ def add_to_cart(request, id):
 @login_required
 def view_cart(request):
     kolkata_tz = pytz.timezone('Asia/Kolkata')
-        # Get the current time in Asia/Kolkata timezone
+       
     now = datetime.now(kolkata_tz)
     
     if request.user.is_authenticated and request.user.is_staff:
@@ -136,7 +136,7 @@ def view_cart(request):
         return redirect('user_app:user_login')
     
     offer_ended = False
-    # Get the user's cart
+    
     cart, created = Cart.objects.get_or_create(user=request.user)
     cart_items = cart.items.all()
     if 'cart_total_with_discount' in request.session:
@@ -144,10 +144,10 @@ def view_cart(request):
     if 'coupon' in request.session:
         del request.session['coupon']
     
-    # List to hold the items that should stay in the cart
+    
     filtered_cart_items = []
     
-    # Loop through cart items and remove those that are not listed
+    
     for item in cart_items:
         if  not item.product.is_listed or not item.product.category.is_listed or not item.product.category.is_listed:
             item.delete()
@@ -165,7 +165,7 @@ def view_cart(request):
                     offer_ended = True
                     print(1,3)
             
-            # Check if quantity exceeds available stock
+            
             if item.quantity > item.varient.stock:
                 item.quantity = item.varient.stock
                 item.save()
@@ -174,7 +174,7 @@ def view_cart(request):
     
     cart_items_with_prices = []
    
-    # Calculate the total price for each item
+    
     for item in filtered_cart_items:
         
                 
@@ -184,7 +184,7 @@ def view_cart(request):
         
         cart_items_with_prices.append(item)
     
-    # Calculate total cart value
+    
     cart_total = sum(item.total_price for item in cart_items_with_prices)
     
     
@@ -212,15 +212,15 @@ def update_cart_item_quantity(request, product_id,varient_id, action):
     varient = get_object_or_404(Varient, id=varient_id)
     
     
-    # Get the user's cart
+    
     cart, created = Cart.objects.get_or_create(user=user)
     
-    # Get the cart item for the specified product
+    
     cart_item = get_object_or_404(Cart_item, cart=cart, product=product,varient=varient)
     
-    # Update quantity based on action
+    
     if action == 'increment':
-        # Check if incrementing would exceed available stock
+        
         if cart_item.quantity >= varient.stock:
             messages.error(request, f'Cannot add more {product.product_name}. Maximum available stock {varient.stock} reached.')
             return redirect('cart_app:view_cart')
@@ -247,7 +247,7 @@ def remove_cart_item(request,cart_id):
 @never_cache
 def checkout(request,cart_id):
     kolkata_tz = pytz.timezone('Asia/Kolkata')
-        # Get the current time in Asia/Kolkata timezone
+       
     now = datetime.now(kolkata_tz)
     
     if request.user.is_authenticated and request.user.is_staff:
@@ -267,7 +267,7 @@ def checkout(request,cart_id):
     
     cart_items_with_prices = []
     offer_ended =''
-    # Calculate the total price for each item
+    
     for item in cart_items:
         offer_ended = False
         if item.product.offer and item.product.offer.end_date < now:
@@ -285,7 +285,7 @@ def checkout(request,cart_id):
         cart_items_with_prices.append(item)
     cart_total = sum(item.total_price for item in cart_items_with_prices)+50
     
-    # Apply coupon discount if applicable
+    
     request.session['cart_total_with_discount'] = float(request.session.get('cart_total_with_discount', cart_total)) 
     cart_total_with_discount=request.session['cart_total_with_discount']
 
@@ -296,9 +296,9 @@ def checkout(request,cart_id):
     try:
         address = Address.objects.get(user=request.user, default=True)
     except Address.DoesNotExist:
-        # Use SweetAlert to show a message and redirect to the address management page
+        
         messages.error(request, "Please add a default address to proceed.")
-        return redirect('customer_app:account')  # Replace 'customer:account' with your actual account URL name
+        return redirect('customer_app:account')  
 
     print(address.phone)
     
@@ -311,8 +311,7 @@ def checkout(request,cart_id):
         'address':address,
         'cart_total_with_discount':cart_total_with_discount,
         'offer_ended':offer_ended
-        # 'coupon_code':coupon_code,
-        # 'wallet_balance':wallet_balance,
+        
     }
     return render(request,'user/checkout.html',context)
 
@@ -327,14 +326,14 @@ def coupon(request):
     
     if request.method == 'POST':
         cart_id = request.POST.get('cart_id')
-        cart_total = float(request.POST.get('cart_total', 0))  # Convert cart_total to a float
+        cart_total = float(request.POST.get('cart_total', 0))  
         customer_coupon = request.POST.get('coupon')
         
         if not customer_coupon:
             print('not customer_coupon' )
             return redirect('cart_app:checkout', cart_id=cart_id)
         else:
-            # Retrieve coupon object based on the entered code
+            
             coupon_obj  = Coupen.objects.filter(code=customer_coupon).first()
             user = request.user
 
@@ -349,7 +348,7 @@ def coupon(request):
                             counter+=1
                     if counter < limit:
                         if cart_total < coupon_obj.maximum_order_amount and cart_total > coupon_obj.minimum_order_amount:
-                        # Apply discount and save it in the session
+                       
                             print(coupon_obj.code)
                             
                             request.session['coupon']=coupon_obj.code
@@ -367,11 +366,11 @@ def coupon(request):
 
 
             else:
-                            # Invalid coupon code
+                           
                             messages.error(request, "Invalid coupon code. Please try again.")
                             return redirect('cart_app:checkout', cart_id=cart_id)
     
-    # Handle non-POST requests by redirecting to a safe page
+    
     return redirect('user_app:index')
 
 

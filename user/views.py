@@ -16,42 +16,90 @@ User = get_user_model()
 
 # Create your views here.
 
+# def user_login(request):
+#     if request.user.is_authenticated:
+#         return redirect('user_app:index')
+    
+   
+    
+#     if request.method == 'POST':
+#         email = request.POST.get('email')
+#         password = request.POST.get('password')
+#         print(email)
+#         print(password)
+#         user_block = CustomUser.objects.get(email = email)
+#         if user_block.is_block:
+#                 messages.error(request, 'you are blocked by the admin!')
+#                 return render(request,'user/login.html')
+#         # remember_me = request.POST.get('remember_me')
+#         user = authenticate(request, email=email, password = password)
+#         print(user)
+#         if user is not None:
+           
+#             login(request, user)
+           
+            
+#             # if remember_me:
+#             #     request.session.set_expiry(1209600)  # 2 weeks
+#             # else:
+#             #     request.session.set_expiry(0) # expires when browser is closed
+#             if user.is_staff:
+#                 return redirect('admin_app:admin_home')
+#             else:
+#                 return redirect('user_app:index')
+#         else:
+#             error='Email or Password wrong!'
+#             return render(request,'user/login.html',{'email':email,'password':password,'error':error})
+#     else:
+#         return render(request,'user/login.html')
 def user_login(request):
     if request.user.is_authenticated:
         return redirect('user_app:index')
-    
-   
     
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
         print(email)
         print(password)
-        user_block = CustomUser.objects.get(email = email)
-        if user_block.is_block:
-                messages.error(request, 'you are blocked by the admin!')
-                return render(request,'user/login.html')
-        # remember_me = request.POST.get('remember_me')
-        user = authenticate(request, email=email, password = password)
-        print(user)
-        if user is not None:
-           
-            login(request, user)
-           
+        
+        
+        user_block = CustomUser.objects.filter(email=email).first()
+        
+       
+        if user_block:
+            if user_block.is_block:
+                messages.error(request, 'You are blocked by the admin!')
+                return render(request, 'user/login.html', {'email': email})
             
-            # if remember_me:
-            #     request.session.set_expiry(1209600)  # 2 weeks
-            # else:
-            #     request.session.set_expiry(0) # expires when browser is closed
-            if user.is_staff:
-                return redirect('admin_app:admin_home')
+            
+            user = authenticate(request, email=email, password=password)
+            print(user)
+            
+            if user is not None:
+                login(request, user)
+                
+               
+                if user.is_staff:
+                    return redirect('admin_app:admin_home')
+                else:
+                    return redirect('user_app:index')
             else:
-                return redirect('user_app:index')
+                error = 'Email or Password wrong!'
+                return render(request, 'user/login.html', {
+                    'email': email,
+                    'password': password,
+                    'error': error
+                })
         else:
-            error='Email or Password wrong!'
-            return render(request,'user/login.html',{'email':email,'password':password,'error':error})
+           
+            error = 'Email or Password wrong!'
+            return render(request, 'user/login.html', {
+                'email': email,
+                'password': password,
+                'error': error
+            })
     else:
-        return render(request,'user/login.html')
+        return render(request, 'user/login.html')
 @never_cache  
 def sign_up(request):
     if request.user.is_authenticated:
@@ -85,17 +133,17 @@ def sign_up(request):
                 print('hi')
                 error1=None
                 user_obj = CustomUser.objects.get(email = email)
-                if not user_obj.is_active:  # If user is not active 
-                    # Generating OTP
+                if not user_obj.is_active:  
+                    
                     otp = random.randint(10000,99999)
                     
-                    # Save the OTP to session
+                   
                     request.session['registration_otp'] = otp
                     request.session['registered_email'] = email
                     
                        
 
-                    # Send the OTP via email
+                    
                     mail_subject = 'Your OTP for email verification'
                     message = f'Your OTP is {otp}. Please enter it to verify your email.'
                     try:
@@ -105,10 +153,10 @@ def sign_up(request):
                         messages.error(request, 'Error sending email. Please try again.')
                         return None
                     print('redirecting to the verify OTP page')
-                    valid_time = (datetime.now() + timedelta(minutes=3)).isoformat()  # Convert to string
+                    valid_time = (datetime.now() + timedelta(minutes=3)).isoformat() 
                     request.session['valid_time'] = valid_time
                     request.session['access']=False
-                    return redirect('user_app:enter_otp')  # Redirect to OTP verification page
+                    return redirect('user_app:enter_otp')  
                 else:
                     error1= 'Email already exists!'
                     return render(request,'user/sign_up.html',{"error1":error1,"email":email,"username":username,"first_name":first_name,"last_name":last_name,"password":password,"confirm_password":confirm_password})
@@ -119,25 +167,25 @@ def sign_up(request):
     
 
         else:
-            # Saving the user with field is_active as False
+           
             
             user = CustomUser(email = email,username = username, first_name = first_name, last_name = last_name)
             user.set_password(password)
             user.is_active = False
             user.save()
             
-            # Generating OTP
+           
             otp = random.randint(10000,99999)
-            valid_time = (datetime.now() + timedelta(minutes=3)).isoformat()  # Convert to string
+            valid_time = (datetime.now() + timedelta(minutes=3)).isoformat()  
             request.session['valid_time'] = valid_time
 
             print(valid_time)
-            # Save the OTP to session
+            
             request.session['registration_otp'] = otp
             request.session['registered_email'] = email
             
 
-            # Send the OTP via email
+            
             mail_subject = 'Your OTP for email verification'
             message = f'Your OTP is {otp}. Please enter it to verify your email.'
             try:
@@ -147,40 +195,40 @@ def sign_up(request):
             except Exception as e:
                 messages.error(request, 'Error sending email. Please try again.')
                 return None
-            valid_time = (datetime.now() + timedelta(minutes=3)).isoformat()  # Convert to string
+            valid_time = (datetime.now() + timedelta(minutes=3)).isoformat()  
             request.session['valid_time'] = valid_time
-            return redirect('user_app:enter_otp')  # Redirect to OTP verification page
+            return redirect('user_app:enter_otp') 
 
     
     return render(request,'user/sign_up.html')  
 
 
 def validation_view(request,email,first_name,last_name,password,confirm_password):
-    #created object for user validation Authentication_check
+   
     user_validation = Authentication_check()
 
     errors = {}
-    #email validation
+   
     email_valid = user_validation.email_validator(email)
     if email_valid:
         errors['email_error'] = email_valid
         
-    #first_name validation
+    
     first_name_valid = user_validation.first_name_validator(first_name)
     if first_name_valid:
         errors['first_name_error'] = first_name_valid
     
-    #last_name validation
+    
     last_name_valid = user_validation.last_name_validator(last_name)
     if last_name_valid:
         errors['last_name_error'] = last_name_valid
         
-    #password validation
+    
     password_valid = user_validation.pass_validator(password)
     if password_valid:
         errors['password_error'] = password_valid
     
-    #password mismatch checking
+    
     password_mismatch = user_validation.password_mismatch(password, confirm_password)
     if password_mismatch:
         errors['password_mismatch'] = password_mismatch
@@ -220,7 +268,7 @@ def enter_otp(request):
             user.is_active = True
             user.save()
             
-            # Clear the OTP session
+            
             del request.session['registration_otp']
             del request.session['registered_email']
             del request.session['valid_time']
@@ -233,22 +281,22 @@ def resend_otp(request):
         
             email=request.session['registered_email']
             
-     # Clear the OTP session
+     
             del request.session['registration_otp']
             del request.session['valid_time']
             
-    # Generating OTP
+    
             otp = random.randint(10000,99999)
-            valid_time = (datetime.now() + timedelta(minutes=3)).isoformat()  # Convert to string
+            valid_time = (datetime.now() + timedelta(minutes=3)).isoformat()  
             request.session['valid_time'] = valid_time
 
             print(valid_time)
-            # Save the OTP to session
+            
             request.session['registration_otp'] = otp
             
             
 
-            # Send the OTP via email
+            
             mail_subject = 'Your OTP for email verification'
             message = f'Your OTP is {otp}. Please enter it to verify your email.'
             try:
@@ -258,13 +306,13 @@ def resend_otp(request):
             except Exception as e:
                 messages.error(request, 'Error sending email. Please try again.')
                 return None
-            valid_time = (datetime.now() + timedelta(minutes=3)).isoformat()  # Convert to string
+            valid_time = (datetime.now() + timedelta(minutes=3)).isoformat()  
             request.session['valid_time'] = valid_time
             if request.session['access']:
                 return redirect('user_app:enter_otp_password')
             else:
                 return redirect('user_app:enter_otp')  
-# forget_password
+
 @never_cache
 def forget_password(request):
     
@@ -272,19 +320,19 @@ def forget_password(request):
             email = request.POST.get('email')
 
             
-            # Check the email is already exists in the database or not
+            
             if CustomUser.objects.filter(email = email).exists():
-                # Generating OTP
+                
                     
                     otp = random.randint(10000,99999)
                     
-                    # Save the OTP to session
+                    
                     request.session['registration_otp'] = otp
                     request.session['registered_email'] = email
                     request.session['access'] = True
                     
 
-                    # Send the OTP via email
+                   
                     mail_subject = 'Your OTP for email verification'
                     message = f'Your OTP is {otp}. Please enter it to verify your email.'
                     try:
@@ -294,9 +342,9 @@ def forget_password(request):
                         messages.error(request, 'Error sending email. Please try again.')
                         return None
                     print('redirecting to the verify OTP page')
-                    valid_time = (datetime.now() + timedelta(minutes=3)).isoformat()  # Convert to string
+                    valid_time = (datetime.now() + timedelta(minutes=3)).isoformat()  
                     request.session['valid_time'] = valid_time
-                    return redirect('user_app:enter_otp_password')  # Redirect to OTP verification page
+                    return redirect('user_app:enter_otp_password')  
             else:
                 messages.error(request, 'Email does not exists!')
                 
@@ -327,7 +375,7 @@ def enter_otp_password(request):
             
             return render(request,'user/otp_password.html',{"error1":error,"otp":otp})
         else:
-            # Clear the OTP session
+           
             del request.session['registration_otp']
             
             del request.session['valid_time']
@@ -359,19 +407,18 @@ def password_check(request):
             referral_code=request.session.get('referral')    
             if referral_code:
                     try:
-                        # If signup is using a referral code, credit both users
-                        # Creating/Updating wallet for the new user
+                        
                         wallet, created = Wallet.objects.get_or_create(user=user)
                         
                         WalletTransation.objects.create(
                             wallet=wallet,
                             transaction_type='referral',
-                            amount=1000,  # Amount for the referral reward
+                            amount=1000,  
                         )
                         wallet.balance = F('balance') + 1000
                         wallet.save()
 
-                        # Credit referrer’s wallet
+                       
                         referred_user = UserReferral.objects.get(referral_code=referral_code)
                         referrer_wallet, created = Wallet.objects.get_or_create(user=referred_user.user)
                         WalletTransation.objects.create(
@@ -398,7 +445,7 @@ import hashlib
 
 def generate_referral_code(user_id, salt="my_secret_salt"):
     hash_input = f"{user_id}{salt}".encode()
-    code = hashlib.md5(hash_input).hexdigest()[:6].upper()  # Take first 8 characters
+    code = hashlib.md5(hash_input).hexdigest()[:6].upper()  
     return code
 
 @never_cache
@@ -420,7 +467,7 @@ def index(request):
 @never_cache
 def user_logout(request):
  if request.user.is_authenticated:
-    # if request.method=='POST':
+   
     logout(request)
     return redirect('user_app:index')
  else: 

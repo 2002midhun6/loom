@@ -263,7 +263,7 @@ def verify_payment(request):
                 payment = Payment.objects.get(razorpay_order_id=order_id)
                 order = payment.order
                 
-                # Update payment and order status
+               
                 payment.payment_status = 'success'
                 payment.razorpay_payment_id = payment_id
                 payment.save()
@@ -277,16 +277,16 @@ def verify_payment(request):
                 payment = Payment.objects.get(razorpay_order_id=order_id)
                 order = payment.order
                 
-                # Update payment status to failed
+               
                 payment.payment_status = 'failed'
                 payment.save()
                 
-                # Check if this was the last attempt
+               
                 if payment.payment_attempts >= 2:
                     cancel_failed_payment_order(order)
                     messages.error(request, 'Maximum payment attempts reached. Order has been cancelled.')
                 else:
-                    # Update order status to payment pending
+                    
                     order.order_status = 'payment_pending'
                     order.save()
                     messages.error(request, f'Payment verification failed. You have {2 - payment.payment_attempts} attempts remaining.')
@@ -316,21 +316,21 @@ def cancel_order(request, id):
     if request.method == 'POST':
         order = Order.objects.get(id=id)
         
-        # If order is done by COD then in cancel order money should not be credited to the wallet.
+        
         try:
             payment = Payment.objects.get(order = order)
             payment_method = payment.payment_method
         except Exception as e:
             payment_method = 'cod'
         
-        # Get cancellation reason from form
+        
         cancel_reason = request.POST.get('cancel_reason')
         
         if cancel_reason:
             order.order_status = 'canceled'
             order.cancellation_reason = cancel_reason 
             
-            # If order canceled then available stock is recalculated
+            
             order_items = order.items.all()
             total_price = 0
             for item in order_items:
@@ -340,7 +340,7 @@ def cancel_order(request, id):
                 item.varient.save()
             order.save()
             
-            # Adding money to wallet when cancelling the order.
+            
             if not payment_method=='cod':
                 wallet = Wallet.objects.get(user=request.user)
                 wallet.balance = F('balance') + order.discount
@@ -364,7 +364,7 @@ def return_order(request,id):
         return redirect('admin_app:admin_home')
     if request.user.is_authenticated and request.user.is_block:
         return redirect('user_app:user_logout')
-    print('hello kutta')
+    
     if request.method == 'POST':
         order_item = OrderItems.objects.get(id=id)
         order=order_item.order
@@ -383,50 +383,120 @@ def return_order(request,id):
             messages.error(request, "Return reason is required.")
         print("hhhdicke")
     return redirect('customer_app:item_order', id=order_id)
-def return_confirm(request,item_id,order_id):
-    # if request.user.is_authenticated and request.user.is_staff:
-    #     return redirect('admin_app:admin_home')
+def return_confirm(request, item_id, order_id):
     if request.user.is_authenticated and request.user.is_block:
         return redirect('authentication_app:logout')
     
     if request.method == 'POST':
-
         item = OrderItems.objects.get(id=item_id)
         order = Order.objects.get(id=order_id)
-        items=order.items.all()
-        count=len(items)
-        if order.coupons:
-            amount=order.coupons.discount_amount
-            deducted=amount//count
-
-        else:
-            deducted=0
-        # Adding money to wallet when returning the item.
-        total_price = (item.price * item.quantity)-deducted
-        print(item.price,item.quantity)
-        print(total_price)
-      
-        # getting the user of the order.
-        order = Order.objects.get(id = order_id)
-        user_id = order.user.id
-        user = CustomUser.objects.get(id=user_id)
-        wallet,created = Wallet.objects.get_or_create(user=user)
-        wallet.balance = F('balance') + total_price
-        wallet.save()
-        print(wallet.balance)
         
+        
+        item_subtotal = item.price
+        
+       
+        coupon_deduction = 0
+        if order.coupons:
+            
+            order_subtotal = sum(order_item.price for order_item in order.items.all())
+            
+            
+            total_discount = order_subtotal - order.discount
+            
+            
+            item_proportion = item_subtotal / order_subtotal
+            
+
+            coupon_deduction = total_discount * item_proportion
+        
+        
+        refund_amount = item_subtotal - coupon_deduction
+        
+        refund_amount = max(refund_amount, 0)
+        
+        
+        user = order.user
+        wallet, created = Wallet.objects.get_or_create(user=user)
+        wallet.balance = F('balance') + refund_amount
+        wallet.save()
+        
+       
         wallet_transaction = WalletTransation.objects.create(
-            wallet = wallet,
-            transaction_type = 'refund',
-            amount = total_price,
+            wallet=wallet,
+            transaction_type='refund',
+            amount=refund_amount,
         )
         
+       
         item.return_status = 'returned'
         item.save()
         
-        return redirect('admin_app:show_order',id=order_id)
+        
+        item.varient.stock = F('stock') + item.quantity
+        item.varient.save()
+        
+        
+        item.product.sold_count = F('sold_count') - item.quantity
+        item.product.save()
+        
+        
+        all_items = order.items.all()
+        returned_items = order.items.filter(return_status='returned')
+        
+        if all_items.count() == returned_items.count():
+            order.order_status = 'canceled'
+            order.cancellation_reason = 'All items returned'
+            order.save()
+        
+        messages.success(request, f'Item returned successfully. ₹{refund_amount:.2f} has been credited to your wallet.')
+        return redirect('admin_app:show_order', id=order_id)
     else:
-        return redirect('admin_app:show_order',id=order_id)
+        return redirect('admin_app:show_order', id=order_id)
+
+# def return_confirm(request,item_id,order_id):
+#     # if request.user.is_authenticated and request.user.is_staff:
+#     #     return redirect('admin_app:admin_home')
+#     if request.user.is_authenticated and request.user.is_block:
+#         return redirect('authentication_app:logout')
+    
+#     if request.method == 'POST':
+
+#         item = OrderItems.objects.get(id=item_id)
+#         order = Order.objects.get(id=order_id)
+#         items=order.items.all()
+#         count=len(items)
+#         if order.coupons:
+#             amount=order.coupons.discount_amount
+#             deducted=amount//count
+
+#         else:
+#             deducted=0
+        
+#         total_price = (item.price * item.quantity)-deducted
+#         print(item.price,item.quantity)
+#         print(total_price)
+      
+        
+#         order = Order.objects.get(id = order_id)
+#         user_id = order.user.id
+#         user = CustomUser.objects.get(id=user_id)
+#         wallet,created = Wallet.objects.get_or_create(user=user)
+#         wallet.balance = F('balance') + total_price
+#         wallet.save()
+#         print(wallet.balance)
+        
+#         wallet_transaction = WalletTransation.objects.create(
+#             wallet = wallet,
+#             transaction_type = 'refund',
+#             amount = total_price,
+#         )
+        
+#         item.return_status = 'returned'
+#         item.save()
+        
+#         return redirect('admin_app:show_order',id=order_id)
+#     else:
+#         return redirect('admin_app:show_order',id=order_id)
 @login_required
 def submit_review(request, product_id,order_id):
     if request.user.is_authenticated and request.user.is_staff:
@@ -442,7 +512,7 @@ def submit_review(request, product_id,order_id):
         
         product = get_object_or_404(Product, id=product_id)
         
-        # Save the review
+        
         review = ProductReview(
             user=request.user,
             product=product,

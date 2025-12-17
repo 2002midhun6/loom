@@ -17,10 +17,10 @@ import pytz
 
 
 
-# Create your views here.
+
 def men_product(request):
     kolkata_tz = pytz.timezone('Asia/Kolkata')
-        # Get the current time in Asia/Kolkata timezone
+        
     now = datetime.now(kolkata_tz)
     
     if request.user.is_authenticated and request.user.is_staff:
@@ -28,7 +28,7 @@ def men_product(request):
     if request.user.is_authenticated and request.user.is_block:
         return redirect('user_app:user_logout')
     
-    # Get all products and subcategories for men
+    
     products = Product.objects.filter(category_id=1)
     for i in products:
         if i.offer and i.offer.end_date < now:
@@ -41,7 +41,7 @@ def men_product(request):
              
     sub_category = Sub_Category.objects.filter(category_id=1)
     
-    # Search functionality
+    
     search_query = request.GET.get('search', '')
     if search_query:
         products = products.filter(product_name__icontains=search_query)
@@ -54,7 +54,7 @@ def men_product(request):
                 i.sub_category.offer = None
                 i.sub_category.save()
     
-    # Category filtering
+    
     selected_subcategory = request.GET.get('subcategory')
     if selected_subcategory and selected_subcategory !="None":
         products = products.filter(sub_category_id=selected_subcategory)
@@ -67,18 +67,18 @@ def men_product(request):
                 i.sub_category.offer = None
                 i.sub_category.save()
     
-    # Sorting
-    sort_by = request.GET.get('sort', 'newest')  # Default to newest
+    
+    sort_by = request.GET.get('sort', 'newest')  
     if sort_by == 'newest':
         products = products.order_by('-created_at')
          
-         # Assuming you have a created_at field
+         
     elif sort_by == 'name_asc':
         products = products.order_by('product_name')
     elif sort_by == 'name_desc':
         products = products.order_by('-product_name')
     
-    # Pagination
+    
     page = request.GET.get('page', 1)
     product_paginator = Paginator(products, 8)
     products = product_paginator.get_page(page)
@@ -93,7 +93,7 @@ def men_product(request):
     return render(request, 'user/men.html', context)
 def men_category(request,id):
         kolkata_tz = pytz.timezone('Asia/Kolkata')
-        # Get the current time in Asia/Kolkata timezone
+        
         now = datetime.now(kolkata_tz)
     
         if request.user.is_authenticated and request.user.is_staff:
@@ -118,7 +118,7 @@ def men_category(request,id):
 
 def women_category(request,id):
         kolkata_tz = pytz.timezone('Asia/Kolkata')
-        # Get the current time in Asia/Kolkata timezone
+        
         now = datetime.now(kolkata_tz)
         if request.user.is_authenticated and request.user.is_staff:
                 return redirect('admin_app:admin_home')
@@ -140,7 +140,7 @@ def women_category(request,id):
         return render(request,'user/casual.html',context)
 def women_product(request):
     kolkata_tz = pytz.timezone('Asia/Kolkata')
-        # Get the current time in Asia/Kolkata timezone
+        
     now = datetime.now(kolkata_tz)
                 
     if request.user.is_authenticated and request.user.is_staff:
@@ -148,7 +148,7 @@ def women_product(request):
     if request.user.is_authenticated and request.user.is_block:
         return redirect('user_app:user_logout')
     
-    # Get all products and subcategories for men
+    
     products = Product.objects.filter(category_id=2)
     for i in products:
             if i.offer and i.offer.end_date < now:
@@ -160,12 +160,12 @@ def women_product(request):
                 i.sub_category.save()
     sub_category = Sub_Category.objects.filter(category_id=2)
     
-    # Search functionality
+    
     search_query = request.GET.get('search', '')
     if search_query:
         products = products.filter(product_name__icontains=search_query)
     
-    # Category filtering
+    
     selected_subcategory = request.GET.get('subcategory')
     if selected_subcategory:
         products = products.filter(sub_category_id=selected_subcategory)
@@ -178,16 +178,16 @@ def women_product(request):
                 i.sub_category.offer = None
                 i.sub_category.save()
         
-    # Sorting
-    sort_by = request.GET.get('sort', 'newest')  # Default to newest
+    
+    sort_by = request.GET.get('sort', 'newest')  
     if sort_by == 'newest':
-        products = products.order_by('-created_at')  # Assuming you have a created_at field
+        products = products.order_by('-created_at') 
     elif sort_by == 'name_asc':
         products = products.order_by('product_name')
     elif sort_by == 'name_desc':
         products = products.order_by('-product_name')
     
-    # Pagination
+    
     page = request.GET.get('page', 1)
     product_paginator = Paginator(products, 8)
     products = product_paginator.get_page(page)
@@ -202,7 +202,7 @@ def women_product(request):
     return render(request, 'user/women.html', context)
 def view_product(request,id):
           kolkata_tz = pytz.timezone('Asia/Kolkata')
-        # Get the current time in Asia/Kolkata timezone
+       
           now = datetime.now(kolkata_tz)
           if request.user.is_authenticated and request.user.is_staff:
             return redirect('admin_app:admin_home')
@@ -225,7 +225,7 @@ def view_product(request,id):
           total_stars=Sum('productreview__rating')
     )
 
-    #  total reviews and total stars from the aggregated data
+    
           total_reviews = review_data['total_reviews'] or 0
           total_stars = review_data['total_stars'] or 0
     
@@ -331,7 +331,7 @@ def add_address(request):
                          Address.objects.filter(user=request.user, default=True).update(default=False)
 
 
-            # Redirect to account page upon success
+            
                address_obj=Address(
                         user=request.user,
                         address_type = address_type,
@@ -492,10 +492,10 @@ def generate_invoice_pdf(request, order, order_items, order_details):
     """
     Generate a PDF invoice for an order
     """
-    # Create the HttpResponse object with PDF headers
+    
     buffer = BytesIO()
     
-    # Create the PDF object using ReportLab
+   
     doc = SimpleDocTemplate(
         buffer,
         pagesize=letter,
@@ -505,10 +505,10 @@ def generate_invoice_pdf(request, order, order_items, order_details):
         bottomMargin=72
     )
 
-    # Container for the 'Flowable' objects
+    
     elements = []
     
-    # Styles
+ 
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(
         name='CustomTitle',
@@ -517,34 +517,34 @@ def generate_invoice_pdf(request, order, order_items, order_details):
         spaceAfter=30
     ))
     
-    # Add the invoice header
+   
     elements.append(Paragraph("INVOICE", styles['CustomTitle']))
     elements.append(Paragraph(f"Order #{order.id}", styles['Heading2']))
     elements.append(Paragraph(f"Date: {datetime.now().strftime('%B %d, %Y')}", styles['Normal']))
     elements.append(Spacer(1, 20))
     
-    # Add customer information
+    
     elements.append(Paragraph("Bill To:", styles['Heading3']))
     elements.append(Paragraph(f"{order.user.first_name} {order.user.last_name}", styles['Normal']))
     elements.append(Paragraph(f"Email: {order.user.email}", styles['Normal']))
     elements.append(Paragraph(f"Phone: {order_details.phone}", styles['Normal']))
     elements.append(Spacer(1, 20))
     
-    # Add shipping address
+    
     elements.append(Paragraph("Shipping Address:", styles['Heading3']))
     elements.append(Paragraph(f"{order_details.street_address}", styles['Normal']))
     elements.append(Paragraph(f" {order_details.postal_code}", styles['Normal']))
     elements.append(Spacer(1, 20))
     
-    # Create the items table
+    
     table_data = [
-        ['Product', 'Quantity', 'Price ($)', 'Total ($)']  # Header row
+        ['Product', 'Quantity', 'Price ($)', 'Total ($)'] 
     ]
     
-    # Add items to the table
+    
     total_amount = 0
     for item in order_items:
-        # Calculate item total using item_price if available, otherwise use product's discount_price
+       
         item_price = getattr(item, 'item_price', item.product.discount_price)
         item_total = item.quantity * item_price
         total_amount += item_total
@@ -555,14 +555,14 @@ def generate_invoice_pdf(request, order, order_items, order_details):
             str(item_total)
         ])
     
-    # Add total row
+    
     table_data.append(['', '', 'Subtotal:', str(total_amount)])
     if hasattr(order, 'discount') and order.discount:
         table_data.append(['', '', 'Final Total:', str(order.discount)])
     else:
         table_data.append(['', '', 'Final Total:', str(total_amount)])
     
-    # Create the table
+   
     table = Table(table_data, colWidths=[4*inch, 1*inch, 1.25*inch, 1.25*inch])
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
@@ -580,13 +580,13 @@ def generate_invoice_pdf(request, order, order_items, order_details):
     ]))
     elements.append(table)
     
-    # Add order status and thank you note
+    
     elements.append(Spacer(1, 30))
     elements.append(Paragraph(f"Order Status: {order.order_status.upper()}", styles['Normal']))
     elements.append(Spacer(1, 20))
     elements.append(Paragraph("Thank you for your business!", styles['Heading3']))
     
-    # Build the PDF document
+    
     doc.build(elements)
     
     # Get the value of the BytesIO buffer and write it to the response
@@ -619,40 +619,34 @@ def item_order(request,id):
     if request.GET.get('download_pdf'):
         return generate_invoice_pdf(request, order, order_items, order_details)
             
-        # Handling the form submission to change order status
-  
-        
-        # Calculating total price
+       
     total_price = 0
     item_total_prices = []
     cart_total_with_discount = request.session.get('cart_total_with_discount', None)
 
     if cart_total_with_discount is None:
         print("hello")
-    # Handle the case where no discount is applied
-    # You could, for example, use the original cart total if available
-        discount_price =  total_price# assuming `cart_total` is defined here
+    
+        discount_price =  total_price
     else:
         print("hyy")
-    # Proceed with the discounted total
-
-    # Use cart_total_with_discount as needed
-        discount_price =  cart_total_with_discount # 
+    
+        discount_price =  cart_total_with_discount 
 
         
     for item in order_items:
-            # Check if product has an offer and calculate the item total
+            
             
             item_total = item.quantity * item.product.discount_price
             
                 
-            # Add item total to total order price
+            
             total_price += item_total
-            item_total_prices.append(item_total) # Store each item's total price
+            item_total_prices.append(item_total)
 
     context = {
             'order': order,
-            'order_items': zip(order_items, item_total_prices),  # Pass both items and their individual total prices
+            'order_items': zip(order_items, item_total_prices),  
             'total_price': total_price,
             'discount_price':discount_price,
             'items':order_items,

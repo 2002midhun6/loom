@@ -100,10 +100,10 @@ def sub_category_edit(request,id):
 
     if request.user.is_authenticated and request.user.is_staff:
         kolkata_tz = pytz.timezone('Asia/Kolkata')
-        # Get the current time in Asia/Kolkata timezone
+       
         now = datetime.now(kolkata_tz)
         sub_category = Sub_Category.objects.get(id = id) 
-        offer = Offer.objects.filter(end_date__gt=now) # Retrive data of the catgory
+        offer = Offer.objects.filter(end_date__gt=now) 
         if request.method == 'POST':
             sub_category_name = request.POST.get('sub_category_name')
             sub_category_image = request.FILES.get('sub_category_image')
