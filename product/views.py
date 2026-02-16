@@ -7,6 +7,43 @@ from django.views.decorators.cache import never_cache
 from datetime import datetime
 import pytz
 
+from PIL import Image
+from io import BytesIO
+from django.core.files.uploadedfile import InMemoryUploadedFile
+import sys
+
+def crop_image(image_file, size=(800, 800)):
+    """Crop image to square and resize"""
+    img = Image.open(image_file)
+    
+    # Convert to RGB if necessary
+    if img.mode != 'RGB':
+        img = img.convert('RGB')
+    
+    # Crop to square
+    width, height = img.size
+    min_dim = min(width, height)
+    left = (width - min_dim) / 2
+    top = (height - min_dim) / 2
+    right = (width + min_dim) / 2
+    bottom = (height + min_dim) / 2
+    
+    img = img.crop((left, top, right, bottom))
+    
+    # Resize
+    img = img.resize(size, Image.Resampling.LANCZOS)
+    
+    # Save to BytesIO
+    output = BytesIO()
+    img.save(output, format='JPEG', quality=85)
+    output.seek(0)
+    
+    return InMemoryUploadedFile(
+        output, 'ImageField', 
+        f"{image_file.name.split('.')[0]}.jpg",
+        'image/jpeg', 
+        sys.getsizeof(output), None
+    )
 
 # Create your views here.
 @never_cache
@@ -96,7 +133,13 @@ def add_product(request,id):
                     return render(request, 'admin/add_product.html', context)
  
 
-                
+                if image1:
+                    image1 = crop_image(image1)
+                if image2:
+                    image2 = crop_image(image2)
+                if image3:
+                    image3 = crop_image(image3)
+
                 
                 new_product = Product(
                     product_name = product_name,
