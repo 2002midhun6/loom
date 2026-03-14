@@ -83,6 +83,7 @@ class WalletTransation(models.Model):
         ('refund', 'Refund'),
         ('cancellation', 'Cancellation'),
         ('debited', 'Debited'),
+        ('referral', 'Referral Bonus'),
         
     ]
 

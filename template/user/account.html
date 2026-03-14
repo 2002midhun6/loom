@@ -2,208 +2,520 @@
 {% load static %}
 {% block content %}
 <style>
-    table {
+    :root {
+        --primary-color: #46c8bb;
+        --secondary-color: #6C63FF;
+        --danger-color: #FF4444;
+        --success-color: #00C851;
+        --warning-color: #FFB700;
+        --light-gray: #F8F9FA;
+        --medium-gray: #E9ECEF;
+        --dark-gray: #495057;
+        --white: #FFFFFF;
+        --shadow: 0 2px 10px rgba(0,0,0,0.08);
+        --shadow-hover: 0 4px 20px rgba(0,0,0,0.12);
+    }
+
+    .account-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid var(--light-gray);
+    }
+
+    .page-header h2 {
+        font-size: 2.5rem;
+        color: var(--dark-gray);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+
+    .info-card {
+        background: var(--white);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        border: 1px solid var(--light-gray);
+    }
+
+    .info-card:hover {
+        box-shadow: var(--shadow-hover);
+        transform: translateY(-2px);
+    }
+
+    .info-card h3 {
+        font-size: 1.5rem;
+        color: var(--dark-gray);
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--primary-color);
+        font-weight: 600;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--light-gray);
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: var(--dark-gray);
+    }
+
+    .info-value {
+        color: #6c757d;
+    }
+
+    .referral-code {
+        display: inline-flex;
+        align-items: center;
+        gap: 1rem;
+        background: var(--light-gray);
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+    }
+
+    .referral-code code {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        letter-spacing: 2px;
+    }
+
+    .btn-copy {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-copy:hover {
+        background: var(--secondary-color);
+        transform: scale(1.05);
+    }
+
+    .address-card {
+        background: var(--light-gray);
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
+    .address-card.default {
+        border-left: 4px solid var(--primary-color);
+        background: linear-gradient(135deg, #f5f7ff 0%, #e8ecff 100%);
+    }
+
+    .address-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: var(--primary-color);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .address-text {
+        margin-bottom: 1rem;
+        line-height: 1.6;
+        color: var(--dark-gray);
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .btn {
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(71, 79, 255, 0.3);
+    }
+
+    .btn-outline-primary {
+        background: transparent;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+    }
+
+    .btn-outline-primary:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-outline-danger {
+        background: transparent;
+        color: var(--danger-color);
+        border: 2px solid var(--danger-color);
+    }
+
+    .btn-outline-danger:hover {
+        background: var(--danger-color);
+        color: white;
+    }
+
+    .orders-table {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
     }
 
-    tr:nth-child(odd) {
-        background-color: #f9f9f9; /* Light gray for odd rows */
+    .orders-table thead {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
     }
 
-    tr:nth-child(even) {
-        background-color: #e9e9e9; /* Slightly darker gray for even rows */
+    .orders-table th {
+        padding: 1.25rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
-    tr:hover {
-        background-color: #d1d1d1; /* Highlight color on hover */
+    .orders-table tbody tr {
+        border-bottom: 1px solid var(--light-gray);
+        transition: all 0.3s ease;
     }
 
-    td {
-        padding: 10px;
-        border: 1px solid #ccc;
+    .orders-table tbody tr:hover {
+        background-color: var(--light-gray);
+        transform: scale(1.01);
+    }
+
+    .orders-table td {
+        padding: 1.25rem;
+        color: var(--dark-gray);
+    }
+
+    .status-badge {
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .status-confirmed {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-payment_pending {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-delivered {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-canceled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .alert {
+        padding: 1.25rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        border-left: 4px solid;
+        background: white;
+        box-shadow: var(--shadow);
+    }
+
+    .alert-danger {
+        border-color: var(--danger-color);
+        background: #fff5f5;
+        color: #721c24;
+    }
+
+    @media (max-width: 768px) {
+        .account-container {
+            padding: 1rem;
+        }
+
+        .info-card {
+            padding: 1.25rem;
+        }
+
+        .page-header h2 {
+            font-size: 2rem;
+        }
+
+        .orders-table {
+            font-size: 0.85rem;
+        }
+
+        .orders-table th,
+        .orders-table td {
+            padding: 0.75rem;
+        }
+
+        .btn-group {
+            flex-direction: column;
+        }
     }
 </style>
-    <!-- Breadcrumbs -->
-        <div class="breadcrumbs">
-            <div class="container">
-                <div class="row">
-                    <div class="col">
-                        <p><a href="{% url 'user_app:index' %}">Home</a> / My Account</p>
+
+<!-- Breadcrumbs -->
+<div class="breadcrumbs">
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <p><a href="{% url 'user_app:index' %}">Home</a> / My Account</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="account-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h2>My Account</h2>
+        <p>Manage your profile, addresses, and orders</p>
+    </div>
+
+    {% if attempts_remaining > 0 %}
+    <div class="alert alert-danger">
+        <strong>⚠️ Payment Attention Required!</strong><br>
+        You have <strong>{{ attempts_remaining }}</strong> payment attempt{{ attempts_remaining|pluralize }} remaining for pending orders.
+    </div>
+    {% endif %}
+
+    <!-- Personal Information & Default Address -->
+    <div class="row">
+        <!-- Personal Information -->
+        <div class="col-md-6">
+            <div class="info-card">
+                <h3>👤 Personal Information</h3>
+                <div class="info-item">
+                    <span class="info-label">Username:</span>
+                    <span class="info-value">{{user_details.username}}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">First Name:</span>
+                    <span class="info-value">{{user_details.first_name}}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Last Name:</span>
+                    <span class="info-value">{{user_details.last_name}}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">{{user_details.email}}</span>
+                </div>
+                
+                <div class="referral-code">
+                    <div>
+                        <small style="color: #6c757d;">Your Referral Code:</small><br>
+                        <code>{{ referral_code }}</code>
                     </div>
+                    <button class="btn-copy" onclick="copyReferralCode('{{ referral_code }}')">📋 Copy</button>
+                </div>
+                
+                <div class="btn-group" style="margin-top: 2rem;">
+                    <a href="{% url 'customer_app:edit_user' user_details.id %}" class="btn btn-primary">Edit Profile</a>
                 </div>
             </div>
         </div>
 
-        <!-- Account Section -->
-        <div id="colorlib-account" class="colorlib-section">
-            <div class="container">
-                <div class="row">
-                    <div class="col-sm-12">
-                        <h2 class="heading">My Account</h2>
+        <!-- Default Address -->
+        <div class="col-md-6">
+            <div class="info-card">
+                <h3>📍 Default Shipping Address</h3>
+                {% for address in address %}
+                <div class="address-card default">
+                    <span class="address-badge">Default</span>
+                    <div class="address-text">
+                        <strong>{{address.street_address}}</strong><br>
+                        Postal Code: {{address.postal_code}}<br>
+                        Phone: {{address.phone}}<br>
+                        {% if address.alternative_phone %}
+                        Alt Phone: {{address.alternative_phone}}
+                        {% endif %}
+                    </div>
+                    <div class="btn-group">
+                        <a href="{% url 'customer_app:edit_address' address.id %}" class="btn btn-outline-primary">✏️ Edit</a>
                     </div>
                 </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 
-                <div class="row">
-                    <!-- Personal Information -->
-                    <div class="col-md-6">
-                        <div class="account-wrap">
-                            <h3>Personal Information</h3>
-                            <div class="personal-info">
-                                <p><strong>Name:</strong> {{user_details.username}}</p>
-                                <p><strong>First Name:</strong> {{user_details.first_name}}</p>
-                                <p><strong>Last Name:</strong> {{user_details.last_name}}</p>
-                                <p><strong>Email:</strong> {{user_details.email}}</p>
-                                
-                                <a href="{% url 'customer_app:edit_user' user_details.id %}"><button class="btn btn-primary">Edit Profile</button></a>
-                            </div>
-                        </div>
+    <!-- Other Addresses -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="info-card">
+                <h3>🏠 Other Addresses</h3>
+                {% for address2 in address1 %}
+                <div class="address-card">
+                    <div class="address-text">
+                        <strong>{{address2.street_address}}</strong><br>
+                        Postal Code: {{address2.postal_code}}<br>
+                        Phone: {{address2.phone}}<br>
+                        {% if address2.alternative_phone %}
+                        Alt Phone: {{address2.alternative_phone}}
+                        {% endif %}
                     </div>
-
-                    <!-- Addresses -->
-                    <div class="col-md-6">
-                        <div class="account-wrap">
-                            <h3>My Addresses</h3>
-                            <div class="address-block">
-                                {% for address in address %}
-                                <h4>Default Shipping Address</h4>
-                                <p>
-
-                                   {{address.street_address}}<br>
-                                   {{address.postal_code}}<br>
-                                   {{address.phone}},{{address.alternative_phone}}
-                                    
-                                   
-                                </p>
-                                <div class="address-actions">
-                                    <a href="{% url 'customer_app:edit_address' address.id %}"><button class="btn btn-outline-primary">Edit</button></a>
-                                   
-                                   
-                                </div>
-                                {% endfor %}
-                                
-                            </div>
-                        </div>
+                    <div class="btn-group">
+                        <a href="{% url 'customer_app:edit_address' address2.id %}" class="btn btn-outline-primary">✏️ Edit</a>
+                        <form class="remove_item" action="{% url 'customer_app:remove_address' address2.id %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-danger" type="submit">🗑️ Remove</button>
+                        </form>
                     </div>
                 </div>
-               
-                <div class="col-md-12">
-                    
-                    <div class="account-wrap">
-                   
-                        <h3>My Addresses</h3>
-                        <h4>Other Address</h4>
-                      
-                        <div class="address-block text-center">
-                          
-                            
-                            <table>
-                                <th>Address</th>
-                                <th>Action</th>
-                                {% for address2 in address1 %}
-                                <tr>
-                                    <td>
-                               {{address2.street_address}}<br>
-                               {{address2.postal_code}}<br>
-                               {{address2.phone}},{{address2.alternative_phone}}
+                {% empty %}
+                <p style="text-align: center; color: #6c757d; padding: 2rem;">No additional addresses found.</p>
+                {% endfor %}
+                
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="{% url 'customer_app:add_address'%}" class="btn btn-primary">➕ Add New Address</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order History -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="info-card">
+                <h3>📦 Recent Orders</h3>
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Order Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td><strong>{{forloop.counter}}</strong></td>
+                            <td>{{order.order_date|date:"M d, Y"}}</td>
+                            <td>
+                                <span class="status-badge status-{{order.order_status}}">
+                                    {{order.order_status|title}}
+                                </span>
                             </td>
                             <td>
-
-                            
-                            <div class="address-actions">
-                                <a href="{% url 'customer_app:edit_address' address2.id %}"><button class="btn btn-outline-primary">Edit</button></a>
-                                <form class="remove_item" action="{% url 'customer_app:remove_address' address2.id %}" method="post" >
-                                    {% csrf_token %}
-                                    <button class="btn btn-outline-danger" id="block"  type="submit" >REMOVE</button>
-                                </form>
-                                   
-                               
-                            </div>
-                        </td>
-                            </tr>
-                            {% endfor %}
-                            </table>
-                           
-                            
-                        </div>
-                        <a href="{% url 'customer_app:add_address'%}"><button class="btn btn-primary mt-4">Add New Address</button></a>
-                    </div>
-                </div>
-            </div>
-
-                <!-- Order History -->
-                <div class="row mt-5">
-                    <div class="col-md-12">
-                        <div class="account-wrap">
-                            {% if attempts_remaining > 0 %}
-    <div class="alert alert-danger">
-        You have {{ attempts_remaining }} payment attempt{{ attempts_remaining|pluralize }} remaining.
-    </div>
-{% endif %}
-                            <h3>Recent Orders</h3>
-                            
-                            <table class="table">
-
-                                <thead>
-                                    <tr>
-                                        <th>Order #</th>
-                                        <th>Date</th>
-                                        <th>Status</th>
-                                        
-                                        <th>show details</th>
-                                        
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for order in orders %}
-                                    <tr>
-                                        <td>{{forloop.counter}}</td>
-                                        <td>{{order.order_date}}</td>
-                                        <td>{{order.order_status}}</td>
-                                        
-                                        
-
-
-                                        <td>  <div>
-                                            <a href="{% url 'customer_app:item_order' order.id %}"><button class="btn btn-outline-primary">VIEW</button></a>
-                                        </div></td>
-                                        <td>{% if order.order_status == 'payment_pending' %}
-                                            <a href="{% url 'order_app:retry_payment' order.id %}" class="btn btn-primary">
-                                                Retry Payment
-                                            </a>
-                                        {% endif %}</td>
-                                       
-                                    </tr>
-                                    {% endfor %}
-                                    
-                                </tbody>
-
-                            </table>
-                            
-                        </div>
-                    </div>
-                </div>
+                                <div class="btn-group">
+                                    <a href="{% url 'customer_app:item_order' order.id %}" class="btn btn-outline-primary">👁️ View</a>
+                                    {% if order.order_status == 'payment_pending' %}
+                                    <a href="{% url 'order_app:retry_payment' order.id %}" class="btn btn-primary">
+                                        💳 Retry Payment
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 3rem; color: #6c757d;">
+                                No orders found. Start shopping now!
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
-     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-     {% if messages %}
-     <script>
-      {% for message in messages %}
-          Swal.fire({
-              icon: 'error', // or 'success', 'warning', etc.
-              title: '{{ message.tags|capfirst }}',
-              text: '{{ message }}',
-              confirmButtonText: 'Okay'
-          });
-      {% endfor %}
-  </script>
-{% endif %}
-     <script>
-       
+    </div>
+</div>
 
-        document.querySelectorAll(".remove_item").forEach(form => {
-          form.addEventListener("submit", function(event) {
-              event.preventDefault(); 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{% if messages %}
+<script>
+    {% for message in messages %}
+    Swal.fire({
+        icon: 'error',
+        title: '{{ message.tags|capfirst }}',
+        text: '{{ message }}',
+        confirmButtonText: 'Okay'
+    });
+    {% endfor %}
+</script>
+{% endif %}
+
+<script>
+    // Copy referral code function
+    function copyReferralCode(code) {
+        navigator.clipboard.writeText(code).then(function() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Copied!',
+                text: 'Referral code copied to clipboard',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        });
+    }
+
+    // Remove address confirmation
+    document.querySelectorAll(".remove_item").forEach(form => {
+        form.addEventListener("submit", function(event) {
+            event.preventDefault(); 
             Swal.fire({
                 title: "Are you sure?",
                 text: "You won't be able to revert this!",
@@ -214,20 +526,18 @@
                 confirmButtonText: "Yes, delete it!"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Show success alert after deletion confirmation
                     Swal.fire({
                         title: "Deleted!",
-                        text: "Cart item has been deleted.",
+                        text: "Address has been removed.",
                         icon: "success",
                         timer: 1500,
                         showConfirmButton: false
                     }).then(() => {
-                        // Submit the form after confirmation
                         event.target.submit();
                     });
                 }
             });
         });
-        });
-    </script> 
+    });
+</script>
 {% endblock %}

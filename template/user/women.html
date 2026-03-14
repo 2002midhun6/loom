@@ -2,161 +2,646 @@
 {% load static %}
 {% block content %}
 
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap');
 
-<div class="breadcrumbs">
-	<div class="container">
-		<div class="row">
-			<div class="col">
-				<p class="bread"><span><a href="{% url 'user_app:index' %}">Home</a></span> / <span>Women</span></p>
-			</div>
-		</div>
-	</div>
+  :root {
+    --cream: #faf7f2;
+    --warm-white: #f5f0e8;
+    --charcoal: #1a1a1a;
+    --muted: #7a7068;
+    --accent: #c9a96e;
+    --accent-dark: #a8854a;
+    --rose: #d4a5a5;
+    --border: #e8e0d4;
+    --shadow: rgba(26,26,26,0.08);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    font-family: 'Jost', sans-serif;
+    color: var(--charcoal);
+  }
+
+  /* ── BREADCRUMB ── */
+  .w-breadcrumb {
+    padding: 14px 0;
+    background: var(--warm-white);
+    border-bottom: 1px solid var(--border);
+  }
+  .w-breadcrumb p {
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0;
+  }
+  .w-breadcrumb a {
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .w-breadcrumb a:hover { color: var(--accent); }
+
+  /* ── HERO ── */
+  .w-hero {
+    position: relative;
+    height: 520px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .w-hero-bg {
+    position: absolute;
+    inset: 0;
+    background-image: url({% static 'images/cover-img-1.jpg' %});
+    background-size: cover;
+    background-position: center;
+    transform: scale(1.04);
+    animation: heroZoom 12s ease-out forwards;
+  }
+  @keyframes heroZoom {
+    from { transform: scale(1.08); }
+    to   { transform: scale(1.00); }
+  }
+  .w-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      160deg,
+      rgba(26,26,26,0.55) 0%,
+      rgba(26,26,26,0.25) 50%,
+      rgba(201,169,110,0.18) 100%
+    );
+  }
+  .w-hero-content {
+    position: relative;
+    text-align: center;
+    animation: heroFade 1.2s ease-out both;
+  }
+  @keyframes heroFade {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .w-hero-eyebrow {
+    font-family: 'Jost', sans-serif;
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .w-hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(64px, 10vw, 120px);
+    font-weight: 300;
+    color: #fff;
+    line-height: 0.9;
+    letter-spacing: -0.01em;
+    margin: 0 0 28px;
+  }
+  .w-hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .w-hero-nav {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .w-hero-nav a {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.75);
+    text-decoration: none;
+    padding-bottom: 4px;
+    border-bottom: 1px solid transparent;
+    transition: all 0.25s;
+  }
+  .w-hero-nav a:hover {
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  /* ── FILTER BAR ── */
+  .w-filter-bar {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 18px 0;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 2px 20px var(--shadow);
+  }
+  .w-filter-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .w-filter-bar .search-wrap {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+  }
+  .w-filter-bar input[type="text"] {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 0;
+    padding: 10px 44px 10px 16px;
+    font-family: 'Jost', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--charcoal);
+    background: var(--cream);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .w-filter-bar input:focus { border-color: var(--accent); }
+  .search-btn {
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 44px;
+    background: var(--charcoal);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .search-btn:hover { background: var(--accent); }
+  .search-btn svg { width: 15px; height: 15px; stroke: #fff; fill: none; stroke-width: 2; }
+  .w-filter-bar select {
+    border: 1px solid var(--border);
+    background: var(--cream);
+    padding: 10px 36px 10px 14px;
+    font-family: 'Jost', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--charcoal);
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237a7068'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    transition: border-color 0.2s;
+  }
+  .w-filter-bar select:focus { border-color: var(--accent); }
+  .filter-label {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ── CATEGORIES GRID ── */
+  .w-section-title {
+    text-align: center;
+    padding: 72px 0 48px;
+  }
+  .w-section-title .eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+  .w-section-title h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 5vw, 56px);
+    font-weight: 300;
+    line-height: 1.1;
+    margin: 0;
+    color: var(--charcoal);
+  }
+  .w-section-title h2 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .w-cat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2px;
+    margin-bottom: 2px;
+  }
+  .w-cat-card {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 3/4;
+    cursor: pointer;
+  }
+  .w-cat-card-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    transition: transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+  .w-cat-card:hover .w-cat-card-bg { transform: scale(1.06); }
+  .w-cat-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(26,26,26,0.72) 0%, transparent 55%);
+    transition: opacity 0.4s;
+  }
+  .w-cat-card:hover .w-cat-card-overlay { opacity: 0.85; }
+  .w-cat-card-body {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 32px 28px;
+    transform: translateY(8px);
+    transition: transform 0.4s ease;
+  }
+  .w-cat-card:hover .w-cat-card-body { transform: translateY(0); }
+  .w-cat-card-body h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: #fff;
+    margin: 0 0 16px;
+    letter-spacing: 0.02em;
+  }
+  .w-cat-btn {
+    display: inline-block;
+    padding: 9px 24px;
+    border: 1px solid rgba(255,255,255,0.6);
+    color: #fff;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.3s;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.35s, transform 0.35s, background 0.25s, border-color 0.25s;
+  }
+  .w-cat-card:hover .w-cat-btn {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .w-cat-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* ── PRODUCTS SECTION ── */
+  .w-products-section {
+    background: var(--warm-white);
+    padding: 80px 0 96px;
+  }
+  #products-section { scroll-margin-top: 72px; }
+
+  .w-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .w-product-card {
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.3s;
+    animation: cardReveal 0.5s ease-out both;
+  }
+  @keyframes cardReveal {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .w-product-card:hover { box-shadow: 0 8px 40px rgba(26,26,26,0.12); z-index: 2; }
+
+  .w-product-img-wrap {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 3/4;
+    background: var(--warm-white);
+  }
+  .w-product-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94);
+    display: block;
+  }
+  .w-product-card:hover .w-product-img-wrap img { transform: scale(1.05); }
+
+  .w-product-badge {
+    position: absolute;
+    top: 14px; left: 14px;
+    background: var(--charcoal);
+    color: #fff;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+  }
+  .w-product-badge.sale { background: var(--accent); }
+
+  .w-product-quick {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--charcoal);
+    color: #fff;
+    text-align: center;
+    padding: 13px;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    transform: translateY(100%);
+    transition: transform 0.35s ease;
+    text-decoration: none;
+    display: block;
+  }
+  .w-product-card:hover .w-product-quick { transform: translateY(0); }
+  .w-product-quick:hover { background: var(--accent); color: #fff; }
+
+  .w-product-info {
+    padding: 18px 20px 22px;
+    border-top: 1px solid var(--border);
+  }
+  .w-product-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--charcoal);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 8px;
+    line-height: 1.3;
+    transition: color 0.2s;
+  }
+  .w-product-name:hover { color: var(--accent); }
+  .w-product-price {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .w-price-current {
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--charcoal);
+    letter-spacing: 0.04em;
+  }
+  .w-price-original {
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: line-through;
+    font-weight: 300;
+  }
+  .w-price-tag {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--accent);
+    padding: 3px 8px;
+  }
+
+  /* ── PAGINATION ── */
+  .w-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 56px 0 0;
+  }
+  .w-pagination a, .w-pagination .active-page {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px; height: 38px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--muted);
+    text-decoration: none;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+  .w-pagination a:hover {
+    border-color: var(--charcoal);
+    color: var(--charcoal);
+    background: var(--warm-white);
+  }
+  .w-pagination .active-page {
+    background: var(--charcoal);
+    border-color: var(--charcoal);
+    color: #fff;
+    font-weight: 500;
+  }
+  .w-pagination .pg-arrow {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  /* ── DIVIDER ── */
+  .w-divider {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin: 0 0 56px;
+  }
+  .w-divider::before, .w-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .w-divider span {
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  /* staggered animation delays */
+  .w-product-card:nth-child(1) { animation-delay: 0.05s; }
+  .w-product-card:nth-child(2) { animation-delay: 0.10s; }
+  .w-product-card:nth-child(3) { animation-delay: 0.15s; }
+  .w-product-card:nth-child(4) { animation-delay: 0.20s; }
+  .w-product-card:nth-child(5) { animation-delay: 0.25s; }
+  .w-product-card:nth-child(6) { animation-delay: 0.30s; }
+  .w-product-card:nth-child(7) { animation-delay: 0.35s; }
+  .w-product-card:nth-child(8) { animation-delay: 0.40s; }
+
+  @media (max-width: 767px) {
+    .w-filter-inner { flex-direction: column; gap: 10px; }
+    .w-filter-inner > * { width: 100%; }
+    .w-cat-grid { grid-template-columns: 1fr 1fr; }
+    .w-products-grid { grid-template-columns: 1fr 1fr; }
+    .w-hero { height: 360px; }
+  }
+  @media (max-width: 480px) {
+    .w-cat-grid { grid-template-columns: 1fr; }
+    .w-products-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<!-- BREADCRUMB -->
+<div class="w-breadcrumb">
+  <div class="container">
+    <p class="bread">
+      <a href="{% url 'user_app:index' %}">Home</a>
+      &nbsp;/&nbsp;
+      <span>Women</span>
+    </p>
+  </div>
 </div>
 
-<div class="breadcrumbs-two">
-	<div class="container">
-		<div class="row">
-			<div class="col">
-				<div class="breadcrumbs-img" style="background-image: url({% static 'images/cover-img-1.jpg' %});">
+<!-- HERO -->
+<section class="w-hero">
+  <div class="w-hero-bg" style="background-image: url({% static 'images/cover-img-1.jpg' %});"></div>
+  <div class="w-hero-overlay"></div>
+  <div class="w-hero-content">
+    <p class="w-hero-eyebrow">The Collection</p>
+    <h1>WO<em>MEN</em></h1>
+    <ul class="w-hero-nav">
+      <li><a href="#">New Arrivals</a></li>
+      <li><a href="#">Bestsellers</a></li>
+      <li><a href="#">Sale</a></li>
+    </ul>
+  </div>
+</section>
 
-					<h2>WOMEN</h2>
-				</div>
-				<div class="menu text-center">
-					<p><a href="#">New Arrivals</a>
-							</p>
-				</div>
-			</div>
-		</div>
-	</div>
+<!-- STICKY FILTER BAR -->
+<div class="w-filter-bar">
+  <div class="container">
+    <form method="get" class="w-filter-inner">
+      <span class="filter-label">Filter &amp; Sort</span>
+
+      <div class="search-wrap">
+        <input type="text" placeholder="Search products…"
+               name="search" value="{{ search_query }}">
+        <button class="search-btn" type="submit" aria-label="Search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </div>
+
+      <select name="subcategory" onchange="this.form.submit()">
+        <option value="">All Categories</option>
+        {% for sub in sub_category %}
+          {% if sub.is_listed and sub.category.is_listed %}
+            <option value="{{ sub.id }}"
+                    {% if selected_subcategory == sub.id|stringformat:"s" %}selected{% endif %}>
+              {{ sub.sub_category_name }}
+            </option>
+          {% endif %}
+        {% endfor %}
+      </select>
+
+      <select name="sort" onchange="this.form.submit()">
+        <option value="newest"    {% if sort_by == 'newest'    %}selected{% endif %}>New Arrivals</option>
+        <option value="name_asc"  {% if sort_by == 'name_asc'  %}selected{% endif %}>Name (A–Z)</option>
+        <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>Name (Z–A)</option>
+      </select>
+    </form>
+  </div>
 </div>
-<div class="container mt-4 mb-4">
-    <div class="row">
-        <div class="col-md-12">
-            <!-- Search and Filter Form -->
-            <form method="get" class="form-inline justify-content-between">
-                <div class="row w-100">
-                    <!-- Search -->
-                    <div class="col-md-4">
-                        <div class="input-group">
-                            <input type="text" class="form-control" style="border-radius: 20%;" placeholder="Search products..." 
-                                   name="search" value="{{ search_query }}">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" style="margin-left: 10px;" type="submit">Search</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Category Filter -->
-                    <div class="col-md-4">
-                        <select name="subcategory" class="form-control" onchange="this.form.submit()">
-                            <option value="">All Categories</option>
-                            {% for sub in sub_category %}
-                                {% if sub.is_listed and sub.category.is_listed %}
-                                    <option value="{{ sub.id }}" 
-                                            {% if selected_subcategory == sub.id|stringformat:"s" %}selected{% endif %}>
-                                        {{ sub.sub_category_name }}
-                                    </option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <!-- Sorting -->
-                    <div class="col-md-4">
-                        <select name="sort" class="form-control" onchange="this.form.submit()">
-                            <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>
-                                New Arrivals
-                            </option>
-                            <option value="name_asc" {% if sort_by == 'name_asc' %}selected{% endif %}>
-                                Name (A-Z)
-                            </option>
-                            <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>
-                                Name (Z-A)
-                            </option>
-                        </select>
-                    </div>
-                </div>
-            </form>
-        </div>
+
+<!-- CATEGORY CARDS -->
+<section style="padding: 0 0 80px; background: var(--cream);">
+  <div class="container">
+    <div class="w-section-title">
+      <p class="eyebrow">Shop by Category</p>
+      <h2>Explore <em>Styles</em></h2>
     </div>
-</div>
-<div class="colorlib-featured">
-	<div class="container">
-		<div class="row">
-			{% for sub in sub_category %}
-			{% if  sub.is_listed  and  sub.category.is_listed %}
-			
-			<div class="col-sm-4 text-center">
-				
-				<div class="featured">
-					<div class="featured-img featured-img-2" style="background-image: url({{sub.sub_category_image.url}}); background-size: cover; background-position: center; background-repeat: no-repeat;">
+    <div class="w-cat-grid">
+      {% for sub in sub_category %}
+        {% if sub.is_listed and sub.category.is_listed %}
+        <div class="w-cat-card">
+          <div class="w-cat-card-bg" style="background-image: url({{ sub.sub_category_image.url }});"></div>
+          <div class="w-cat-card-overlay"></div>
+          <div class="w-cat-card-body">
+            <h3>{{ sub.sub_category_name }}</h3>
+            <a href="{% url 'customer_app:women_category' sub.id %}" class="w-cat-btn">Shop Now</a>
+          </div>
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
 
-						<h2 style="color: rgb(47, 36, 82);font-weight: 900;">{{sub.sub_category_name}}</h2>
-						<p><a href="{% url 'customer_app:women_category' sub.id %}" class="btn btn-primary btn-lg">Shop now</a></p>
-					</div>
-				</div>
-			</div>
-			{% endif %}
-			{% endfor %}
-		</div>
-	</div>
-</div>
+<!-- PRODUCTS -->
+<section class="w-products-section" id="products-section">
+  <div class="container">
+    <div class="w-section-title" style="padding-top:0;">
+      <p class="eyebrow">The Edit</p>
+      <h2>All <em>Products</em></h2>
+    </div>
+    <div class="w-divider"><span>&#10022;</span></div>
 
-<div class="colorlib-product">
-	<div class="container">
-		<div class="row">
-			<div class="col-sm-8 offset-sm-2 text-center colorlib-heading colorlib-heading-sm">
-				<h2>View All  Products</h2>
-			</div>
-		</div>
-		<div class="row row-pb-md">
-		{% for i in products %}
-		{% if  i.is_listed  and   i.sub_category.is_listed and   i.category.is_listed %}
-		<div class="col-md-3 col-lg-3 mb-4 text-center">
-			<div class="product-entry border">
-				<a href="{% url 'customer_app:view_product' i.id %}" class="prod-img">
-						<img src="{{i.image1.url}}" class="img-fluid" alt="Free html5 bootstrap 4 template">
-					</a>
-					<div class="desc">
-						<h2><a href="#">{{i.product_name}}</a></h2>
-						{% if i.offer or i.sub_category.offer%}
-                            <h4><del>{{i.price}} Rs</del></h4>
-                            <h4>{{i.discount_price}} Rs</h4>
-                        {% else %}
-                            <h4>{{i.price}} Rs</h4>
-                        {% endif %}
-					</div>
-				</div>
-			</div>
-			{% endif %}
-			{% endfor %}
-			
-			
-		</div> 
-		<div class="text-center">
-			{% if products.has_previous %}
-				<a href="?page={{ products.previous_page_number }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}#products-section">
-					<span style="margin-right: 10px;">&lt;&lt;</span>
-				</a>
-			{% endif %}
-		
-			{% for i in products.paginator.page_range %}
-				<a href="?page={{ i }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}#products-section" 
-				   class="{% if products.number == i %}active-page{% endif %}">
-					<span style="margin: 10px;">{{ i }}</span>
-				</a>
-			{% endfor %}
-		
-			{% if products.has_next %}
-				<a href="?page={{ products.next_page_number }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}#products-section">
-					<span style="margin-left: 10px;">&gt;&gt;</span>
-				</a>
-			{% endif %}
-		</div>
-		<div class="page-btn">
-			
-		</div> 
-	</div>
-</div>
+    <div class="w-products-grid">
+      {% for i in products %}
+        {% if i.is_listed and i.sub_category.is_listed and i.category.is_listed %}
+        <div class="w-product-card">
+          <div class="w-product-img-wrap">
+            <img src="{{ i.image1.url }}" alt="{{ i.product_name }}" loading="lazy">
+            {% if i.offer or i.sub_category.offer %}
+              <span class="w-product-badge sale">Sale</span>
+            {% endif %}
+            <a href="{% url 'customer_app:view_product' i.id %}" class="w-product-quick">View Product</a>
+          </div>
+          <div class="w-product-info">
+            <a href="{% url 'customer_app:view_product' i.id %}" class="w-product-name">{{ i.product_name }}</a>
+            <div class="w-product-price">
+              {% if i.offer or i.sub_category.offer %}
+                <span class="w-price-original">₹{{ i.price }}</span>
+                <span class="w-price-current">₹{{ i.discount_price }}</span>
+                <span class="w-price-tag">Save</span>
+              {% else %}
+                <span class="w-price-current">₹{{ i.price }}</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
 
-{% endblock %} 
+    <!-- PAGINATION -->
+    <nav class="w-pagination" aria-label="Products pagination">
+      {% if products.has_previous %}
+        <a class="pg-arrow"
+           href="?page={{ products.previous_page_number }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}#products-section">
+          &#8592;
+        </a>
+      {% endif %}
+
+      {% for i in products.paginator.page_range %}
+        <a href="?page={{ i }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}#products-section"
+           class="{% if products.number == i %}active-page{% endif %}">
+          {{ i }}
+        </a>
+      {% endfor %}
+
+      {% if products.has_next %}
+        <a class="pg-arrow"
+           href="?page={{ products.next_page_number }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}#products-section">
+          &#8594;
+        </a>
+      {% endif %}
+    </nav>
+  </div>
+</section>
+
+{% endblock %}

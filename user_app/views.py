@@ -263,6 +263,9 @@ def account(request):
             return redirect('user_app:user_logout')
         if not request.user.is_authenticated:
                 return redirect('user_app:user_login')
+        from user.models import UserReferral
+        referral = UserReferral.objects.filter(user=request.user).first()
+        referral_code = referral.referral_code if referral else "Not available"
          
         orders = request.user.orders.all().order_by('-id')
         
@@ -275,6 +278,7 @@ def account(request):
                 'address':address_obj,
                 'address1':address_obj1,
                 'orders':orders,
+                'referral_code': referral_code,
 
         }
         

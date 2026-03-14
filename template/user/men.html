@@ -2,166 +2,763 @@
 {% load static %}
 {% block content %}
 
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@200;300;400;500&family=DM+Serif+Display:ital@0;1&display=swap');
 
-<div class="breadcrumbs">
-	<div class="container">
-		<div class="row">
-			<div class="col">
-				<p class="bread"><span><a href="{% url 'user_app:index' %}">Home</a></span> / <span>Men</span></p>
-			</div>
-		</div>
-	</div>
+  :root {
+    --ink: #0f0f0f;
+    --carbon: #1c1c1c;
+    --graphite: #2e2e2e;
+    --steel: #4a4a4a;
+    --smoke: #8a8a8a;
+    --fog: #c8c8c8;
+    --off-white: #f4f2ee;
+    --paper: #faf9f7;
+    --copper: #b87333;
+    --copper-light: #d4904a;
+    --border-dark: rgba(255,255,255,0.08);
+    --border-light: rgba(0,0,0,0.10);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink);
+  }
+
+  /* ── BREADCRUMB ── */
+  .m-breadcrumb {
+    background: var(--ink);
+    padding: 13px 0;
+    border-bottom: 1px solid var(--border-dark);
+  }
+  .m-breadcrumb p {
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--smoke);
+    margin: 0;
+    font-weight: 300;
+  }
+  .m-breadcrumb a { color: var(--fog); text-decoration: none; transition: color 0.2s; }
+  .m-breadcrumb a:hover { color: var(--copper-light); }
+
+  /* ── HERO ── */
+  .m-hero {
+    position: relative;
+    height: 600px;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    background: var(--ink);
+  }
+  .m-hero-bg {
+    position: absolute;
+    inset: 0;
+    background-image: url({% static 'images/cover-img-1.jpg' %});
+    background-size: cover;
+    background-position: center 30%;
+    opacity: 0.45;
+    animation: mHeroPan 14s ease-out forwards;
+  }
+  @keyframes mHeroPan {
+    from { transform: scale(1.06) translateX(-1%); opacity: 0.3; }
+    to   { transform: scale(1.00) translateX(0);   opacity: 0.45; }
+  }
+  /* noise grain overlay */
+  .m-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 2;
+  }
+  .m-hero-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(10,10,10,0.95) 0%,
+      rgba(10,10,10,0.5) 45%,
+      rgba(10,10,10,0.1) 100%
+    );
+    z-index: 1;
+  }
+  .m-hero-content {
+    position: relative;
+    z-index: 3;
+    padding: 0 0 60px;
+    width: 100%;
+  }
+  .m-hero-tag {
+    display: inline-block;
+    font-size: 9px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--copper-light);
+    border: 1px solid var(--copper);
+    padding: 5px 14px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.8s 0.2s ease-out both;
+  }
+  .m-hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(80px, 14vw, 160px);
+    color: #fff;
+    line-height: 0.88;
+    letter-spacing: 0.04em;
+    margin: 0 0 32px;
+    animation: fadeUp 0.9s 0.35s ease-out both;
+  }
+  .m-hero h1 span {
+    color: var(--copper-light);
+    display: block;
+    font-size: 0.52em;
+    letter-spacing: 0.12em;
+  }
+  .m-hero-links {
+    display: flex;
+    gap: 0;
+    animation: fadeUp 0.9s 0.5s ease-out both;
+  }
+  .m-hero-link {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    padding: 11px 22px;
+    border: 1px solid rgba(255,255,255,0.15);
+    margin-right: -1px;
+    transition: all 0.25s;
+  }
+  .m-hero-link:hover {
+    color: #fff;
+    background: var(--graphite);
+    border-color: var(--graphite);
+  }
+  .m-hero-link.active {
+    background: var(--copper);
+    border-color: var(--copper);
+    color: #fff;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── FILTER BAR ── */
+  .m-filter-bar {
+    background: var(--carbon);
+    border-bottom: 2px solid var(--copper);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 0;
+  }
+  .m-filter-inner {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    height: 54px;
+  }
+  .m-filter-label {
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--copper-light);
+    border-right: 1px solid var(--border-dark);
+    white-space: nowrap;
+    font-weight: 400;
+  }
+  .m-filter-search {
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    position: relative;
+    border-right: 1px solid var(--border-dark);
+  }
+  .m-filter-search input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 0 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    color: #fff;
+    letter-spacing: 0.05em;
+    outline: none;
+  }
+  .m-filter-search input::placeholder { color: var(--steel); }
+  .m-filter-search button {
+    background: var(--copper);
+    border: none;
+    padding: 0 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .m-filter-search button:hover { background: var(--copper-light); }
+  .m-filter-search button svg {
+    width: 15px; height: 15px;
+    stroke: #fff; fill: none; stroke-width: 2;
+  }
+  .m-filter-select-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border-right: 1px solid var(--border-dark);
+  }
+  .m-filter-select-wrap select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    border: none;
+    padding: 0 44px 0 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--fog);
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    outline: none;
+    height: 100%;
+    min-width: 160px;
+  }
+  .m-filter-select-wrap select option { background: var(--carbon); color: #fff; }
+  .m-filter-select-wrap::after {
+    content: '';
+    position: absolute;
+    right: 16px;
+    pointer-events: none;
+    width: 0; height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid var(--smoke);
+  }
+
+  /* ── SECTION HEADER ── */
+  .m-section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 72px 0 44px;
+  }
+  .m-section-header-left .eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--copper);
+    margin-bottom: 12px;
+    display: block;
+  }
+  .m-section-header-left h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(42px, 6vw, 72px);
+    letter-spacing: 0.05em;
+    color: var(--ink);
+    margin: 0;
+    line-height: 0.9;
+  }
+  .m-section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border-light);
+    margin: 0 32px 8px;
+  }
+  .m-section-count {
+    font-size: 11px;
+    color: var(--smoke);
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+    white-space: nowrap;
+  }
+
+  /* ── CATEGORY CARDS ── */
+  .m-cat-strip {
+    background: var(--ink);
+    padding: 0 0 2px;
+    overflow: hidden;
+  }
+  .m-cat-row {
+    display: flex;
+    gap: 2px;
+  }
+  .m-cat-card {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    min-height: 420px;
+    cursor: pointer;
+  }
+  .m-cat-card-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    filter: grayscale(30%);
+    transition: transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94), filter 0.5s;
+  }
+  .m-cat-card:hover .m-cat-card-bg {
+    transform: scale(1.07);
+    filter: grayscale(0%);
+  }
+  .m-cat-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+    transition: background 0.4s;
+  }
+  .m-cat-card:hover .m-cat-card-overlay {
+    background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
+  }
+  .m-cat-card-body {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 30px 28px;
+  }
+  .m-cat-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 64px;
+    color: rgba(255,255,255,0.07);
+    line-height: 1;
+    margin-bottom: -10px;
+    display: block;
+  }
+  .m-cat-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 30px;
+    color: #fff;
+    letter-spacing: 0.06em;
+    display: block;
+    margin-bottom: 16px;
+    line-height: 1;
+  }
+  .m-cat-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    transition: color 0.3s;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.35s, transform 0.35s, color 0.2s;
+  }
+  .m-cat-cta::after {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: var(--copper);
+    transition: width 0.3s;
+  }
+  .m-cat-card:hover .m-cat-cta {
+    opacity: 1;
+    transform: translateY(0);
+    color: var(--copper-light);
+  }
+  .m-cat-card:hover .m-cat-cta::after { width: 40px; }
+
+  /* ── PRODUCT GRID ── */
+  .m-products-section {
+    background: var(--off-white);
+    padding: 0 0 100px;
+  }
+  .m-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2px;
+    background: var(--border-light);
+    outline: 1px solid var(--border-light);
+  }
+  .m-product-card {
+    background: var(--paper);
+    position: relative;
+    overflow: hidden;
+    animation: cardIn 0.6s ease-out both;
+    transition: box-shadow 0.3s;
+  }
+  .m-product-card:hover {
+    box-shadow: 0 12px 48px rgba(0,0,0,0.14);
+    z-index: 2;
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .m-product-card:nth-child(1) { animation-delay: 0.05s; }
+  .m-product-card:nth-child(2) { animation-delay: 0.10s; }
+  .m-product-card:nth-child(3) { animation-delay: 0.15s; }
+  .m-product-card:nth-child(4) { animation-delay: 0.20s; }
+  .m-product-card:nth-child(5) { animation-delay: 0.25s; }
+  .m-product-card:nth-child(6) { animation-delay: 0.30s; }
+  .m-product-card:nth-child(7) { animation-delay: 0.35s; }
+  .m-product-card:nth-child(8) { animation-delay: 0.40s; }
+
+  .m-product-img-wrap {
+    position: relative;
+    aspect-ratio: 4/5;
+    overflow: hidden;
+    background: #e8e4de;
+  }
+  .m-product-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.65s cubic-bezier(0.25,0.46,0.45,0.94);
+    filter: grayscale(8%);
+  }
+  .m-product-card:hover .m-product-img-wrap img {
+    transform: scale(1.06);
+    filter: grayscale(0%);
+  }
+  .m-product-tag {
+    position: absolute;
+    top: 12px; left: 0;
+    background: var(--ink);
+    color: #fff;
+    font-size: 8px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+  }
+  .m-product-tag.sale-tag {
+    background: var(--copper);
+  }
+  .m-product-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10,10,10,0.0);
+    display: flex;
+    align-items: flex-end;
+    transition: background 0.35s;
+  }
+  .m-product-card:hover .m-product-overlay { background: rgba(10,10,10,0.06); }
+  .m-product-view-btn {
+    display: block;
+    width: 100%;
+    background: var(--ink);
+    color: #fff;
+    text-align: center;
+    padding: 13px;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transform: translateY(100%);
+    transition: transform 0.38s cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+  .m-product-card:hover .m-product-view-btn { transform: translateY(0); }
+  .m-product-view-btn:hover { background: var(--copper); color: #fff; }
+
+  .m-product-info {
+    padding: 16px 18px 20px;
+    border-top: 2px solid var(--ink);
+  }
+  .m-product-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--ink);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 10px;
+    line-height: 1.35;
+    transition: color 0.2s;
+  }
+  .m-product-name:hover { color: var(--copper); }
+  .m-price-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .m-price-now {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+  }
+  .m-price-was {
+    font-size: 12px;
+    color: var(--smoke);
+    text-decoration: line-through;
+    font-weight: 300;
+  }
+  .m-sale-pill {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    background: var(--copper);
+    color: #fff;
+    padding: 3px 8px;
+    margin-left: auto;
+  }
+
+  /* ── DIVIDER ── */
+  .m-rule {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .m-rule::before { content: ''; flex: 1; height: 1px; background: var(--border-light); }
+  .m-rule-icon {
+    width: 28px; height: 28px;
+    border: 1px solid var(--copper);
+    transform: rotate(45deg);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .m-rule-icon::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: var(--copper);
+    transform: rotate(0deg);
+  }
+  .m-rule::after { content: ''; flex: 1; height: 1px; background: var(--border-light); }
+
+  /* ── PAGINATION ── */
+  .m-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 56px 0 0;
+  }
+  .m-pagination a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px; height: 42px;
+    border: 1px solid var(--border-light);
+    background: #fff;
+    font-size: 12px;
+    color: var(--steel);
+    text-decoration: none;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+  }
+  .m-pagination a:hover {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+  .m-pagination .m-pg-active {
+    background: var(--copper);
+    border-color: var(--copper);
+    color: #fff;
+    font-weight: 500;
+  }
+  .m-pagination .m-pg-arrow {
+    font-size: 16px;
+    color: var(--smoke);
+    background: transparent;
+    border-color: transparent;
+  }
+  .m-pagination .m-pg-arrow:hover { background: var(--graphite); border-color: var(--graphite); color: #fff; }
+
+  @media (max-width: 767px) {
+    .m-filter-inner { flex-direction: column; height: auto; padding: 12px 0; gap: 0; }
+    .m-filter-label { display: none; }
+    .m-filter-search, .m-filter-select-wrap { width: 100%; border-right: none; border-bottom: 1px solid var(--border-dark); min-height: 48px; }
+    .m-cat-row { flex-direction: column; }
+    .m-cat-card { min-height: 280px; }
+    .m-products-grid { grid-template-columns: 1fr 1fr; }
+    .m-hero { height: 400px; }
+    .m-hero h1 { font-size: 72px; }
+  }
+  @media (max-width: 480px) {
+    .m-products-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<!-- BREADCRUMB -->
+<div class="m-breadcrumb">
+  <div class="container">
+    <p>
+      <a href="{% url 'user_app:index' %}">Home</a>
+      &nbsp;/&nbsp;
+      Men
+    </p>
+  </div>
 </div>
 
-<div class="breadcrumbs-two">
-	<div class="container">
-		<div class="row">
-			<div class="col">
-				<div class="breadcrumbs-img" style="background-image: url({% static 'images/cover-img-1.jpg' %});">
-
-					<h2>Men's</h2>
-				</div>
-				<div class="menu text-center">
-					<p><a href="#">New Arrivals</a>
-							</p>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
-<div class="container mt-4 mb-4">
-    <div class="row">
-        <div class="col-md-12">
-            <!-- Search and Filter Form -->
-            <form method="get" class="form-inline justify-content-between">
-                <div class="row w-100">
-                    <!-- Search -->
-                    <div class="col-md-4">
-                        <div class="input-group">
-                            <input type="text" class="form-control" style="border-radius: 20%;" placeholder="Search products..." 
-                                   name="search" value="{{ search_query }}">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" style="margin-left: 10px;" type="submit">Search</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Category Filter -->
-                    <div class="col-md-4">
-                        <select name="subcategory" class="form-control" onchange="this.form.submit()">
-                            <option value="">All Categories</option>
-                            {% for sub in sub_category %}
-                                {% if sub.is_listed and sub.category.is_listed %}
-                                    <option value="{{ sub.id }}" 
-                                            {% if selected_subcategory == sub.id|stringformat:"s" %}selected{% endif %}>
-                                        {{ sub.sub_category_name }}
-                                    </option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <!-- Sorting -->
-                    <div class="col-md-4">
-                        <select name="sort" class="form-control" onchange="this.form.submit()">
-                            <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>
-                                New Arrivals
-                            </option>
-                            <option value="name_asc" {% if sort_by == 'name_asc' %}selected{% endif %}>
-                                Name (A-Z)
-                            </option>
-                            <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>
-                                Name (Z-A)
-                            </option>
-                        </select>
-                    </div>
-                </div>
-            </form>
-        </div>
+<!-- HERO -->
+<section class="m-hero">
+  <div class="m-hero-bg"></div>
+  <div class="m-hero-gradient"></div>
+  <div class="m-hero-content">
+    <div class="container">
+      <div class="m-hero-tag">New Season — 2026</div>
+      <h1>
+        <span>The</span>
+        Men's Edit
+      </h1>
+      <div class="m-hero-links">
+        <!-- <a href="#" class="m-hero-link active">New Arrivals</a>
+        <a href="#" class="m-hero-link">Bestsellers</a>
+        <a href="#" class="m-hero-link">Essentials</a>
+        <a href="#" class="m-hero-link">Sale</a> -->
+      </div>
     </div>
-</div>
-<div class="colorlib-featured">
-	<div class="container">
-		<div class="row">
-			{% for sub in sub_category %}
-			
-			{% if  sub.is_listed  and  sub.category.is_listed %}
-           
-			<div class="col-sm-4 text-center">
-				
-				<div class="featured">
-					<div class="featured-img featured-img-2" style="background-image: url({{sub.sub_category_image.url}}); background-size: cover; background-position: center; background-repeat: no-repeat;">
+  </div>
+</section>
 
-						<h2 style="color: rgb(47, 36, 82);font-weight: 900;">{{sub.sub_category_name}}</h2>
-						<p><a href="{% url 'customer_app:men_category' sub.id %}" class="btn btn-primary btn-lg">Shop now</a></p>
-					</div>
-				</div>
-			</div>
-			
-			
-			{% endif %}
+<!-- FILTER BAR -->
+<div class="m-filter-bar">
+  <div class="container" style="padding: 0 15px;">
+    <form method="get" class="m-filter-inner">
+      <span class="m-filter-label">Refine</span>
 
-			{% endfor %}
-		</div>
-	</div>
-</div>
+      <div class="m-filter-search">
+        <input type="text" placeholder="Search products…"
+               name="search" value="{{ search_query }}">
+        <button type="submit" aria-label="Search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </div>
 
-<div class="colorlib-product">
-	<div class="container">
-		<div class="row">
-			<div class="col-sm-8 offset-sm-2 text-center colorlib-heading colorlib-heading-sm">
-				<h2>View All  Products</h2>
-			</div>
-		</div>
-		<div class="row row-pb-md">
-		{% for i in products %}
-		{% if  i.is_listed  and   i.sub_category.is_listed and   i.category.is_listed %}
-		<div class="col-md-3 col-lg-3 mb-4 text-center">
-			<div class="product-entry border">
-				<a href="{% url 'customer_app:view_product' i.id %}" class="prod-img">
-						<img src="{{i.image1.url}}" class="img-fluid" alt="Free html5 bootstrap 4 template">
-					</a>
-					<div class="desc">
-						<h2><a href="#">{{i.product_name}}</a></h2>
-							
-						{% if i.offer or i.sub_category.offer%}
-                            <h4><del>{{i.price}} Rs</del></h4>
-                            <h4>{{i.discount_price}} Rs</h4>
-                        {% else %}
-                            <h4>{{i.price}} Rs</h4>
-                        {% endif %}
-						
-					</div>
-				</div>
-			</div>
-			{% endif %}
-			{% endfor %}
-			
-		</div> 
-		<div class="text-center">
-			{% if products.has_previous %}
-				<a href="?page={{ products.previous_page_number }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}#products-section">
-					<span style="margin-right: 10px;">&lt;&lt;</span>
-				</a>
-			{% endif %}
-		
-			{% for i in products.paginator.page_range %}
-				<a href="?page={{ i }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}#products-section" 
-				   class="{% if products.number == i %}active-page{% endif %}">
-					<span style="margin: 10px;">{{ i }}</span>
-				</a>
-			{% endfor %}
-		
-			{% if products.has_next %}
-				<a href="?page={{ products.next_page_number }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}#products-section">
-					<span style="margin-left: 10px;">&gt;&gt;</span>
-				</a>
-			{% endif %}
-		</div>
-		<div class="page-btn">
-			
-		</div> 
-	</div>
+      <div class="m-filter-select-wrap">
+        <select name="subcategory" onchange="this.form.submit()">
+          <option value="">All Categories</option>
+          {% for sub in sub_category %}
+            {% if sub.is_listed and sub.category.is_listed %}
+              <option value="{{ sub.id }}"
+                      {% if selected_subcategory == sub.id|stringformat:"s" %}selected{% endif %}>
+                {{ sub.sub_category_name }}
+              </option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="m-filter-select-wrap">
+        <select name="sort" onchange="this.form.submit()">
+          <option value="newest"    {% if sort_by == 'newest'    %}selected{% endif %}>New Arrivals</option>
+          <option value="name_asc"  {% if sort_by == 'name_asc'  %}selected{% endif %}>Name (A–Z)</option>
+          <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>Name (Z–A)</option>
+        </select>
+      </div>
+    </form>
+  </div>
 </div>
 
-{% endblock %} 
+<!-- CATEGORY STRIP -->
+<section class="m-cat-strip">
+  <div class="m-cat-row">
+    {% for sub in sub_category %}
+      {% if sub.is_listed and sub.category.is_listed %}
+      <div class="m-cat-card">
+        <div class="m-cat-card-bg" style="background-image: url({{ sub.sub_category_image.url }});"></div>
+        <div class="m-cat-card-overlay"></div>
+        <div class="m-cat-card-body">
+          <span class="m-cat-number">0{{ forloop.counter }}</span>
+          <span class="m-cat-name">{{ sub.sub_category_name }}</span>
+          <a href="{% url 'customer_app:men_category' sub.id %}" class="m-cat-cta">
+            Shop Now
+          </a>
+        </div>
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section class="m-products-section" id="products-section">
+  <div class="container">
+    <div class="m-section-header">
+      <div class="m-section-header-left">
+        <span class="eyebrow">The Collection</span>
+        <h2>All Products</h2>
+      </div>
+      <div class="m-section-line"></div>
+      <div class="m-section-count">
+        Page {{ products.number }} of {{ products.paginator.num_pages }}
+      </div>
+    </div>
+
+    <div class="m-rule">
+      <div class="m-rule-icon"></div>
+    </div>
+
+    <div class="m-products-grid">
+      {% for i in products %}
+        {% if i.is_listed and i.sub_category.is_listed and i.category.is_listed %}
+        <div class="m-product-card">
+          <div class="m-product-img-wrap">
+            <img src="{{ i.image1.url }}" alt="{{ i.product_name }}" loading="lazy">
+            {% if i.offer or i.sub_category.offer %}
+              <span class="m-product-tag sale-tag">Sale</span>
+            {% else %}
+              <span class="m-product-tag">New</span>
+            {% endif %}
+            <div class="m-product-overlay">
+              <a href="{% url 'customer_app:view_product' i.id %}" class="m-product-view-btn">
+                View Product
+              </a>
+            </div>
+          </div>
+          <div class="m-product-info">
+            <a href="{% url 'customer_app:view_product' i.id %}" class="m-product-name">
+              {{ i.product_name }}
+            </a>
+            <div class="m-price-row">
+              {% if i.offer or i.sub_category.offer %}
+                <span class="m-price-was">₹{{ i.price }}</span>
+                <span class="m-price-now">₹{{ i.discount_price }}</span>
+                <span class="m-sale-pill">Save</span>
+              {% else %}
+                <span class="m-price-now">₹{{ i.price }}</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- PAGINATION -->
+    <nav class="m-pagination" aria-label="Products pagination">
+      {% if products.has_previous %}
+        <a class="m-pg-arrow"
+           href="?page={{ products.previous_page_number }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}#products-section">
+          &#8592;
+        </a>
+      {% endif %}
+
+      {% for i in products.paginator.page_range %}
+        <a href="?page={{ i }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}#products-section"
+           class="{% if products.number == i %}m-pg-active{% endif %}">
+          {{ i }}
+        </a>
+      {% endfor %}
+
+      {% if products.has_next %}
+        <a class="m-pg-arrow"
+           href="?page={{ products.next_page_number }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}#products-section">
+          &#8594;
+        </a>
+      {% endif %}
+    </nav>
+  </div>
+</section>
+
+{% endblock %}

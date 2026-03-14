@@ -9,12 +9,15 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import environ
 from pathlib import Path
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+env = environ.Env()
+# This is the reliable way — explicitly point to .env next to manage.py
+env.read_env(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -96,18 +99,27 @@ WSGI_APPLICATION = 'loom.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'loom',
+#         'USER': 'loomuser',
+#         'PASSWORD': 'strongpassword',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'loom',
-        'USER': 'loomuser',
-        'PASSWORD': 'strongpassword',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),
+        'PORT': env('DB_PORT'),
     }
 }
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -185,8 +197,11 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'midhunbrototype03@gmail.com' # Replace with your Gmail address
-EMAIL_HOST_PASSWORD = 'ijnq ntdo rowe ywtp'  # Replace with the generated app password
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+# EMAIL_HOST_USER = 'midhunbrototype03@gmail.com' # Replace with your Gmail address
+# EMAIL_HOST_PASSWORD = 'ijnq ntdo rowe ywtp' 
+#  # Replace with the generated app password
 # Ensure email is required for signup
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
@@ -203,11 +218,13 @@ SOCIALACCOUNT_PIPELINE = (
     'social_core.pipeline.social_auth.auth_allowed',
     'social_core.pipeline.social_auth.social_user',
     'social_core.pipeline.user.get_username',
-    'user.pipelines.save_user_details',  # Add your custom pipeline here
+    'user.pipelines.save_user_details', 
     'social_core.pipeline.user.create_user',
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
 )
-RAZORPAY_KEY_ID ='rzp_test_edILj9JBaY8yUr'
-RAZORPAY_KEY_SECRET ='168kdvOyy3oMMoT7ew2ygm8i'
+# RAZORPAY_KEY_ID = 'rzp_test_SOEJFz83hBoQtj'
+# RAZORPAY_KEY_SECRET = '7pDwdFgIxx1KTddcJl8caN38'
+RAZORPAY_KEY_ID = env('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = env('RAZORPAY_KEY_SECRET')

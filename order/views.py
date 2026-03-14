@@ -168,11 +168,11 @@ def order_complete(request):
                         return render(request, 'user/razorpay_payment.html', context)
             
             except Exception as e:
-                messages.error(request, f"Error processing payment: {e}")
-        return redirect('cart_app:checkout')
+                messages.error(request, f"Error processing paymentttt: {e}")
+        return redirect('cart_app:checkout', cart_id=cart_id)
     except Exception as e:
         messages.error(request, f"Error processing payment: {e}")
-        return redirect('cart_app:checkout')
+        return redirect('cart_app:checkout', cart_id=cart_id)
 def retry_payment(request, order_id):
     if request.user.is_authenticated and request.user.is_staff:
         return redirect('admin_app:admin_home')

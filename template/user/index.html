@@ -1,227 +1,702 @@
 {% load static %}
-
 <!DOCTYPE HTML>
-<html>
-	<head>
-	<title>LOOM</title>
-   <meta charset="utf-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>LOOM</title>
 
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@200;300;400;500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 
+  <!-- Existing stylesheets -->
+  <link rel="stylesheet" href="{% static 'css/animate.css' %}">
+  <link rel="stylesheet" href="{% static 'css/icomoon.css' %}">
+  <link rel="stylesheet" href="{% static 'css/ionicons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/magnific-popup.css' %}">
+  <link rel="stylesheet" href="{% static 'css/flexslider.css' %}">
+  <link rel="stylesheet" href="{% static 'css/owl.carousel.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/owl.theme.default.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/bootstrap-datepicker.css' %}">
+  <link rel="stylesheet" href="{% static 'fonts/flaticon/font/flaticon.css' %}">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@200;300;400;500&family=DM+Serif+Display:ital@0;1&display=swap');
 
+    :root {
+      --ink:          #0f0f0f;
+      --carbon:       #1c1c1c;
+      --graphite:     #2e2e2e;
+      --steel:        #4a4a4a;
+      --smoke:        #8a8a8a;
+      --fog:          #c8c8c8;
+      --off-white:    #f4f2ee;
+      --paper:        #faf9f7;
+      --copper:       #b87333;
+      --copper-light: #d4904a;
+      --border-dark:  rgba(255,255,255,0.08);
+      --border-light: rgba(0,0,0,0.10);
+      --nav-h:        60px;
+    }
 
-   <link href="{% static 'fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700' %}" rel="stylesheet">
-   <link href="{% static 'fonts.googleapis.com/css?family=Rokkitt:100,300,400,700' %}" rel="stylesheet">
-   
-   <!-- Animate.css -->
-   <link rel="stylesheet" href="{% static 'css/animate.css' %}">
-   <!-- Icomoon Icon Fonts-->
-   <link rel="stylesheet" href="{% static 'css/icomoon.css' %}">
-   <!-- Ion Icon Fonts-->
-   <link rel="stylesheet" href="{% static 'css/ionicons.min.css' %}">
-   <!-- Bootstrap  -->
-   <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-   
-   <!-- Magnific Popup -->
-   <link rel="stylesheet" href="{% static 'css/magnific-popup.css' %}">
-   
-   <!-- Flexslider  -->
-   <link rel="stylesheet" href="{% static 'css/flexslider.css' %}">
-   
-   <!-- Owl Carousel -->
-   <link rel="stylesheet" href="{% static 'css/owl.carousel.min.css' %}">
-   <link rel="stylesheet" href="{% static 'css/owl.theme.default.min.css' %}">
-   
-   <!-- Date Picker -->
-   <link rel="stylesheet" href="{% static 'css/bootstrap-datepicker.css' %}">
-   <!-- Flaticons  -->
-   <link rel="stylesheet" href="{% static 'fonts/flaticon/font/flaticon.css' %}">
-   
-   <!-- Theme style  -->
-   <link rel="stylesheet" href="{% static 'css/style.css' %}">
-	</head>
-	<body>
-		
-	<div class="colorlib-loader"></div>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-	<div id="page">
-		<nav class="colorlib-nav" role="navigation">
-			<div class="top-menu">
-				<div class="container">
-					<div class="row">
-						<div class="col-sm-7 col-md-9">
-							<div id="colorlib-logo"><a href="index.html">Footwear</a></div>
-							
-								
-							
-							
-							     
-						</div>
-						
-		         </div>
-					<div class="row">
+    body {
+      background: var(--paper);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--ink);
+      overflow-x: hidden;
+    }
 
-						<div class="col-sm-12 text-left menu-1">
-							<ul>
-								<li class="active"><a href="{% url 'user_app:index' %}">Home</a></li>
-								
-								<li >
-								 <a href="{% url 'customer_app:men_product' %}">Men</a>
-									 
-								</li>
-								<li><a href="{% url 'customer_app:women_product' %}">Women</a></li>
-								<li><a href="{% url 'customer_app:account' %}">Account</a></li>
-								<li><a href="{% url 'wishlist_app:wishlist_view'%}">Wishlist</a></li>
-								<li>{% if request.user.is_authenticated %}
-									<form class="nav-link" action="{% url 'user_app:user_logout' %}" method="post" style="display: inline;">
-										{% csrf_token %}
-										<button type="submit"  style="background-color: transparent; color: black; border: none;margin-left: -.35rem;">LOGOUT</button>
-									</form>
-									{% else %}
-										<a class="nav-link " style="display: inline;" href="{% url 'user_app:user_login' %}"> lOGIN</a>
-									{% endif %}</li>
-								
-								
-								<li class="cart"><a href="{% url 'cart_app:view_cart' %}"><i class="icon-shopping-cart"></i> Cart </a></li>
-								<li><a href="{% url 'customer_app:view_wallet' %}">Wallet</a></li>
-							</ul>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="sale">
-				<div class="container">
-					<div class="row">
-						<div class="col-sm-8 offset-sm-2 text-center">
-							<div class="row">
-								<div class="owl-carousel2">
-									<div class="item">
-										<div class="col">
-											<h3><a href="#">2% off (Almost) Everything! Use Code: Summer Sale</a></h3>
-										</div>
-									</div>
-									<div class="item">
-										<div class="col">
-											<h3><a href="#">Our biggest sale yet 50% off all summer shoes</a></h3>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</nav>
-			{% block content %}
-			{% endblock content %}
-		<footer id="colorlib-footer" role="contentinfo">
-			<div class="container">
-				<div class="row row-pb-md">
-					<div class="col footer-col colorlib-widget">
-						<h4>About Footwear</h4>
-						<p>Even the all-powerful Pointing has no control about the blind texts it is an almost unorthographic life</p>
-						<p>
-							<ul class="colorlib-social-icons">
-								<li><a href="#"><i class="icon-twitter"></i></a></li>
-								<li><a href="#"><i class="icon-facebook"></i></a></li>
-								<li><a href="#"><i class="icon-linkedin"></i></a></li>
-								<li><a href="#"><i class="icon-dribbble"></i></a></li>
-							</ul>
-						</p>
-					</div>
-					<div class="col footer-col colorlib-widget">
-						<h4>Customer Care</h4>
-						<p>
-							<ul class="colorlib-footer-links">
-								<li><a href="#">Contact</a></li>
-								<li><a href="#">Returns/Exchange</a></li>
-								<li><a href="#">Gift Voucher</a></li>
-								<li><a href="#">Wishlist</a></li>
-								<li><a href="#">Special</a></li>
-								<li><a href="#">Customer Services</a></li>
-								<li><a href="#">Site maps</a></li>
-							</ul>
-						</p>
-					</div>
-					<div class="col footer-col colorlib-widget">
-						<h4>Information</h4>
-						<p>
-							<ul class="colorlib-footer-links">
-								<li><a href="#">About us</a></li>
-								<li><a href="#">Delivery Information</a></li>
-								<li><a href="#">Privacy Policy</a></li>
-								<li><a href="#">Support</a></li>
-								<li><a href="#">Order Tracking</a></li>
-							</ul>
-						</p>
-					</div>
+    /* ── PAGE LOADER ── */
+    #loom-loader {
+      position: fixed;
+      inset: 0;
+      background: var(--ink);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.55s ease, visibility 0.55s ease;
+    }
+    #loom-loader.hidden { opacity: 0; visibility: hidden; }
+    .loom-loader-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .loom-loader-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 56px;
+      color: #fff;
+      letter-spacing: 0.18em;
+      line-height: 1;
+    }
+    .loom-loader-logo span { color: var(--copper-light); }
+    .loom-loader-bar {
+      width: 120px;
+      height: 1px;
+      background: var(--graphite);
+      position: relative;
+      overflow: hidden;
+    }
+    .loom-loader-bar::after {
+      content: '';
+      position: absolute;
+      left: -100%;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--copper);
+      animation: loadBar 0.9s ease-out forwards;
+    }
+    @keyframes loadBar {
+      from { left: -100%; }
+      to   { left: 0; }
+    }
 
-					<div class="col footer-col">
-						<h4>News</h4>
-						<ul class="colorlib-footer-links">
-							<li><a href="blog.html">Blog</a></li>
-							<li><a href="#">Press</a></li>
-							<li><a href="#">Exhibitions</a></li>
-						</ul>
-					</div>
+    /* ── ANNOUNCEMENT STRIP ── */
+    .l-announce {
+      background: var(--copper);
+      padding: 9px 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .l-announce-track {
+      display: flex;
+      gap: 0;
+      white-space: nowrap;
+      animation: marquee 22s linear infinite;
+    }
+    .l-announce-track span {
+      font-size: 9px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: #fff;
+      padding: 0 40px;
+      font-weight: 400;
+    }
+    .l-announce-track span::before {
+      content: '✦';
+      margin-right: 40px;
+      opacity: 0.6;
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
 
-					<div class="col footer-col">
-						<h4>Contact Information</h4>
-						<ul class="colorlib-footer-links">
-							<li>291 South 21th Street, <br> Suite 721 New York NY 10016</li>
-							<li><a href="tel://1234567920">+ 1235 2355 98</a></li>
-							<li><a href="mailto:info@yoursite.com">info@yoursite.com</a></li>
-							<li><a href="#">yoursite.com</a></li>
-						</ul>
-					</div>
-				</div>
-			</div>
-			<div class="copy">
-				<div class="row">
-					<div class="col-sm-12 text-center">
-						<p>
-							<span><!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="icon-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
-<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. --></span> 
-							<span class="block">Demo Images: <a href="http://unsplash.co/" target="_blank">Unsplash</a> , <a href="http://pexels.com/" target="_blank">Pexels.com</a></span>
-						</p>
-					</div>
-				</div>
-			</div>
-		</footer>
-	</div>
+    /* ── NAV ── */
+    .l-nav {
+      background: var(--ink);
+      position: sticky;
+      top: 0;
+      z-index: 500;
+      border-bottom: 1px solid var(--border-dark);
+      height: var(--nav-h);
+    }
+    .l-nav-inner {
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0;
+    }
 
-	<div class="gototop js-top">
-		<a href="#" class="js-gotop"><i class="ion-ios-arrow-up"></i></a>
-	</div>
+    /* Logo */
+    .l-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 32px;
+      color: #fff;
+      letter-spacing: 0.2em;
+      text-decoration: none;
+      flex-shrink: 0;
+      line-height: 1;
+      position: relative;
+    }
+    .l-logo::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: var(--copper);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+    .l-logo:hover { color: #fff; text-decoration: none; }
+    .l-logo:hover::after { transform: scaleX(1); }
 
+    /* Nav links */
+    .l-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      list-style: none;
+      height: 100%;
+    }
+    .l-nav-links li { height: 100%; display: flex; align-items: center; }
+    .l-nav-links a,
+    .l-nav-links button {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      padding: 0 18px;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--fog);
+      text-decoration: none;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: color 0.2s, background 0.2s;
+      white-space: nowrap;
+      position: relative;
+    }
+    .l-nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 18px; right: 18px;
+      height: 2px;
+      background: var(--copper);
+      transform: scaleX(0);
+      transition: transform 0.25s ease;
+    }
+    .l-nav-links a:hover,
+    .l-nav-links button:hover { color: #fff; }
+    .l-nav-links a:hover::after { transform: scaleX(1); }
+    .l-nav-links a.l-active { color: #fff; }
+    .l-nav-links a.l-active::after { transform: scaleX(1); }
 
-	<!-- jQuery -->
+    /* Cart badge */
+    .l-cart-link {
+      position: relative;
+    }
+    .l-cart-link i { font-size: 16px; }
+
+    /* Divider between link groups */
+    .l-nav-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--border-dark);
+      margin: 0 4px;
+    }
+
+    /* Right side icons */
+    .l-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      list-style: none;
+      height: 100%;
+    }
+
+    /* Mobile hamburger */
+    .l-hamburger {
+      display: none;
+      background: transparent;
+      border: none;
+      padding: 0 16px;
+      cursor: pointer;
+      height: var(--nav-h);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .l-hamburger span {
+      display: block;
+      width: 22px;
+      height: 1px;
+      background: var(--fog);
+      transition: all 0.3s;
+    }
+
+    /* Mobile drawer */
+    .l-drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 300px;
+      background: var(--carbon);
+      z-index: 600;
+      transform: translateX(100%);
+      transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+      display: flex;
+      flex-direction: column;
+      padding: 60px 32px 40px;
+    }
+    .l-drawer.open { transform: translateX(0); }
+    .l-drawer-close {
+      position: absolute;
+      top: 20px; right: 20px;
+      background: transparent;
+      border: none;
+      color: var(--smoke);
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+    .l-drawer-close:hover { color: #fff; }
+    .l-drawer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      color: #fff;
+      letter-spacing: 0.2em;
+      margin-bottom: 40px;
+    }
+    .l-drawer-logo span { color: var(--copper-light); }
+    .l-drawer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .l-drawer-links a,
+    .l-drawer-links button {
+      display: block;
+      padding: 14px 0;
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--fog);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border-dark);
+      background: transparent;
+      border-left: none; border-right: none; border-top: none;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: color 0.2s, padding-left 0.2s;
+    }
+    .l-drawer-links a:hover,
+    .l-drawer-links button:hover { color: var(--copper-light); padding-left: 8px; }
+    .l-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 599;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.4s, visibility 0.4s;
+    }
+    .l-overlay.open { opacity: 1; visibility: visible; }
+
+    /* ── MAIN CONTENT ── */
+    #l-main { min-height: 60vh; }
+
+    /* ── FOOTER ── */
+    .l-footer {
+      background: var(--ink);
+      color: var(--smoke);
+      padding: 80px 0 0;
+      border-top: 1px solid var(--border-dark);
+    }
+    .l-footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
+      gap: 48px;
+      padding-bottom: 64px;
+      border-bottom: 1px solid var(--border-dark);
+    }
+    .l-footer-brand .l-footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 38px;
+      color: #fff;
+      letter-spacing: 0.18em;
+      display: block;
+      margin-bottom: 16px;
+      line-height: 1;
+    }
+    .l-footer-brand .l-footer-logo span { color: var(--copper-light); }
+    .l-footer-brand p {
+      font-size: 12px;
+      line-height: 1.8;
+      color: var(--steel);
+      font-weight: 300;
+      max-width: 260px;
+      margin-bottom: 24px;
+    }
+    .l-social-links {
+      display: flex;
+      gap: 8px;
+      list-style: none;
+    }
+    .l-social-links a {
+      width: 34px; height: 34px;
+      border: 1px solid var(--border-dark);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--smoke);
+      font-size: 13px;
+      text-decoration: none;
+      transition: all 0.25s;
+    }
+    .l-social-links a:hover {
+      background: var(--copper);
+      border-color: var(--copper);
+      color: #fff;
+    }
+    .l-footer-col h4 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 16px;
+      letter-spacing: 0.15em;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    .l-footer-nav {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .l-footer-nav a {
+      font-size: 12px;
+      color: var(--steel);
+      text-decoration: none;
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      transition: color 0.2s;
+    }
+    .l-footer-nav a:hover { color: var(--copper-light); }
+    .l-footer-nav li {
+      font-size: 12px;
+      color: var(--steel);
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      line-height: 1.7;
+    }
+    .l-footer-nav li a { display: block; }
+
+    /* Footer bottom bar */
+    .l-footer-bottom {
+      padding: 24px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .l-footer-bottom p {
+      font-size: 10px;
+      color: var(--steel);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 300;
+    }
+    .l-footer-bottom a { color: var(--copper); text-decoration: none; }
+    .l-footer-bottom a:hover { color: var(--copper-light); }
+
+    /* ── SCROLL-TO-TOP ── */
+    .l-totop {
+      position: fixed;
+      bottom: 32px; right: 32px;
+      width: 42px; height: 42px;
+      background: var(--copper);
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200;
+      opacity: 0; visibility: hidden;
+      transform: translateY(12px);
+      transition: opacity 0.3s, visibility 0.3s, transform 0.3s, background 0.2s;
+    }
+    .l-totop.visible { opacity: 1; visibility: visible; transform: translateY(0); }
+    .l-totop:hover { background: var(--graphite); }
+    .l-totop svg { width: 16px; height: 16px; stroke: #fff; fill: none; stroke-width: 2; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 991px) {
+      .l-nav-links { display: none; }
+      .l-hamburger { display: flex; }
+      .l-footer-grid { grid-template-columns: 1fr 1fr; gap: 36px; }
+    }
+    @media (max-width: 575px) {
+      .l-footer-grid { grid-template-columns: 1fr; }
+      .l-footer-bottom { flex-direction: column; text-align: center; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- PAGE LOADER -->
+<div id="loom-loader">
+  <div class="loom-loader-inner">
+    <div class="loom-loader-logo">LO<span>O</span>M</div>
+    <div class="loom-loader-bar"></div>
+  </div>
+</div>
+
+<!-- ANNOUNCEMENT STRIP -->
+<div class="l-announce">
+  <div class="l-announce-track">
+    <span>Free shipping on orders over ₹1999</span>
+    <span>2% off everything — Use Code: SUMMER26</span>
+    <span>New Season — Men's Edit 2026 is here</span>
+    <span>50% off all summer shoes this week only</span>
+    <!-- duplicate for seamless loop -->
+    <span>Free shipping on orders over ₹1999</span>
+    <span>2% off everything — Use Code: SUMMER26</span>
+    <span>New Season — Men's Edit 2026 is here</span>
+    <span>50% off all summer shoes this week only</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="l-nav">
+  <div class="container">
+    <div class="l-nav-inner">
+
+      <a href="{% url 'user_app:index' %}" class="l-logo">LO<span style="color:var(--copper-light)">O</span>M</a>
+
+      <!-- Desktop links -->
+      <ul class="l-nav-links">
+        <li><a href="{% url 'user_app:index' %}">Home</a></li>
+        <li><a href="{% url 'customer_app:men_product' %}">Men</a></li>
+        <li><a href="{% url 'customer_app:women_product' %}">Women</a></li>
+        <div class="l-nav-divider"></div>
+        <li><a href="{% url 'customer_app:account' %}">Account</a></li>
+        <li><a href="{% url 'wishlist_app:wishlist_view' %}">Wishlist</a></li>
+        <li>
+          {% if request.user.is_authenticated %}
+            <form action="{% url 'user_app:user_logout' %}" method="post" style="height:100%;display:flex;align-items:center;">
+              {% csrf_token %}
+              <button type="submit">Logout</button>
+            </form>
+          {% else %}
+            <a href="{% url 'user_app:user_login' %}">Login</a>
+          {% endif %}
+        </li>
+        <div class="l-nav-divider"></div>
+        <li>
+          <a href="{% url 'cart_app:view_cart' %}" class="l-cart-link">
+            <i class="icon-shopping-cart" style="font-size:16px;"></i>
+            &nbsp;Cart
+          </a>
+        </li>
+        <li><a href="{% url 'customer_app:view_wallet' %}">Wallet</a></li>
+      </ul>
+
+      <!-- Mobile hamburger -->
+      <button class="l-hamburger" id="lHamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- MOBILE DRAWER -->
+<div class="l-overlay" id="lOverlay"></div>
+<div class="l-drawer" id="lDrawer">
+  <button class="l-drawer-close" id="lDrawerClose">&#215;</button>
+  <div class="l-drawer-logo">LO<span>O</span>M</div>
+  <ul class="l-drawer-links">
+    <li><a href="{% url 'user_app:index' %}">Home</a></li>
+    <li><a href="{% url 'customer_app:men_product' %}">Men</a></li>
+    <li><a href="{% url 'customer_app:women_product' %}">Women</a></li>
+    <li><a href="{% url 'customer_app:account' %}">Account</a></li>
+    <li><a href="{% url 'wishlist_app:wishlist_view' %}">Wishlist</a></li>
+    <li><a href="{% url 'cart_app:view_cart' %}">Cart</a></li>
+    <li><a href="{% url 'customer_app:view_wallet' %}">Wallet</a></li>
+    <li>
+      {% if request.user.is_authenticated %}
+        <form action="{% url 'user_app:user_logout' %}" method="post">
+          {% csrf_token %}
+          <button type="submit">Logout</button>
+        </form>
+      {% else %}
+        <a href="{% url 'user_app:user_login' %}">Login</a>
+      {% endif %}
+    </li>
+  </ul>
+</div>
+
+<!-- MAIN CONTENT -->
+<main id="l-main">
+  {% block content %}
+  {% endblock content %}
+</main>
+
+<!-- FOOTER -->
+<footer class="l-footer">
+  <div class="container">
+    <div class="l-footer-grid">
+
+      <!-- Brand -->
+      <div class="l-footer-brand l-footer-col">
+        <span class="l-footer-logo">LO<span>O</span>M</span>
+        <p>Crafted for those who move with intention. Premium footwear built on the intersection of form and function.</p>
+        <ul class="l-social-links">
+          <li><a href="#"><i class="icon-twitter"></i></a></li>
+          <li><a href="#"><i class="icon-facebook"></i></a></li>
+          <li><a href="#"><i class="icon-linkedin"></i></a></li>
+          <li><a href="#"><i class="icon-dribbble"></i></a></li>
+        </ul>
+      </div>
+
+      <!-- Customer Care -->
+      <div class="l-footer-col">
+        <h4>Customer Care</h4>
+        <ul class="l-footer-nav">
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Returns / Exchange</a></li>
+          <li><a href="#">Gift Voucher</a></li>
+          <li><a href="{% url 'wishlist_app:wishlist_view' %}">Wishlist</a></li>
+          <li><a href="#">Specials</a></li>
+          <li><a href="#">Site Map</a></li>
+        </ul>
+      </div>
+
+      <!-- Information -->
+      <div class="l-footer-col">
+        <h4>Information</h4>
+        <ul class="l-footer-nav">
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Delivery Information</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Support</a></li>
+          <li><a href="#">Order Tracking</a></li>
+        </ul>
+      </div>
+
+      <!-- News -->
+      <div class="l-footer-col">
+        <h4>Editorial</h4>
+        <ul class="l-footer-nav">
+          <li><a href="#">Journal</a></li>
+          <li><a href="#">Press</a></li>
+          <li><a href="#">Exhibitions</a></li>
+          <li><a href="#">Lookbook</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact -->
+      <div class="l-footer-col">
+        <h4>Contact</h4>
+        <ul class="l-footer-nav">
+          <li>291 South 21st Street,<br>Suite 721, New York NY 10016</li>
+          <li><a href="tel://+912355980000">+91 2355 980 000</a></li>
+          <li><a href="mailto:hello@loom.com">hello@loom.com</a></li>
+          <li><a href="#">loom.com</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="l-footer-bottom">
+      <p>&copy; <script>document.write(new Date().getFullYear())</script> LOOM. All rights reserved.</p>
+      <p>Made with <i class="icon-heart" style="color:var(--copper);"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a></p>
+      <p>Images: <a href="https://unsplash.com" target="_blank">Unsplash</a> &amp; <a href="https://pexels.com" target="_blank">Pexels</a></p>
+    </div>
+  </div>
+</footer>
+
+<!-- SCROLL TO TOP -->
+<button class="l-totop" id="lToTop" aria-label="Back to top">
+  <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
+<!-- Scripts -->
 <script src="{% static 'js/jquery.min.js' %}"></script>
-<!-- Popper -->
 <script src="{% static 'js/popper.min.js' %}"></script>
-<!-- Bootstrap 4.1 -->
 <script src="{% static 'js/bootstrap.min.js' %}"></script>
-<!-- jQuery easing -->
 <script src="{% static 'js/jquery.easing.1.3.js' %}"></script>
-<!-- Waypoints -->
 <script src="{% static 'js/jquery.waypoints.min.js' %}"></script>
-<!-- Flexslider -->
 <script src="{% static 'js/jquery.flexslider-min.js' %}"></script>
-<!-- Owl carousel -->
 <script src="{% static 'js/owl.carousel.min.js' %}"></script>
-<!-- Magnific Popup -->
 <script src="{% static 'js/jquery.magnific-popup.min.js' %}"></script>
 <script src="{% static 'js/magnific-popup-options.js' %}"></script>
-<!-- Date Picker -->
 <script src="{% static 'js/bootstrap-datepicker.js' %}"></script>
-<!-- Stellar Parallax -->
 <script src="{% static 'js/jquery.stellar.min.js' %}"></script>
-<!-- Main -->
 <script src="{% static 'js/main.js' %}"></script>
 
+<script>
+  // Page loader
+  window.addEventListener('load', function () {
+    setTimeout(function () {
+      document.getElementById('loom-loader').classList.add('hidden');
+    }, 700);
+  });
 
-	</body>
+  // Mobile drawer
+  const hamburger = document.getElementById('lHamburger');
+  const drawer    = document.getElementById('lDrawer');
+  const overlay   = document.getElementById('lOverlay');
+  const closeBtn  = document.getElementById('lDrawerClose');
+
+  function openDrawer()  { drawer.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeDrawer() { drawer.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; }
+
+  hamburger.addEventListener('click', openDrawer);
+  closeBtn.addEventListener('click', closeDrawer);
+  overlay.addEventListener('click', closeDrawer);
+
+  // Active nav link highlight
+  (function () {
+    const path = window.location.pathname;
+    document.querySelectorAll('.l-nav-links a').forEach(function (a) {
+      if (a.getAttribute('href') && path === a.getAttribute('href')) {
+        a.classList.add('l-active');
+      }
+    });
+  })();
+
+  // Scroll-to-top button
+  const toTop = document.getElementById('lToTop');
+  window.addEventListener('scroll', function () {
+    if (window.scrollY > 400) toTop.classList.add('visible');
+    else toTop.classList.remove('visible');
+  });
+  toTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
+
+</body>
 </html>
-

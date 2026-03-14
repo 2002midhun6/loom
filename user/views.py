@@ -2,6 +2,7 @@ from django.shortcuts import render,redirect
 from . validate import Authentication_check
 from . models import *
 import random
+from decimal import Decimal
 from django.core.mail import EmailMessage
 from django.contrib import messages
 from datetime import datetime,timedelta
@@ -187,7 +188,25 @@ def sign_up(request):
 
             
             mail_subject = 'Your OTP for email verification'
-            message = f'Your OTP is {otp}. Please enter it to verify your email.'
+            message = f"""Hello,
+
+Your One-Time Password (OTP) to verify your email is:
+
+    {otp}
+
+This OTP is valid for only 3 minutes.
+
+Please enter it on the website to continue.
+
+Important:
+- Do not share this OTP with anyone.
+- If you did not request this, please ignore this email.
+
+Thank you,
+LOOM Team
+Kozhikode, Kerala
+
+"""
             try:
                 email_message = EmailMessage(mail_subject, message, to=[email])
                 email_message.send()
@@ -267,8 +286,49 @@ def enter_otp(request):
             user = CustomUser.objects.get(email =email)
             user.is_active = True
             user.save()
+            if not hasattr(user, 'referral'):  
+                referral_code = generate_referral_code(user.id)
+                UserReferral.objects.create(
+                    user=user,
+                    referral_code=referral_code
+                )
+                print(f"Created referral code {referral_code} for user {user.email}")
             
-            
+            referral_code_used = request.session.get('referral')
+
+            if referral_code_used:
+                try:
+                    referrer_referral = UserReferral.objects.select_related('user').get(referral_code=referral_code_used)
+                    referrer = referrer_referral.user
+
+                    # Prevent self-referral
+                    if referrer == user:
+                        messages.warning(request, "You cannot use your own referral code.")
+                    else:
+                        # Give reward to NEW USER (referred)
+                        wallet_new, _ = Wallet.objects.get_or_create(user=user)
+                        WalletTransation.objects.create(
+                            wallet=wallet_new,
+                            transaction_type='referral',  # you may want to add this choice
+                            amount=100.00,
+                        )
+                        wallet_new.balance = Decimal(str(wallet_new.balance)) + Decimal('100')
+                        wallet_new.save()
+
+                        # Give reward to REFERRER
+                        wallet_referrer, _ = Wallet.objects.get_or_create(user=referrer)
+                        WalletTransation.objects.create(
+                            wallet=wallet_referrer,
+                            transaction_type='referral',
+                            amount=500.00,
+                        )
+                        wallet_referrer.balance = Decimal(str(wallet_referrer.balance)) + Decimal('500')
+                        wallet_referrer.save()
+
+                        messages.success(request, "Referral bonus applied! ₹100 added to your wallet.")
+
+                except UserReferral.DoesNotExist:
+                    messages.warning(request, "Invalid referral code — bonus not applied.")
             del request.session['registration_otp']
             del request.session['registered_email']
             del request.session['valid_time']
