@@ -5,7 +5,8 @@ django-cors-headers==4.7.0
 psycopg2-binary==2.9.10
 gunicorn==23.0.0   # or whatever version you prefer
 python-dotenv          # if using .env files
-pillow                 # common for product images
+pillow     
+django-environ            # common for product images
 # Add any others you actually use, e.g.:
 # requests
 # django-filter
