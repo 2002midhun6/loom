@@ -29,7 +29,7 @@ def men_product(request):
         return redirect('user_app:user_logout')
     
     
-    products = Product.objects.filter(category_id=1)
+    products = Product.objects.filter(category_id=2)
     for i in products:
         if i.offer and i.offer.end_date < now:
             i.offer = None
@@ -39,7 +39,7 @@ def men_product(request):
             i.sub_category.offer = None
             i.sub_category.save()
              
-    sub_category = Sub_Category.objects.filter(category_id=1)
+    sub_category = Sub_Category.objects.filter(category_id=2)
     
     
     search_query = request.GET.get('search', '')
@@ -100,7 +100,7 @@ def men_category(request,id):
             return redirect('admin_app:admin_home')
         if request.user.is_authenticated and request.user.is_block:
             return redirect('user_app:user_logout')
-        products = Product.objects.filter(Q(category_id=1) & Q(sub_category=id) )
+        products = Product.objects.filter(Q(category_id=2) & Q(sub_category=id) )
         for i in products:
             if i.offer and i.offer.end_date < now:
                 i.offer = None
@@ -124,7 +124,7 @@ def women_category(request,id):
                 return redirect('admin_app:admin_home')
         if request.user.is_authenticated and request.user.is_block:
             return redirect('user_app:user_logout')
-        products = Product.objects.filter(Q(category_id=2) & Q(sub_category=id) )
+        products = Product.objects.filter(Q(category_id=1) & Q(sub_category=id) )
         for i in products:
             if i.offer and i.offer.end_date < now:
                 i.offer = None
@@ -149,7 +149,7 @@ def women_product(request):
         return redirect('user_app:user_logout')
     
     
-    products = Product.objects.filter(category_id=2)
+    products = Product.objects.filter(category_id=1)
     for i in products:
             if i.offer and i.offer.end_date < now:
                 i.offer = None
@@ -158,7 +158,7 @@ def women_product(request):
                 i.offer = None
                 i.sub_category.offer = None
                 i.sub_category.save()
-    sub_category = Sub_Category.objects.filter(category_id=2)
+    sub_category = Sub_Category.objects.filter(category_id=1)
     
     
     search_query = request.GET.get('search', '')
