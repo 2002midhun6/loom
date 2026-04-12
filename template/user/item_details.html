@@ -72,7 +72,12 @@
                 <td><img src="{{item.product.image1.url}}" alt="{{item.product.product_name}}" width="100"/></td>
                 <td>{{ item.quantity }}</td>
                
-                <td>{{ item.item_price }}</td>
+                <td><div class="col-price">
+    <div class="item-price">₹{{ item.product.discount_price }}</div>
+    {% if item.product.price != item.product.discount_price %}
+        <div style="text-decoration: line-through; color: #999; font-size: 0.85rem;">₹{{ item.product.price }}</div>
+    {% endif %}
+</div></td>
             
                 
                 <td>{{ item.price }}</td>
@@ -139,8 +144,24 @@
 
     <hr>
     
-    <h4>Total Amount With Discount</h4>
-    <h3 class="font-weight-bold"> {{order.discount}} RS</h3>
+    <hr>
+
+<div class="d-flex justify-content-between" style="max-width: 400px;">
+    <h5>Subtotal:</h5>
+    <h5>₹{{ total_price }}</h5>
+</div>
+
+{% if coupon_savings > 0 %}
+<div class="d-flex justify-content-between" style="max-width: 400px; color: green;">
+    <h5>Coupon Discount ({{ order.coupons.code }}):</h5>
+    <h5>- ₹{{ coupon_savings }}</h5>
+</div>
+{% endif %}
+
+<div class="d-flex justify-content-between fw-bold" style="max-width: 400px;">
+    <h4>Total Paid:</h4>
+    <h4>₹{{ order.discount }}</h4>
+</div>
     <br>
     {% if order.order_status != 'delivered' %}
 

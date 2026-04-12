@@ -583,14 +583,16 @@ def show_order(request,id):
             
             total_price += item_total
             item_total_prices.append(item_total) 
-
+        coupon_savings = (float(total_price)+50) - float(order.discount) if order.discount else 0
         context = {
             'order': order,
             'order_items': zip(order_items, item_total_prices),  
             'total_price': total_price,
             'status_choices': STATUS,
             'items':order_items,
-            'order_details':order_details
+            'order_details':order_details,
+            'coupon_savings': coupon_savings,
+
         }
         return render(request,'admin/show_order.html',context)
     

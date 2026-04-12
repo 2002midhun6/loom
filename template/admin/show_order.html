@@ -105,10 +105,24 @@
         </tbody>
     </table>
 
-    <hr>
-    
-    <h4>Total Amount</h4>
-    <p>₹{{order.discount}}</p>
+   <hr>
+
+<div class="d-flex justify-content-between" style="max-width: 400px;">
+    <h5>Subtotal:</h5>
+    <h5>₹{{ total_price }}</h5>
+</div>
+
+{% if coupon_savings > 0 %}
+<div class="d-flex justify-content-between" style="max-width: 400px; color: green;">
+    <h5>Coupon Discount ({{ order.coupons.code }}):</h5>
+    <h5>- ₹{{ coupon_savings }}</h5>
+</div>
+{% endif %}
+
+<div class="d-flex justify-content-between fw-bold" style="max-width: 400px;">
+    <h4>Total Paid:</h4>
+    <h4>₹{{ order.discount }}</h4>
+</div>
     <br>
     {% if order.order_status != 'canceled' and order.order_status != 'delivered' %}
     <form action="" method="post">

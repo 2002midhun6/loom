@@ -289,7 +289,7 @@ def checkout(request,cart_id):
     request.session['cart_total_with_discount'] = float(request.session.get('cart_total_with_discount', cart_total)) 
     cart_total_with_discount=request.session['cart_total_with_discount']
 
-    
+    coupon_savings = float(cart_total) - float(cart_total_with_discount)
     
     
         
@@ -297,8 +297,8 @@ def checkout(request,cart_id):
         address = Address.objects.get(user=request.user, default=True)
     except Address.DoesNotExist:
         
-        messages.error(request, "Please add a default address to proceed.")
-        return redirect('customer_app:account')  
+        request.session['next'] = f'/checkout/{cart_id}/'  
+        return redirect('customer_app:add_address') 
 
     print(address.phone)
     
@@ -310,12 +310,17 @@ def checkout(request,cart_id):
         'cart_total':cart_total,
         'address':address,
         'cart_total_with_discount':cart_total_with_discount,
-        'offer_ended':offer_ended
+        'offer_ended':offer_ended,
+        'coupon_savings': coupon_savings,
+        'coupon': request.session.get('coupon', '')
         
     }
     return render(request,'user/checkout.html',context)
 
 
+
+import json
+from django.http import JsonResponse
 
 def coupon(request):
     if request.user.is_authenticated:
@@ -323,54 +328,65 @@ def coupon(request):
             return redirect('admin_app:admin_home')
         if request.user.is_block:
             return redirect('user_app:user_logout')
-    
+
     if request.method == 'POST':
         cart_id = request.POST.get('cart_id')
-        cart_total = float(request.POST.get('cart_total', 0))  
+        cart_total = float(request.POST.get('cart_total', 0))
         customer_coupon = request.POST.get('coupon')
-        
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
         if not customer_coupon:
-            print('not customer_coupon' )
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'message': 'Please enter a coupon code.'})
             return redirect('cart_app:checkout', cart_id=cart_id)
-        else:
-            
-            coupon_obj  = Coupen.objects.filter(code=customer_coupon).first()
-            user = request.user
 
-            counter=0
-            
-            if coupon_obj and coupon_obj.code == customer_coupon:
-                    order = Order.objects.filter(user=user,coupons=coupon_obj)
-                    print(order)
-                    limit=int(coupon_obj.used_limit)
-                    for i in order:
-                        if i.coupons.code == customer_coupon:
-                            counter+=1
-                    if counter < limit:
-                        if cart_total < coupon_obj.maximum_order_amount and cart_total > coupon_obj.minimum_order_amount:
-                       
-                            print(coupon_obj.code)
-                            
-                            request.session['coupon']=coupon_obj.code
-                            request.session['total_without_coupon']=cart_total
-                            request.session['cart_total_with_discount'] = cart_total - float(coupon_obj.discount_amount)
-                            print(request.session['cart_total_with_discount'])
-                            messages.success(request, "Coupon applied successfully.")
-                            return redirect('cart_app:checkout', cart_id=cart_id)
-                        else:
-                            messages.error(request, "coupen cannotbe able to applied in this amount")
-                            return redirect('cart_app:checkout', cart_id=cart_id)
-                    else:
-                        messages.error(request, "coupen limit exceed")
-                        return redirect('cart_app:checkout', cart_id=cart_id)
+        coupon_obj = Coupen.objects.filter(code=customer_coupon).first()
+        user = request.user
+        counter = 0
 
+        if coupon_obj and coupon_obj.code == customer_coupon:
+            order = Order.objects.filter(user=user, coupons=coupon_obj)
+            limit = int(coupon_obj.used_limit)
+            for i in order:
+                if i.coupons.code == customer_coupon:
+                    counter += 1
 
+            if counter < limit:
+                if cart_total < coupon_obj.maximum_order_amount and cart_total > coupon_obj.minimum_order_amount:
+                    request.session['coupon'] = coupon_obj.code
+                    request.session['total_without_coupon'] = cart_total
+                    discounted_total = cart_total - float(coupon_obj.discount_amount)
+                    request.session['cart_total_with_discount'] = discounted_total
+
+                    if is_ajax:
+                        return JsonResponse({
+                            'status': 'success',
+                            'message': 'Coupon applied successfully.',
+                            'coupon_code': coupon_obj.code,
+                            'discount_amount': float(coupon_obj.discount_amount),
+                            'cart_total_with_discount': discounted_total,
+                        })
+                    messages.success(request, "Coupon applied successfully.")
+                    return redirect('cart_app:checkout', cart_id=cart_id)
+                else:
+                    msg = "Coupon cannot be applied to this amount."
+                    if is_ajax:
+                        return JsonResponse({'status': 'error', 'message': msg})
+                    messages.error(request, msg)
+                    return redirect('cart_app:checkout', cart_id=cart_id)
             else:
-                           
-                            messages.error(request, "Invalid coupon code. Please try again.")
-                            return redirect('cart_app:checkout', cart_id=cart_id)
-    
-    
+                msg = "Coupon limit exceeded."
+                if is_ajax:
+                    return JsonResponse({'status': 'error', 'message': msg})
+                messages.error(request, msg)
+                return redirect('cart_app:checkout', cart_id=cart_id)
+        else:
+            msg = "Invalid coupon code. Please try again."
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'message': msg})
+            messages.error(request, msg)
+            return redirect('cart_app:checkout', cart_id=cart_id)
+
     return redirect('user_app:index')
 
 

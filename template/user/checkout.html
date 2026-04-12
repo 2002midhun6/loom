@@ -97,10 +97,20 @@
 						
 						
                     </div>
-					<div class="total d-flex justify-content-between font-weight-bold mt-3">
-						<span>discount_Total</span>
-						<span>{{cart_total_with_discount}}</span>
-					</div>
+                    
+<div id="coupon-summary" {% if not coupon_savings %}style="display:none;"{% endif %}>
+    <div class="d-flex justify-content-between mt-2" style="color: green;">
+        <span id="coupon-label">Coupon ({{ coupon }})</span>
+        <span id="coupon-savings">- ₹{{ coupon_savings }}</span>
+    </div>
+    <hr>
+    <div class="total d-flex justify-content-between font-weight-bold mt-2" style="color: #474FFF; font-size: 1.1rem;">
+        <span>You Pay</span>
+        <span id="you-pay">₹{{ cart_total_with_discount }}</span>
+    </div>
+</div>
+					
+                    
                 </div>
             </div>
 
@@ -163,23 +173,73 @@
     {% endfor %}
 {% endif %}
 			<div class="col-sm-8">
-				<form action="{% url 'cart_app:coupon' %}" method="post">
-					{% csrf_token %}
-					<div class="row form-group d-flex align-items-center">
-		
-							<div class="col-sm-9">
-								<input type="text" style="width: auto;border-radius: 20px;" value="{{coupon}}" name="coupon" id="coupon" class="form-control input-number" placeholder="Your Coupon Number...">
-							</div>
-							
-							<div class="col-sm-3">
-								<input type="hidden" id="cart_total" value="{{cart_total}}" name="cart_total">
-								<input type="hidden" id="cart_total" value="{{cart_id}}" name="cart_id">
-								<input type="submit" value="Apply Coupon" class="btn btn-primary" style="margin-left: 10px;">
-							</div>
-						
-					
-					</div>
-				</form>
+				<!-- Coupon feedback message area -->
+<div id="coupon-message" style="display:none; margin-top: 8px; padding: 8px 12px; border-radius: 6px; font-size: 0.9rem;"></div>
+
+<div class="col-sm-8">
+    <div class="row form-group d-flex align-items-center">
+        <div class="col-sm-9">
+            <input type="text" style="width: auto; border-radius: 20px;" value="{{ coupon }}"
+                name="coupon" id="coupon" class="form-control input-number"
+                placeholder="Your Coupon Number...">
+        </div>
+        <div class="col-sm-3">
+            <input type="hidden" id="cart_total" value="{{ cart_total }}">
+            <input type="hidden" id="cart_id" value="{{ cart_id }}">
+            <button type="button" id="apply-coupon-btn" class="btn btn-primary" style="margin-left: 10px;">
+                Apply Coupon
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('apply-coupon-btn').addEventListener('click', function () {
+    const coupon = document.getElementById('coupon').value.trim();
+    const cartTotal = document.getElementById('cart_total').value;
+    const cartId = document.getElementById('cart_id').value;
+    const msgBox = document.getElementById('coupon-message');
+
+    fetch("{% url 'cart_app:coupon' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: new URLSearchParams({ coupon, cart_total: cartTotal, cart_id: cartId }),
+    })
+    .then(res => res.json())
+    .then(data => {
+        msgBox.style.display = 'block';
+
+        if (data.status === 'success') {
+            msgBox.style.background = '#d4edda';
+            msgBox.style.color = 'green';
+            msgBox.textContent = data.message;
+
+            // Update the order summary section live
+            const couponSection = document.getElementById('coupon-summary');
+            if (couponSection) {
+                document.getElementById('coupon-label').textContent = `Coupon (${data.coupon_code})`;
+                document.getElementById('coupon-savings').textContent = `- ₹${data.discount_amount.toFixed(2)}`;
+                document.getElementById('you-pay').textContent = `₹${data.cart_total_with_discount.toFixed(2)}`;
+                couponSection.style.display = 'block';
+            }
+        } else {
+            msgBox.style.background = '#f8c2c7';
+            msgBox.style.color = 'red';
+            msgBox.textContent = data.message;
+        }
+    })
+    .catch(() => {
+        msgBox.style.display = 'block';
+        msgBox.style.background = '#f8c2c7';
+        msgBox.style.color = 'red';
+        msgBox.textContent = 'Something went wrong. Please try again.';
+    });
+});
+</script>
 			</div>
 			
           

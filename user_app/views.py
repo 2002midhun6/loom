@@ -375,9 +375,13 @@ def add_address(request):
                         default=is_default
                 )
                address_obj.save()
+               next_url = request.session.pop('next', None)
+               if next_url:
+                    return redirect(next_url)
+               return redirect('customer_app:account')
              
                 
-               return redirect('customer_app:account')
+               
         
         return render(request,'user/add_address.html')
 @login_required
@@ -451,6 +455,10 @@ def edit_address(request,id):
                address_obj.alternative_phone=alternative_phone
                address_obj.default= is_default
                address_obj.save()
+               next_url = request.session.pop('next', None)
+               if next_url:
+                    return redirect(next_url)
+            
                return redirect('customer_app:account')
         return render(request,'user/edit_address.html',context)
 @login_required
@@ -673,6 +681,8 @@ def item_order(request,id):
             
             total_price += item_total
             item_total_prices.append(item_total)
+    coupon_savings = (float(total_price)+50) - float(order.discount) if order.discount else 0
+    print(coupon_savings)
 
     context = {
             'order': order,
@@ -681,6 +691,7 @@ def item_order(request,id):
             'discount_price':discount_price,
             'items':order_items,
             'order_details': order_details,
+            'coupon_savings': coupon_savings,
         }
     return render(request,'user/item_details.html',context)
 @login_required
