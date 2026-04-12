@@ -36,9 +36,9 @@ A fully functional **online shopping platform** built using **Django (Python)** 
 | Layer    | Technology                       |
 | -------- | -------------------------------- |
 | Backend  | Django (Python)                  |
-| Frontend | HTML5, SCSS, Bootstrap 5, jQuery |
+| Frontend | HTML5, SCSS, Bootstrap 5 |
 | Charts   | ApexCharts                       |
-| Styling  | Bootstrap, AOS, Owl Carousel     |
+| Styling  | Bootstrap,css                    |
 | Icons    | IonIcons, Flaticon               |
 | Payments | Razorpay                         |
 | Database | PostgreSQL                       |
