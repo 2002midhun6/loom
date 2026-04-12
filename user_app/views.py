@@ -77,7 +77,18 @@ def men_product(request):
         products = products.order_by('product_name')
     elif sort_by == 'name_desc':
         products = products.order_by('-product_name')
-    
+    price_min = request.GET.get('price_min', '').strip()
+    price_max = request.GET.get('price_max', '').strip()
+    if price_min:
+        try:
+            products = products.filter(price__gte=float(price_min))
+        except ValueError:
+            price_min = ''
+    if price_max:
+        try:
+            products = products.filter(price__lte=float(price_max))
+        except ValueError:
+             price_max = ''
     
     page = request.GET.get('page', 1)
     product_paginator = Paginator(products, 8)
@@ -89,6 +100,8 @@ def men_product(request):
         'search_query': search_query,
         'selected_subcategory': selected_subcategory,
         'sort_by': sort_by,
+        'price_min': price_min,   
+        'price_max': price_max,
     }
     return render(request, 'user/men.html', context)
 def men_category(request,id):
@@ -187,7 +200,18 @@ def women_product(request):
     elif sort_by == 'name_desc':
         products = products.order_by('-product_name')
     
-    
+    price_min = request.GET.get('price_min', '').strip()
+    price_max = request.GET.get('price_max', '').strip()
+    if price_min:
+        try:
+            products = products.filter(price__gte=float(price_min))
+        except ValueError:
+            price_min = ''
+    if price_max:
+        try:
+            products = products.filter(price__lte=float(price_max))
+        except ValueError:
+            price_max = ''
     page = request.GET.get('page', 1)
     product_paginator = Paginator(products, 8)
     products = product_paginator.get_page(page)
@@ -198,6 +222,8 @@ def women_product(request):
         'search_query': search_query,
         'selected_subcategory': selected_subcategory,
         'sort_by': sort_by,
+        'price_min': price_min,   
+        'price_max': price_max,
     }
     return render(request, 'user/women.html', context)
 def view_product(request,id):

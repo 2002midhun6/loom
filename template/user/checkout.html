@@ -77,7 +77,12 @@
                     {% for item in cart_items %}
                     <div class="cart-item  d-flex  justify-content-between mb-2">
                         <span>{{item.quantity}} x {{item.product.product_name}} {{item.varient.size}}</span>
-                        <span class="float-end">{{item.total_price}}</span>
+                       <div>
+    <div class="item-price">₹{{ item.product.discount_price }}</div>
+    {% if item.product.price != item.product.discount_price %}
+        <div style="text-decoration: line-through; color: #999; font-size: 0.85rem;">₹{{ item.product.price }}</div>
+    {% endif %}
+</div>
                     </div>
                     {% endfor %}
                     

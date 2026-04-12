@@ -16,11 +16,11 @@ def crop_image(image_file, size=(800, 800)):
     """Crop image to square and resize"""
     img = Image.open(image_file)
     
-    # Convert to RGB if necessary
+   
     if img.mode != 'RGB':
         img = img.convert('RGB')
     
-    # Crop to square
+   
     width, height = img.size
     min_dim = min(width, height)
     left = (width - min_dim) / 2
@@ -30,10 +30,10 @@ def crop_image(image_file, size=(800, 800)):
     
     img = img.crop((left, top, right, bottom))
     
-    # Resize
+   
     img = img.resize(size, Image.Resampling.LANCZOS)
     
-    # Save to BytesIO
+  
     output = BytesIO()
     img.save(output, format='JPEG', quality=85)
     output.seek(0)
@@ -45,7 +45,7 @@ def crop_image(image_file, size=(800, 800)):
         sys.getsizeof(output), None
     )
 
-# Create your views here.
+
 @never_cache
 def admin_product_view(request):
     if request.user.is_authenticated and request.user.is_staff:

@@ -152,100 +152,163 @@
   }
 
   /* ── FILTER BAR ── */
-  .m-filter-bar {
-    background: var(--carbon);
-    border-bottom: 2px solid var(--copper);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    padding: 0;
+.m-filter-bar {
+  background: var(--carbon);
+  border-bottom: 1px solid var(--border-dark);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.m-filter-inner {
+  display: flex;
+  align-items: center;
+  height: 54px;
+  gap: 0;
+}
+.m-filter-label {
+  font-size: 9px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--smoke);
+  padding: 0 20px;
+  border-right: 1px solid var(--border-dark);
+  white-space: nowrap;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+.m-filter-search {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  border-right: 1px solid var(--border-dark);
+  height: 100%;
+  padding: 0 16px;
+  gap: 10px;
+}
+.m-filter-search input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--fog);
+  letter-spacing: 0.05em;
+  width: 100%;
+}
+.m-filter-search input::placeholder { color: var(--steel); }
+.m-filter-search button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--smoke);
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+.m-filter-search button:hover { color: var(--copper-light); }
+.m-filter-search svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.m-filter-select-wrap {
+  border-right: 1px solid var(--border-dark);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+}
+.m-filter-select-wrap select {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--fog);
+  letter-spacing: 0.08em;
+  padding: 0 28px 0 16px;
+  height: 54px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a8a8a'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  min-width: 140px;
+}
+.m-filter-select-wrap select option {
+  background: var(--carbon);
+  color: var(--fog);
+}
+  /* ── PRICE RANGE ── */
+.m-filter-price {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 16px;
+  border-right: 1px solid var(--border-dark);
+}
+.m-filter-price input[type="number"] {
+  background: transparent;
+  border: none;
+  width: 74px;
+  padding: 0 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--fog);
+  letter-spacing: 0.05em;
+  outline: none;
+  height: 54px;
+  -moz-appearance: textfield;
+}
+.m-filter-price input[type="number"]::-webkit-outer-spin-button,
+.m-filter-price input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+.m-filter-price input[type="number"]::placeholder { color: var(--steel); }
+.m-price-sep {
+  color: var(--steel);
+  font-size: 12px;
+  padding: 0 4px;
+}
+.m-price-go {
+  background: transparent;
+  border: 1px solid var(--border-dark);
+  color: var(--copper-light);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: all 0.2s;
+}
+.m-price-go:hover {
+  background: var(--copper);
+  border-color: var(--copper);
+  color: #fff;
+}
+
+/* mobile */
+@media (max-width: 767px) {
+  .m-filter-price {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border-dark);
+    min-height: 48px;
+    padding: 0 12px;
   }
-  .m-filter-inner {
-    display: flex;
-    align-items: stretch;
-    gap: 0;
-    height: 54px;
-  }
-  .m-filter-label {
-    display: flex;
-    align-items: center;
-    padding: 0 24px;
-    font-size: 9px;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    color: var(--copper-light);
-    border-right: 1px solid var(--border-dark);
-    white-space: nowrap;
-    font-weight: 400;
-  }
-  .m-filter-search {
-    flex: 1;
-    display: flex;
-    align-items: stretch;
-    position: relative;
-    border-right: 1px solid var(--border-dark);
-  }
-  .m-filter-search input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    padding: 0 16px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 300;
-    color: #fff;
-    letter-spacing: 0.05em;
-    outline: none;
-  }
-  .m-filter-search input::placeholder { color: var(--steel); }
-  .m-filter-search button {
-    background: var(--copper);
-    border: none;
-    padding: 0 20px;
-    cursor: pointer;
-    transition: background 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .m-filter-search button:hover { background: var(--copper-light); }
-  .m-filter-search button svg {
-    width: 15px; height: 15px;
-    stroke: #fff; fill: none; stroke-width: 2;
-  }
-  .m-filter-select-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-    border-right: 1px solid var(--border-dark);
-  }
-  .m-filter-select-wrap select {
-    appearance: none;
-    -webkit-appearance: none;
-    background: transparent;
-    border: none;
-    padding: 0 44px 0 20px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 300;
-    color: var(--fog);
-    letter-spacing: 0.05em;
-    cursor: pointer;
-    outline: none;
-    height: 100%;
-    min-width: 160px;
-  }
-  .m-filter-select-wrap select option { background: var(--carbon); color: #fff; }
-  .m-filter-select-wrap::after {
-    content: '';
-    position: absolute;
-    right: 16px;
-    pointer-events: none;
-    width: 0; height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid var(--smoke);
-  }
+  .m-filter-price input[type="number"] { height: 48px; }
+}
 
   /* ── SECTION HEADER ── */
   .m-section-header {
@@ -656,6 +719,17 @@
           <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>Name (Z–A)</option>
         </select>
       </div>
+
+      <!-- PRICE RANGE -->
+      <div class="m-filter-price">
+        <input type="number" name="price_min" placeholder="Min ₹"
+               value="{{ price_min }}" min="0" step="1">
+        <span class="m-price-sep">–</span>
+        <input type="number" name="price_max" placeholder="Max ₹"
+               value="{{ price_max }}" min="0" step="1">
+        <button type="submit" class="m-price-go" aria-label="Apply price filter">Go</button>
+      </div>
+
     </form>
   </div>
 </div>
@@ -739,13 +813,13 @@
     <nav class="m-pagination" aria-label="Products pagination">
       {% if products.has_previous %}
         <a class="m-pg-arrow"
-           href="?page={{ products.previous_page_number }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}#products-section">
+           href="?page={{ products.previous_page_number }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}&price_min={{ price_min }}&price_max={{ price_max }}#products-section">
           &#8592;
         </a>
       {% endif %}
 
       {% for i in products.paginator.page_range %}
-        <a href="?page={{ i }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}#products-section"
+        <a href="?page={{ i }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}&price_min={{ price_min }}&price_max={{ price_max }}#products-section"
            class="{% if products.number == i %}m-pg-active{% endif %}">
           {{ i }}
         </a>
@@ -753,7 +827,7 @@
 
       {% if products.has_next %}
         <a class="m-pg-arrow"
-           href="?page={{ products.next_page_number }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}#products-section">
+           href="?page={{ products.next_page_number }}&search={{ search_query }}&sort={{ sort_by }}&subcategory={{ selected_subcategory }}&price_min={{ price_min }}&price_max={{ price_max }}#products-section">
           &#8594;
         </a>
       {% endif %}

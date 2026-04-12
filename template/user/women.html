@@ -132,7 +132,51 @@
     color: #fff;
     border-color: var(--accent);
   }
-
+/* ── PRICE RANGE ── */
+.w-filter-price {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.w-filter-price input[type="number"] {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  width: 80px;
+  padding: 10px 8px;
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--charcoal);
+  letter-spacing: 0.05em;
+  outline: none;
+  -moz-appearance: textfield;
+  transition: border-color 0.2s;
+}
+.w-filter-price input[type="number"]:focus { border-color: var(--accent); }
+.w-filter-price input[type="number"]::-webkit-outer-spin-button,
+.w-filter-price input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+.w-filter-price input[type="number"]::placeholder { color: var(--muted); }
+.w-price-sep {
+  color: var(--muted);
+  font-size: 12px;
+  padding: 0 6px;
+}
+.w-price-go {
+  background: var(--charcoal);
+  border: none;
+  color: #fff;
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: background 0.2s;
+}
+.w-price-go:hover { background: var(--accent); }
   /* ── FILTER BAR ── */
   .w-filter-bar {
     background: #fff;
@@ -553,6 +597,15 @@
         <option value="name_asc"  {% if sort_by == 'name_asc'  %}selected{% endif %}>Name (A–Z)</option>
         <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>Name (Z–A)</option>
       </select>
+      <!-- PRICE RANGE -->
+<div class="w-filter-price">
+  <input type="number" name="price_min" placeholder="Min ₹"
+         value="{{ price_min }}" min="0" step="1">
+  <span class="w-price-sep">–</span>
+  <input type="number" name="price_max" placeholder="Max ₹"
+         value="{{ price_max }}" min="0" step="1">
+  <button type="submit" class="w-price-go" aria-label="Apply price filter">Go</button>
+</div>
     </form>
   </div>
 </div>

@@ -123,7 +123,7 @@ def sign_up(request):
             else:
                   request.session['referral'] = referral
        
-        error=validation_view(request,email,first_name,last_name,password,confirm_password)
+        error=validation_view(request,email,username,first_name,last_name,password,confirm_password)
         
         
         
@@ -221,7 +221,7 @@ Kozhikode, Kerala
     return render(request,'user/sign_up.html')  
 
 
-def validation_view(request,email,first_name,last_name,password,confirm_password):
+def validation_view(request,email,username,first_name,last_name,password,confirm_password):
    
     user_validation = Authentication_check()
 
@@ -240,6 +240,9 @@ def validation_view(request,email,first_name,last_name,password,confirm_password
     last_name_valid = user_validation.last_name_validator(last_name)
     if last_name_valid:
         errors['last_name_error'] = last_name_valid
+    username_valid = user_validation.username_validator(username)
+    if username_valid:
+        errors['username_error'] = username_valid
         
     
     password_valid = user_validation.pass_validator(password)
