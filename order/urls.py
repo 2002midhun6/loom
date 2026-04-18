@@ -13,4 +13,5 @@ urlpatterns = [
     path('payment/verify/',       views.verify_payment,   name='verify_payment'),
     path('payment/failed/',       views.payment_failed,   name='payment_failed'),
     path('payment/retry/<int:order_id>/',  views.retry_payment,    name='retry_payment'),
+    path('cancel-item/<int:item_id>/', views.cancel_order_item, name='cancel_order_item'),
 ]

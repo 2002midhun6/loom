@@ -114,14 +114,12 @@ function saveReturnUrl() {
 let selectedAddressId = {{ address.id|default:'null' }};
 
 function selectAddress(addressId) {
-    // Clear previous selection highlight
     document.querySelectorAll('.address-option').forEach(el => {
         el.style.background = '';
         el.style.borderColor = '#dee2e6';
     });
     document.querySelectorAll('[id^="check-"]').forEach(el => el.style.display = 'none');
 
-    // Highlight selected
     const selected = document.getElementById('addr-option-' + addressId);
     if (selected) {
         selected.style.background = '#f0fffe';
@@ -130,7 +128,6 @@ function selectAddress(addressId) {
     document.getElementById('check-' + addressId).style.display = 'block';
     selectedAddressId = addressId;
 
-    // Send to server
     fetch("{% url 'cart_app:set_checkout_address' %}", {
         method: 'POST',
         headers: {
@@ -143,29 +140,82 @@ function selectAddress(addressId) {
     .then(data => {
         if (data.success) {
             const a = data.address;
-            // Update displayed address
-            document.getElementById('addr-street').textContent = a.street_address;
-            document.getElementById('addr-postal').textContent = a.postal_code;
-            document.getElementById('addr-phone').textContent = a.phone;
-            document.getElementById('addr-state').textContent = a.state;
-            document.getElementById('addr-country').textContent = a.country;
-            document.getElementById('addr-type').textContent = a.address_type;
 
-            if (a.landmark) {
-                document.getElementById('addr-landmark').textContent = a.landmark;
-                document.getElementById('addr-landmark-wrap').style.display = '';
+            // If address display was empty, rebuild it
+            const display = document.getElementById('address-display');
+            if (display.querySelector('p[style*="color:#999"]')) {
+                display.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label style="font-weight:bold;color:black;">Country</label>
+                            <p id="addr-country">${a.country}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label style="font-weight:bold;color:black;">State</label>
+                            <p id="addr-state">${a.state}</p>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label style="font-weight:bold;color:black;">Street Address</label>
+                        <p id="addr-street">${a.street_address}</p>
+                    </div>
+                    ${a.landmark ? `<div class="mb-3" id="addr-landmark-wrap">
+                        <label style="font-weight:bold;color:black;">Landmark</label>
+                        <p id="addr-landmark">${a.landmark}</p>
+                    </div>` : ''}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label style="font-weight:bold;color:black;">Postal Code</label>
+                            <p id="addr-postal">${a.postal_code}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label style="font-weight:bold;color:black;">Phone</label>
+                            <p id="addr-phone">${a.phone}</p>
+                        </div>
+                    </div>
+                    ${a.alternative_phone ? `<div class="mb-3" id="addr-altphone-wrap">
+                        <label style="font-weight:bold;color:black;">Alternative Phone</label>
+                        <p id="addr-altphone">${a.alternative_phone}</p>
+                    </div>` : ''}
+                    <div class="mb-3">
+                        <label style="font-weight:bold;color:black;">Address Type</label>
+                        <p id="addr-type">${a.address_type}</p>
+                    </div>`;
             } else {
-                document.getElementById('addr-landmark-wrap').style.display = 'none';
+                // Normal update of existing fields
+                document.getElementById('addr-street').textContent = a.street_address;
+                document.getElementById('addr-postal').textContent = a.postal_code;
+                document.getElementById('addr-phone').textContent = a.phone;
+                document.getElementById('addr-state').textContent = a.state;
+                document.getElementById('addr-country').textContent = a.country;
+                document.getElementById('addr-type').textContent = a.address_type;
+
+                const landmarkWrap = document.getElementById('addr-landmark-wrap');
+                if (a.landmark && landmarkWrap) {
+                    document.getElementById('addr-landmark').textContent = a.landmark;
+                    landmarkWrap.style.display = '';
+                } else if (landmarkWrap) {
+                    landmarkWrap.style.display = 'none';
+                }
+
+                const altWrap = document.getElementById('addr-altphone-wrap');
+                if (a.alternative_phone && altWrap) {
+                    document.getElementById('addr-altphone').textContent = a.alternative_phone;
+                    altWrap.style.display = '';
+                } else if (altWrap) {
+                    altWrap.style.display = 'none';
+                }
             }
 
-            if (a.alternative_phone) {
-                document.getElementById('addr-altphone').textContent = a.alternative_phone;
-                document.getElementById('addr-altphone-wrap').style.display = '';
-            } else {
-                document.getElementById('addr-altphone-wrap').style.display = 'none';
-            }
+            // Enable the Place Order button and hide warning
+            const btn = document.getElementById('place-order-btn');
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
 
-            // Close modal
+            const warning = document.getElementById('no-address-warning');
+            if (warning) warning.style.display = 'none';
+
             setTimeout(() => {
                 document.getElementById('address-modal').style.display = 'none';
             }, 300);
@@ -223,50 +273,50 @@ function selectAddress(addressId) {
             </div>
 
            <!-- Payment Method -->
+<!-- Payment Method -->
 <div class="payment-section mb-4">
-    <form action="{% url 'order_app:order_complete' %}" method="post">
+    <form action="{% url 'order_app:order_complete' %}" method="post" id="order-form">
         {% csrf_token %}
         <h3>Payment Method</h3>
         <div class="payment-options p-4 border rounded">
             <div class="form-check mb-2">
-                <input 
-                    type="radio" 
-                    class="form-check-input" 
-                    name="payment_method" 
-                    value="cod" 
-                    id="cod" 
-                    {% if cart_total_with_discount > 1000 %}disabled{% endif %} 
-                    required>
-					
+                <input type="radio" class="form-check-input" name="payment_method" 
+                       value="cod" id="cod" 
+                       {% if cart_total_with_discount > 1000 %}disabled{% endif %} required>
                 <label class="form-check-label" for="cod">Cash on delivery</label>
             </div>
-			{% if cart_total_with_discount > 1000 %}
-					<p style="color: red;">cash on delivery is not avaialble </p>
-					{% endif %} 
+            {% if cart_total_with_discount > 1000 %}
+            <p style="color: red;">Cash on delivery is not available</p>
+            {% endif %}
 
             <div class="form-check mb-2">
-                <input 
-                    type="radio" 
-                    class="form-check-input" 
-                    name="payment_method" 
-                    id="wallet" 
-                    value="wallet" 
-                    required>
+                <input type="radio" class="form-check-input" name="payment_method" 
+                       id="wallet" value="wallet" required>
                 <label class="form-check-label" for="wallet">Wallet</label>
             </div>
 
             <div class="form-check mb-3">
-                <input 
-                    type="radio" 
-                    class="form-check-input" 
-                    name="payment_method" 
-                    id="razorpay" 
-                    value="razorpay" 
-                    required>
+                <input type="radio" class="form-check-input" name="payment_method" 
+                       id="razorpay" value="razorpay" required>
                 <label class="form-check-label" for="razorpay">Razorpay</label>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100">Place an order</button>
+            {% if not address %}
+            <div id="no-address-warning" style="background:#fff3cd; border:1px solid #ffc107; 
+                 border-radius:8px; padding:12px; margin-bottom:12px; color:#856404;">
+                ⚠️ Please select a delivery address before placing your order.
+                <br>
+                <button type="button" class="btn btn-sm btn-warning mt-2" 
+                        onclick="document.getElementById('address-modal').style.display='flex'">
+                    📍 Select Address
+                </button>
+            </div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary w-100" id="place-order-btn"
+                    {% if not address %}disabled style="opacity:0.6; cursor:not-allowed;"{% endif %}>
+                Place an order
+            </button>
         </div>
     </form>
 </div>
@@ -366,4 +416,5 @@ document.getElementById('apply-coupon-btn').addEventListener('click', function (
     });
     {% endif %}
 </script>
+
 {% endblock %}

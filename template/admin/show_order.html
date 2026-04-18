@@ -49,61 +49,57 @@
     <hr>
 
     <h4>Order Items</h4>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Product</th>
-                <th>Image</th>
-                <th>Quantity</th>
-                <th>Price (₹)</th>
-                <th>Total (₹)</th>
-                {% for item in items %}
-                    {% if item.return_reason and item.return_status == 'pending' %}
-                        <th>Return Request</th>
-                    {% endif %}
-                    {% if item.return_reason and item.return_status == 'returned' %}
-                        <th></th>
-                    {% endif %}
-                    {% if item.return_reason %}
-                        <th>Reason</th>
-                    {% endif %}
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for item, item_total in order_items %}
-            <tr>
-                <td>{{ item.product.product_name }}</td>
-                <td><img src="{{item.product.image1.url}}" alt="{{item.product.product_name}}" width="100"/></td>
-                <td>{{ item.quantity }}</td>
-                
-                <td>{{item.item_price }}</td>
-                
-                <td>{{ item.price  }}</td>
-                {% if item.return_reason and item.return_status == 'pending' %}
-                        <td>
-                            <form class="confirm_return" action="{% url 'order_app:return_confirm' item.id order.id %}" method="post">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                    Confirm
-                                </button>
-                            </form>
-                        </td>
-                {% endif %} 
-                {% if item.return_reason and item.return_status == 'returned' %}
-                        <td>
-                            <button type="button" class="btn btn-sm btn-outline-danger" disabled>
-                                Item Returned!
-                            </button>
-                        </td>
-                {% endif %}
-                {% if item.return_reason %}
-                    <td>{{item.return_reason}}</td>
-                {% endif %} 
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Image</th>
+            <th>Quantity</th>
+            <th>Price (₹)</th>
+            <th>Total (₹)</th>
+            <th>Item Status</th>
+            <th>Action / Reason</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item, item_total in order_items %}
+        <tr>
+            <td>{{ item.product.product_name }}</td>
+            <td><img src="{{ item.product.image1.url }}" alt="{{ item.product.product_name }}" width="100"/></td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.item_price }}</td>
+            <td>{{ item.price }}</td>
+
+            {% if item.cancel_status == 'canceled' %}
+                <td><span class="badge bg-danger">Canceled</span></td>
+                <td><small class="text-muted">{{ item.cancel_reason }}</small></td>
+
+            {% elif item.return_status == 'returned' %}
+                <td><span class="badge bg-secondary">Returned</span></td>
+                <td><small class="text-muted">{{ item.return_reason }}</small></td>
+
+            {% elif item.return_status == 'pending' and item.return_reason %}
+    <td><span class="badge bg-warning text-dark">Return Requested</span></td>
+    <td>
+        <p class="mb-1"><small>{{ item.return_reason }}</small></p>
+        <form class="confirm_return"
+              action="{% url 'order_app:return_confirm' item.id order.id %}"
+              method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-danger">
+                Confirm Return
+            </button>
+        </form>
+    </td>
+
+            {% else %}
+                <td><span class="badge bg-success">Active</span></td>
+                <td>—</td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
    <hr>
 

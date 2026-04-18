@@ -368,29 +368,26 @@ def cancel_order(request, id):
             messages.error(request, "Cancellation reason is required.")
     
     return redirect('customer_app:item_order', id=id)
-def return_order(request,id):
+def return_order(request, id):
     if request.user.is_authenticated and request.user.is_staff:
         return redirect('admin_app:admin_home')
     if request.user.is_authenticated and request.user.is_block:
         return redirect('user_app:user_logout')
-    
+
     if request.method == 'POST':
         order_item = OrderItems.objects.get(id=id)
-        order=order_item.order
-        order_id=order.id
+        order = order_item.order
+        order_id = order.id
         return_reason = request.POST.get('return_reason')
         if return_reason:
             order_item.return_reason = return_reason
+            order_item.return_status = 'pending'   # ← THIS WAS MISSING
             order_item.return_date = timezone.now()
-            
             order_item.save()
-            print('hello kutta3',order_item.return_reason)
-            
-
             messages.success(request, "Return request sent.")
         else:
             messages.error(request, "Return reason is required.")
-        print("hhhdicke")
+
     return redirect('customer_app:item_order', id=order_id)
 def return_confirm(request, item_id, order_id):
     if request.user.is_authenticated and request.user.is_block:
@@ -544,5 +541,101 @@ def submit_review(request, product_id,order_id):
     
     return render(request,'user/review.html',{'order_items':order_items,'order_id':order_id})
 
+def cancel_order_item(request, item_id):
+    if request.user.is_authenticated and request.user.is_staff:
+        return redirect('admin_app:admin_home')
+    if request.user.is_authenticated and request.user.is_block:
+        return redirect('user_app:user_logout')
 
+    if request.method != 'POST':
+        return redirect('customer_app:item_order', id=order_id)
 
+    order_item = get_object_or_404(OrderItems, id=item_id)
+    order = order_item.order
+    order_id = order.id
+
+    # Security check
+    if order.user != request.user:
+        return redirect('user_app:user_logout')
+
+    # Validation
+    if order.order_status in ['delivered', 'canceled']:
+        messages.error(request, "This order cannot be modified.")
+        return redirect('customer_app:item_order', id=order_id)
+
+    if order_item.cancel_status == 'canceled':
+        messages.error(request, "This item is already canceled.")
+        return redirect('customer_app:item_order', id=order_id)
+
+    cancel_reason = request.POST.get('cancel_reason')
+    if not cancel_reason:
+        messages.error(request, "Cancellation reason is required.")
+        return redirect('customer_app:item_order', id=order_id)
+
+    # === Calculate refund amount ===
+    item_subtotal = order_item.price  # This is already quantity * item_price
+
+    coupon_deduction = 0
+    if order.coupons:
+        order_subtotal = sum(i.price for i in order.items.all())
+        total_discount = order_subtotal - order.discount
+        item_proportion = item_subtotal / order_subtotal if order_subtotal > 0 else 0
+        coupon_deduction = total_discount * item_proportion
+
+    refund_amount = max(item_subtotal - coupon_deduction, 0)
+
+    # === Check if this is the LAST active (non-canceled) item ===
+    active_items = order.items.exclude(cancel_status='canceled')
+    is_last_item = active_items.count() == 1 and active_items.first() == order_item
+
+    DELIVERY_CHARGE = Decimal('50.00')
+
+    if is_last_item:
+        # Add delivery charge to the last item's refund
+        refund_amount += DELIVERY_CHARGE
+
+    # === Process Cancellation ===
+    order_item.cancel_reason = cancel_reason
+    order_item.cancel_status = 'canceled'
+    order_item.save()
+
+    # Restore stock
+    order_item.varient.stock = F('stock') + order_item.quantity
+    order_item.varient.save()
+
+    # Restore sold count
+    order_item.product.sold_count = F('sold_count') - order_item.quantity
+    order_item.product.save()
+
+    # === Refund to wallet (if not COD) ===
+    try:
+        payment = Payment.objects.get(order=order)
+        payment_method = payment.payment_method
+    except Payment.DoesNotExist:
+        payment_method = 'cod'
+
+    if payment_method != 'cod':
+        wallet, _ = Wallet.objects.get_or_create(user=request.user)
+        wallet.balance = F('balance') + refund_amount
+        wallet.save()
+
+        WalletTransation.objects.create(
+            wallet=wallet,
+            transaction_type='cancellation',
+            amount=refund_amount,
+        )
+
+    # === If all items are now canceled → update order status ===
+    all_items = order.items.all()
+    canceled_items = order.items.filter(cancel_status='canceled')
+
+    if all_items.count() == canceled_items.count():
+        order.order_status = 'canceled'
+        order.cancellation_reason = 'All items canceled by user'
+        order.save()
+
+    messages.success(request, f"'{order_item.product.product_name}' has been canceled. "
+                             f"₹{refund_amount:.2f} refunded to wallet." if payment_method != 'cod' else 
+                             f"'{order_item.product.product_name}' has been canceled.")
+
+    return redirect('customer_app:item_order', id=order_id)

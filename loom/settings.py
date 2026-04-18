@@ -159,8 +159,16 @@ USE_TZ = True
 # STATICFILES_DIRS = [
 #     BASE_DIR / "static",
 # ]
+# ===================== STATIC FILES =====================
 STATIC_URL = '/static/'
+
+# This is where collectstatic will put ALL static files (admin + your custom)
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# This tells Django where to find your project's custom static files during development
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',          # ← Your main custom static folder
+]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")

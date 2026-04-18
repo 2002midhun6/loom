@@ -57,8 +57,10 @@ class OrderItems(models.Model):
     total_price = models.DecimalField(max_digits=10, decimal_places=2,null=True, blank=True)
     item_price =  models.DecimalField(max_digits=10, decimal_places=2,null=True, blank=True)
     return_date = models.DateTimeField(auto_now_add=True,null=True)
-    return_status = models.CharField(max_length=10,default='pending',null=True,blank=True)
+    return_status = models.CharField(max_length=10,default=None,null=True,blank=True)
     return_reason = models.TextField(null=True,blank=True)
+    cancel_reason = models.TextField(null=True, blank=True)
+    cancel_status = models.CharField(max_length=20, null=True, blank=True)  
 
     def __str__(self) -> str:
         return f'{self.product.product_name}-{self.quantity}'
