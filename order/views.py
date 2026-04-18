@@ -31,7 +31,11 @@ def order_complete(request):
     cart_id = cart.id
     cart_item = cart.items.all()
     delivery_date = timezone.now() + timedelta(days=7)
-    address=Address.objects.get(default=True,user=user)
+    address_id = request.session.get('checkout_address_id')
+    if address_id:
+        address = get_object_or_404(Address, id=address_id, user=user)
+    else:
+        address = get_object_or_404(Address, user=user, default=True)
    
     coupon_code=request.session.get('coupon')
     print(coupon_code)
@@ -93,6 +97,11 @@ def order_complete(request):
             item.varient.save()
             item.product.save()
     cart_item.delete()
+    cart_item.delete()
+    request.session.pop('checkout_address_id', None)
+    request.session.pop('coupon', None)
+    request.session.pop('cart_total_with_discount', None)
+    request.session.pop('total_without_coupon', None)
     
     payment_method=request.POST.get('payment_method')
     try:

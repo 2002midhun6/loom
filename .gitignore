@@ -21,7 +21,7 @@ env-loom/
 local_settings.py
 
 # Static files
-/static/
+
 media/
 
 # IDE files

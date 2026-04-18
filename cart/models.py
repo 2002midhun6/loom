@@ -17,7 +17,11 @@ class Cart_item(models.Model):
 
     def __str__(self):
         return f"CartItem {self.id} - {self.product.product_name} (Qty: {self.quantity})"
+class Book(models.Model):
+    name=models.CharField(max_length=100)
+    published_date=models.DateField()
 
-    
-
+class author(models.Model):
+    author_name=models.CharField(max_length=100)
+    book_name=models.ManyToManyField(Book,related_name='book')
 

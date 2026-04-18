@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Sum
 from datetime import datetime
 import pytz
-
+ 
 
 
 
@@ -296,11 +296,9 @@ def checkout(request,cart_id):
     try:
         address = Address.objects.get(user=request.user, default=True)
     except Address.DoesNotExist:
-        
-        request.session['next'] = f'/checkout/{cart_id}/'  
-        return redirect('customer_app:add_address') 
+        address = None  
 
-    print(address.phone)
+    all_addresses = Address.objects.filter(user=request.user)
     
     context = {
         'cart':cart,
@@ -312,12 +310,34 @@ def checkout(request,cart_id):
         'cart_total_with_discount':cart_total_with_discount,
         'offer_ended':offer_ended,
         'coupon_savings': coupon_savings,
-        'coupon': request.session.get('coupon', '')
+        'coupon': request.session.get('coupon', ''),
+        'address': address,
+        'all_addresses': all_addresses,
         
     }
     return render(request,'user/checkout.html',context)
 
-
+def set_checkout_address(request):
+    if request.method == 'POST':
+        import json
+        data = json.loads(request.body)
+        address_id = data.get('address_id')
+        address = get_object_or_404(Address, id=address_id, user=request.user)
+        request.session['checkout_address_id'] = address_id
+        return JsonResponse({
+            'success': True,
+            'address': {
+                'street_address': address.street_address,
+                'postal_code': address.postal_code,
+                'phone': address.phone,
+                'state': address.state,
+                'country': address.country,
+                'landmark': getattr(address, 'landmark', ''),
+                'alternative_phone': getattr(address, 'alternative_phone', ''),
+                'address_type': address.address_type,
+            }
+        })
+    return JsonResponse({'success': False})
 
 import json
 from django.http import JsonResponse
@@ -389,7 +409,16 @@ def coupon(request):
 
     return redirect('user_app:index')
 
-
+def checkout_add_address(request, cart_id):
+    """Sets session next URL then redirects to add address page"""
+    from django.urls import reverse
+    request.session['next'] = reverse('cart_app:checkout', kwargs={'cart_id': cart_id})
+    return redirect('customer_app:add_address')
+def checkout_edit_address(request, cart_id, addr_id):
+    """Sets session next URL then redirects to edit address page"""
+    from django.urls import reverse
+    request.session['next'] = reverse('cart_app:checkout', kwargs={'cart_id': cart_id})
+    return redirect('customer_app:edit_address', id=addr_id)
 def update_cart_item_quantity_ajax(request):
     if request.method == 'POST':
         try:
@@ -420,5 +449,6 @@ def update_cart_item_quantity_ajax(request):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
 
 
