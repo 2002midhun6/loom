@@ -181,8 +181,12 @@ def order_complete(request):
         messages.error(request, f'Payment gateway error: {str(e)}')
         return redirect('cart_app:checkout', cart_id=cart_id)
     except Exception as e:
-        messages.error(request, f'Something went wrong while placing your order. Please try again.')
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.exception("order_complete failed")  # logs full traceback
+        messages.error(request, 'Something went wrong while placing your order. Please try again.')
         return redirect('cart_app:checkout', cart_id=cart_id)
+         
 def retry_payment(request, order_id):
     guard = _staff_or_blocked_redirect(request)
     if guard:
