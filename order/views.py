@@ -181,15 +181,8 @@ def order_complete(request):
         messages.error(request, f'Payment gateway error: {str(e)}')
         return redirect('cart_app:checkout', cart_id=cart_id)
     except Exception as e:
-        import traceback
-        error_details = traceback.format_exc()
-        messages.error(request, f'DEBUG ERROR: {str(e)}')
-        # Also print to terminal
-        print("=== ORDER ERROR ===")
-        print(error_details)
-        print("==================")
+        messages.error(request, f'Something went wrong while placing your order. Please try again.')
         return redirect('cart_app:checkout', cart_id=cart_id)
-        
 def retry_payment(request, order_id):
     guard = _staff_or_blocked_redirect(request)
     if guard:
