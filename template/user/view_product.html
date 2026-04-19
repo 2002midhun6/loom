@@ -605,25 +605,78 @@
     });
   });
 
-  // ── SWEETALERT NOTIFICATIONS
+  // ── SWEETALERT THEME
   const swalTheme = {
     background: '#0f0f0f',
     color: '#c8c8c8',
     confirmButtonColor: '#b87333',
   };
 
+  // ── OFFER EXPIRED
   {% if offer_ended %}
-  Swal.fire({ title: 'Offer Expired', text: 'The offer for this product has ended.', icon: 'info', ...swalTheme });
+  Swal.fire({ 
+    title: 'Offer Expired', 
+    text: 'The offer for this product has ended.', 
+    icon: 'info', 
+    ...swalTheme 
+  });
   {% endif %}
 
+  // ── MAIN NOTIFICATIONS (Cart + Wishlist)
   document.addEventListener('DOMContentLoaded', function () {
+
+    // ==================== CART NOTIFICATIONS ====================
     {% if item_exists %}
-    Swal.fire({ title: 'Already in Cart', text: 'This product is already in your cart.', icon: 'info', timer: 3000, showConfirmButton: false, ...swalTheme });
-    setTimeout(() => { window.location.href = "{% url 'customer_app:view_product' id %}"; }, 3000);
+      Swal.fire({ 
+        title: 'Already in Cart', 
+        text: 'This product is already in your cart.', 
+        icon: 'info', 
+        timer: 2800, 
+        showConfirmButton: false, 
+        ...swalTheme 
+      });
+      setTimeout(() => { 
+        window.location.href = "{% url 'customer_app:view_product' id %}"; 
+      }, 2800);
+
     {% elif alert %}
-    Swal.fire({ title: 'Added to Cart', text: 'Product successfully added to your cart.', icon: 'success', timer: 2500, showConfirmButton: false, ...swalTheme });
-    setTimeout(() => { window.location.href = "{% url 'customer_app:view_product' id %}"; }, 2500);
+      Swal.fire({ 
+        title: 'Added to Cart', 
+        text: 'Product successfully added to your cart.', 
+        icon: 'success', 
+        timer: 2500, 
+        showConfirmButton: false, 
+        ...swalTheme 
+      });
+      setTimeout(() => { 
+        window.location.href = "{% url 'customer_app:view_product' id %}"; 
+      }, 2500);
     {% endif %}
+
+
+    // ==================== WISHLIST NOTIFICATIONS ====================
+    {% if wishlist_alert %}
+      {% if wishlist_added %}
+        Swal.fire({ 
+          title: 'Added to Wishlist', 
+          text: 'Product successfully added to your wishlist.', 
+          icon: 'success', 
+          timer: 2500, 
+          showConfirmButton: false, 
+          ...swalTheme 
+        });
+      {% else %}
+        Swal.fire({ 
+          title: 'Already in Wishlist', 
+          text: 'This item is already in your wishlist.', 
+          icon: 'info', 
+          timer: 3000, 
+          showConfirmButton: false, 
+          ...swalTheme 
+        });
+      {% endif %}
+    {% endif %}
+
   });
 </script>
 

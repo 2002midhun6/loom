@@ -1,5 +1,5 @@
-from django.shortcuts import render,redirect,get_object_or_404
-from  . models import *
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import *
 from product.models import *
 from django.contrib.auth.decorators import login_required
 from decimal import Decimal
@@ -7,321 +7,249 @@ from django.contrib import messages
 from address.models import Address
 from order.models import Order
 from django.views.decorators.cache import never_cache
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import get_object_or_404
 from django.db.models import Sum
 from datetime import datetime
-import pytz
- 
-
-
-
-
-    
+from django.urls import reverse
 from django.db import transaction
-from django.http import HttpResponse
-
+import pytz
+import json
+def _get_kolkata_now():
+    return datetime.now(pytz.timezone('Asia/Kolkata'))
+def _expire_offers(product, now):
+    expired = False
+    if product.offer and product.offer.end_date < now:
+        product.offer = None
+        product.save()
+        expired = True
+    elif (
+        product.sub_category
+        and product.sub_category.offer
+        and product.sub_category.offer.end_date < now
+    ):
+        product.sub_category.offer = None
+        product.sub_category.save()
+        expired = True
+    return expired
+def _staff_or_blocked_redirect(request):
+    if request.user.is_authenticated and request.user.is_staff:
+        return redirect('admin_app:admin_home')
+    if request.user.is_authenticated and getattr(request.user, 'is_block', False):
+        return redirect('user_app:user_logout')
+    return None
 def add_to_cart(request, id):
-    kolkata_tz = pytz.timezone('Asia/Kolkata')
-       
-    now = datetime.now(kolkata_tz)
-    print("=== Starting add_to_cart function ===")
-    
+    now = _get_kolkata_now()
     if not request.user.is_authenticated:
-        print("User not authenticated")
         return redirect("user_app:user_login")
 
     if request.user.is_staff:
-        print("Staff user detected")
         return redirect('admin_app:admin_home')
-        
-    if request.user.is_block:
-        print("Blocked user detected")
+
+    if getattr(request.user, 'is_block', False):
         return redirect('user_app:user_logout')
 
-    if request.method == 'POST':
-        try:
-            print(f"Processing POST request for product ID: {id}")
-            
-            
-            user = request.user
-            print(f"User: {user.username}")
-            
-            product = get_object_or_404(Product, id=id)
-            offer_ended=False
-            if product.offer and product.offer.end_date < now:
-                    product.offer = None
-                    product.save()
-                    offer_ended = True
-            elif product.sub_category.offer and product.sub_category.offer.end_date < now:
-                    product.offer = None
-                    product.sub_category.offer = None
-                    product.sub_category.save()
-                    offer_ended = True
-            print(f"Product found: {product.product_name}")
-           
-            varients_id = request.POST.get('var_id')
-            print(f"Variant ID from POST: {varients_id}")
-            
-            varient = Varient.objects.get(id=varients_id)
-            print(f"Variant found: {varient}")
-            
-            
-            with transaction.atomic():
-                cart, cart_created = Cart.objects.get_or_create(user=user)
-                print(f"Cart {'created' if cart_created else 'retrieved'} for user")
-                print(f"Cart ID: {cart.id}")
-                
-               
-                unit_price = varient.price if hasattr(varient, 'price') else product.price
-                print(f"Unit price: {unit_price}")
-                
-                
-                cart_item, created = Cart_item.objects.get_or_create(
-                    cart=cart,
-                    product=product,
-                    varient=varient,
-                    defaults={
-                        'quantity': 1,
-                        'total_price': unit_price
-                    }
-                )
-                
-                
-                if not created:
-                    print("Item already exists in cart")
-                    item_exists = True 
-                else:
-                    print("New cart item created")
-                    cart_item.quantity = 1
-                    cart_item.total_price = unit_price * cart_item.quantity
-                    cart_item.save()
-                    item_exists = False 
-                print(f"Cart item saved with ID: {cart_item.id}")
-                print(f"Final quantity: {cart_item.quantity}")
-                print(f"Final total price: {cart_item.total_price}")
-                alert = True
-                if request.POST.get('wishlist'):
-                    request.session['exist_session']=item_exists
-                    return redirect('wishlist_app:wishlist_view')
-                return render(request,'user/view_product.html',{'product':product,'id':id,'alert':alert,'item_exists': item_exists,})
-            
-        except Product.DoesNotExist:
-            print("Product not found")
-            return HttpResponse("Product not found")
-        except Varient.DoesNotExist:
-            print("Variant not found")
-            return HttpResponse("Variant not found")
-        except Exception as e:
-            print(f"Error occurred: {str(e)}")
-    error_message = "select a size"
-
-          
-    messages.error(request, error_message)
-    return redirect('customer_app:view_product', id=id )
-
-
+    if request.method != 'POST':
+        messages.error(request, 'Please select a size.')
+        return redirect('customer_app:view_product', id=id)
+    try:
+        user = request.user
+        product = get_object_or_404(Product, id=id)
+        _expire_offers(product, now)
+        varient_id = request.POST.get('var_id')
+        if not varient_id:
+            messages.error(request, 'Please select a size.')
+            return redirect('customer_app:view_product', id=id)
+        varient = get_object_or_404(Varient, id=varient_id)
+        if varient.stock < 1:
+            messages.error(request, f'Sorry, "{product.product_name}" in the selected size is out of stock.')
+            return redirect('customer_app:view_product', id=id)
+        with transaction.atomic():
+            cart, _ = Cart.objects.get_or_create(user=user)
+            unit_price = getattr(varient, 'price', None) or product.price   
+            cart_item, created = Cart_item.objects.get_or_create(
+                cart=cart,
+                product=product,
+                varient=varient,
+                defaults={
+                    'quantity': 1,
+                    'total_price': unit_price,
+                }
+            )
+            item_exists = not created
+            if created:
+                cart_item.quantity = 1
+                cart_item.total_price = unit_price
+                cart_item.save()
+            else:
+                pass
+            if request.POST.get('wishlist') == 'wishlist':
+                request.session['just_added_to_cart'] = json.dumps({ 
+                        'product_name': product.product_name,
+                        'was_already_in_cart': item_exists  
+                    })
+                return redirect('wishlist_app:wishlist_view')
+            varients = product.varient.all() 
+            return render(request, 'user/view_product.html', {
+                'product': product,
+                'id': id,
+                'alert': True,
+                'item_exists': item_exists,
+                'varients': varients,   
+            })
+    except Exception as e:
+        messages.error(request, 'Something went wrong while adding to cart. Please try again.')
+        return redirect('customer_app:view_product', id=id)
 @login_required
+@never_cache
 def view_cart(request):
-    kolkata_tz = pytz.timezone('Asia/Kolkata')
-       
-    now = datetime.now(kolkata_tz)
-    
-    if request.user.is_authenticated and request.user.is_staff:
-        return redirect('admin_app:admin_home')
-    if request.user.is_authenticated and request.user.is_block:
-        return redirect('authentication_app:logout')
-    if not request.user.is_authenticated:
-        return redirect('user_app:user_login')
-    
+    now = _get_kolkata_now()
+    guard = _staff_or_blocked_redirect(request)
+    if guard:
+        return guard
+    try:
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+    except Exception:
+        messages.error(request, 'Could not load your cart. Please try again.')
+        return redirect('user_app:index')
+    request.session.pop('cart_total_with_discount', None)
+    request.session.pop('coupon', None)
     offer_ended = False
-    
-    cart, created = Cart.objects.get_or_create(user=request.user)
-    cart_items = cart.items.all()
-    if 'cart_total_with_discount' in request.session:
-        del request.session['cart_total_with_discount']
-    if 'coupon' in request.session:
-        del request.session['coupon']
-    
-    
     filtered_cart_items = []
-    
-    
-    for item in cart_items:
-        if  not item.product.is_listed or not item.product.category.is_listed or not item.product.category.is_listed:
+    for item in cart.items.select_related('product', 'product__category', 'product__sub_category', 'varient').all():
+        if (
+            not item.product.is_listed
+            or not item.product.category.is_listed
+            or not item.product.sub_category.is_listed
+        ):
             item.delete()
-        else:
-            
-            if item.product.offer and item.product.offer.end_date < now:
-                    item.product.offer = None
-                    item.product.save()
-                    offer_ended = True
-                    print(1)
-            elif item.product.sub_category.offer and item.product.sub_category.offer.end_date < now:
-                    item.product.offer = None
-                    item.product.sub_category.offer = None
-                    item.product.sub_category.save()
-                    offer_ended = True
-                    print(1,3)
-            
-            
-            if item.quantity > item.varient.stock:
-                item.quantity = item.varient.stock
-                item.save()
-                messages.warning(request, f'Quantity for {item.product.product_name} has been adjusted to match available stock ({item.variant.stock}).')
-            filtered_cart_items.append(item)
-    
-    cart_items_with_prices = []
-   
-    
-    for item in filtered_cart_items:
-        
-                
+            continue
+
+        if _expire_offers(item.product, now):
+            offer_ended = True
+        if item.quantity > item.varient.stock:
+            item.quantity = item.varient.stock
+            item.save()
+            messages.warning(
+                request,
+                f'Quantity for "{item.product.product_name}" adjusted to available stock ({item.varient.stock}).'
+            )
         item.total_price = item.product.discount_price * item.quantity
-        
-           
-        
-        cart_items_with_prices.append(item)
-    
-    
-    cart_total = sum(item.total_price for item in cart_items_with_prices)
-    
-    
+        filtered_cart_items.append(item)
+    cart_total = sum(item.total_price for item in filtered_cart_items)
+    cart_delivery = float(cart_total) + 50
     request.session['cart_total'] = float(cart_total)
-    cart_delivery=float(cart_total)+50
-    
     return render(request, 'user/cart.html', {
         'cart': cart,
         'cart_items': filtered_cart_items,
         'cart_total': cart_total,
         'cart_delivery': cart_delivery,
-        'offer_ended':offer_ended,
-        
+        'offer_ended': offer_ended,
     })
-
 @login_required
-def update_cart_item_quantity(request, product_id,varient_id, action):
-    if request.user.is_authenticated and request.user.is_staff:
-        return redirect('admin_app:admin_home')
-    if request.user.is_authenticated and request.user.is_block:
-        return redirect('user_app:user_logout')
-    
-    user = request.user
+def update_cart_item_quantity(request, product_id, varient_id, action):
+    guard = _staff_or_blocked_redirect(request)
+    if guard:
+        return guard
     product = get_object_or_404(Product, id=product_id)
     varient = get_object_or_404(Varient, id=varient_id)
-    
-    
-    
-    cart, created = Cart.objects.get_or_create(user=user)
-    
-    
-    cart_item = get_object_or_404(Cart_item, cart=cart, product=product,varient=varient)
-    
-    
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    cart_item = get_object_or_404(Cart_item, cart=cart, product=product, varient=varient)
     if action == 'increment':
-        
         if cart_item.quantity >= varient.stock:
-            messages.error(request, f'Cannot add more {product.product_name}. Maximum available stock {varient.stock} reached.')
-            return redirect('cart_app:view_cart')
-        cart_item.quantity += 1
+            messages.error(
+                request,
+                f'Cannot add more "{product.product_name}". Maximum stock ({varient.stock}) reached.'
+            )
+        else:
+            cart_item.quantity += 1
+            cart_item.save()
     elif action == 'decrement':
         if cart_item.quantity > 1:
             cart_item.quantity -= 1
+            cart_item.save()
         else:
             cart_item.delete()
-            return redirect('cart_app:view_cart')
-    
-    cart_item.save()
+    else:
+        messages.error(request, 'Invalid action.')
     return redirect('cart_app:view_cart')
-def remove_cart_item(request,cart_id):
-    if request.user.is_authenticated and request.user.is_staff:
-        return redirect('admin_app:admin_home')
-    if request.user.is_authenticated and request.user.is_block:
-        return redirect('authentication_app:logout')
-    
-    cart_item = Cart_item.objects.get(id = cart_id)
-    cart_item.delete()
-    
+def remove_cart_item(request, cart_id):
+    guard = _staff_or_blocked_redirect(request)
+    if guard:
+        return guard
+    try:
+        cart_item = Cart_item.objects.get(id=cart_id)
+        if cart_item.cart.user != request.user:
+            messages.error(request, 'You are not authorised to remove this item.')
+            return redirect('cart_app:view_cart')
+        cart_item.delete()
+    except Cart_item.DoesNotExist:
+        messages.error(request, 'Cart item not found.')
     return redirect('cart_app:view_cart')
 @never_cache
-def checkout(request,cart_id):
-    kolkata_tz = pytz.timezone('Asia/Kolkata')
-       
-    now = datetime.now(kolkata_tz)
-    
-    if request.user.is_authenticated and request.user.is_staff:
-        return redirect('admin_app:admin_home')
-    if request.user.is_authenticated and request.user.is_block:
-        return redirect('user_app:user_logout')
+def checkout(request, cart_id):
+    now = _get_kolkata_now()
+    guard = _staff_or_blocked_redirect(request)
+    if guard:
+        return guard
     if not request.user.is_authenticated:
         return redirect('user_app:user_login')
-    user_email = request.user.email
-    user = CustomUser.objects.get(email = user_email)
-    cart = Cart.objects.get(id = cart_id)
+    try:
+        cart = Cart.objects.get(id=cart_id)
+    except Cart.DoesNotExist:
+        messages.error(request, 'Cart not found.')
+        return redirect('cart_app:view_cart')
     if request.user.id != cart.user.id:
+        messages.error(request, 'Unauthorised access.')
         return redirect('user_app:user_logout')
-
-    cart_items = cart.items.all()
-  
-    
+    cart_items = cart.items.select_related('product', 'product__sub_category', 'varient').all()
+    if not cart_items.exists():
+        messages.error(request, 'Your cart is empty.')
+        return redirect('cart_app:view_cart')
+    offer_ended = False
     cart_items_with_prices = []
-    offer_ended =''
-    
     for item in cart_items:
-        offer_ended = False
-        if item.product.offer and item.product.offer.end_date < now:
-                    item.product.offer = None
-                    item.product.save()
-                    offer_ended = True
-        elif item.product.sub_category.offer and item.product.sub_category.offer.end_date < now:
-                    item.product.offer = None
-                    item.product.sub_category.offer = None
-                    item.product.sub_category.save()
-                    offer_ended = True
-       
+        if _expire_offers(item.product, now):
+            offer_ended = True
         item.total_price = item.product.discount_price * item.quantity
-        
         cart_items_with_prices.append(item)
-    cart_total = sum(item.total_price for item in cart_items_with_prices)+50
-    
-    
-    request.session['cart_total_with_discount'] = float(request.session.get('cart_total_with_discount', cart_total)) 
-    cart_total_with_discount=request.session['cart_total_with_discount']
-
-    coupon_savings = float(cart_total) - float(cart_total_with_discount)
-    
-    
-        
+    cart_subtotal = sum(item.total_price for item in cart_items_with_prices)
+    cart_total = float(cart_subtotal) + 50  
+    cart_total_with_discount = float(
+        request.session.get('cart_total_with_discount', cart_total)
+    )
+    request.session['cart_total_with_discount'] = cart_total_with_discount
+    coupon_savings = cart_total - cart_total_with_discount
     try:
         address = Address.objects.get(user=request.user, default=True)
     except Address.DoesNotExist:
-        address = None  
-
+        address = None
+    except Address.MultipleObjectsReturned:
+        address = Address.objects.filter(user=request.user, default=True).first()
     all_addresses = Address.objects.filter(user=request.user)
-    
-    context = {
-        'cart':cart,
-        'user':user,
-        'cart_items':cart_items,
-        'cart_id':cart_id,
-        'cart_total':cart_total,
-        'address':address,
-        'cart_total_with_discount':cart_total_with_discount,
-        'offer_ended':offer_ended,
-        'coupon_savings': coupon_savings,
-        'coupon': request.session.get('coupon', ''),
+    return render(request, 'user/checkout.html', {
+        'cart': cart,
+        'user': request.user,
+        'cart_items': cart_items_with_prices,
+        'cart_id': cart_id,
+        'cart_total': cart_total,
         'address': address,
         'all_addresses': all_addresses,
-        
-    }
-    return render(request,'user/checkout.html',context)
-
+        'cart_total_with_discount': cart_total_with_discount,
+        'offer_ended': offer_ended,
+        'coupon_savings': coupon_savings,
+        'coupon': request.session.get('coupon', ''),
+    })
 def set_checkout_address(request):
-    if request.method == 'POST':
-        import json
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'Authentication required.'}, status=401)
+    try:
         data = json.loads(request.body)
         address_id = data.get('address_id')
+        if not address_id:
+            return JsonResponse({'success': False, 'error': 'address_id is required.'}, status=400)
         address = get_object_or_404(Address, id=address_id, user=request.user)
         request.session['checkout_address_id'] = address_id
         return JsonResponse({
@@ -337,118 +265,126 @@ def set_checkout_address(request):
                 'address_type': address.address_type,
             }
         })
-    return JsonResponse({'success': False})
-
-import json
-from django.http import JsonResponse
-
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON body.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 def coupon(request):
-    if request.user.is_authenticated:
-        if request.user.is_staff:
-            return redirect('admin_app:admin_home')
-        if request.user.is_block:
-            return redirect('user_app:user_logout')
-
-    if request.method == 'POST':
-        cart_id = request.POST.get('cart_id')
-        cart_total = float(request.POST.get('cart_total', 0))
-        customer_coupon = request.POST.get('coupon')
-        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-
-        if not customer_coupon:
-            if is_ajax:
-                return JsonResponse({'status': 'error', 'message': 'Please enter a coupon code.'})
-            return redirect('cart_app:checkout', cart_id=cart_id)
-
-        coupon_obj = Coupen.objects.filter(code=customer_coupon).first()
-        user = request.user
-        counter = 0
-
-        if coupon_obj and coupon_obj.code == customer_coupon:
-            order = Order.objects.filter(user=user, coupons=coupon_obj)
-            limit = int(coupon_obj.used_limit)
-            for i in order:
-                if i.coupons.code == customer_coupon:
-                    counter += 1
-
-            if counter < limit:
-                if cart_total < coupon_obj.maximum_order_amount and cart_total > coupon_obj.minimum_order_amount:
-                    request.session['coupon'] = coupon_obj.code
-                    request.session['total_without_coupon'] = cart_total
-                    discounted_total = cart_total - float(coupon_obj.discount_amount)
-                    request.session['cart_total_with_discount'] = discounted_total
-
-                    if is_ajax:
-                        return JsonResponse({
-                            'status': 'success',
-                            'message': 'Coupon applied successfully.',
-                            'coupon_code': coupon_obj.code,
-                            'discount_amount': float(coupon_obj.discount_amount),
-                            'cart_total_with_discount': discounted_total,
-                        })
-                    messages.success(request, "Coupon applied successfully.")
-                    return redirect('cart_app:checkout', cart_id=cart_id)
-                else:
-                    msg = "Coupon cannot be applied to this amount."
-                    if is_ajax:
-                        return JsonResponse({'status': 'error', 'message': msg})
-                    messages.error(request, msg)
-                    return redirect('cart_app:checkout', cart_id=cart_id)
-            else:
-                msg = "Coupon limit exceeded."
-                if is_ajax:
-                    return JsonResponse({'status': 'error', 'message': msg})
-                messages.error(request, msg)
-                return redirect('cart_app:checkout', cart_id=cart_id)
+    if not request.user.is_authenticated:
+        return redirect('user_app:user_login')
+    if request.user.is_staff:
+        return redirect('admin_app:admin_home')
+    if getattr(request.user, 'is_block', False):
+        return redirect('user_app:user_logout')
+    if request.method != 'POST':
+        return redirect('user_app:index')
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    def ajax_or_redirect(status, message, cart_id, extra=None):
+        if is_ajax:
+            payload = {'status': status, 'message': message}
+            if extra:
+                payload.update(extra)
+            return JsonResponse(payload)
+        if status == 'error':
+            messages.error(request, message)
         else:
-            msg = "Invalid coupon code. Please try again."
-            if is_ajax:
-                return JsonResponse({'status': 'error', 'message': msg})
-            messages.error(request, msg)
-            return redirect('cart_app:checkout', cart_id=cart_id)
+            messages.success(request, message)
+        return redirect('cart_app:checkout', cart_id=cart_id)
 
-    return redirect('user_app:index')
-
+    cart_id = request.POST.get('cart_id')
+    customer_coupon = request.POST.get('coupon', '').strip()
+    try:
+        cart_total = float(request.POST.get('cart_total', 0))
+    except (ValueError, TypeError):
+        return ajax_or_redirect('error', 'Invalid cart total.', cart_id)
+    if not cart_id:
+        return ajax_or_redirect('error', 'Cart ID missing.', cart_id)
+    if not customer_coupon:
+        return ajax_or_redirect('error', 'Please enter a coupon code.', cart_id)
+    try:
+        coupon_obj = Coupen.objects.filter(code=customer_coupon).first()
+        if not coupon_obj:
+            return ajax_or_redirect('error', 'Invalid coupon code. Please try again.', cart_id)
+        usage_count = Order.objects.filter(
+            user=request.user, coupons=coupon_obj
+        ).count()
+        if usage_count >= int(coupon_obj.used_limit):
+            return ajax_or_redirect('error', 'You have exceeded the usage limit for this coupon.', cart_id)
+        if not (coupon_obj.minimum_order_amount < cart_total < coupon_obj.maximum_order_amount):
+            return ajax_or_redirect(
+                'error',
+                f'This coupon is valid only for orders between '
+                f'₹{coupon_obj.minimum_order_amount} and ₹{coupon_obj.maximum_order_amount}.',
+                cart_id
+            )
+        discounted_total = cart_total - float(coupon_obj.discount_amount)
+        request.session['coupon'] = coupon_obj.code
+        request.session['total_without_coupon'] = cart_total
+        request.session['cart_total_with_discount'] = discounted_total
+        return ajax_or_redirect(
+            'success',
+            'Coupon applied successfully.',
+            cart_id,
+            extra={
+                'coupon_code': coupon_obj.code,
+                'discount_amount': float(coupon_obj.discount_amount),
+                'cart_total_with_discount': discounted_total,
+            }
+        )
+    except Exception as e:
+        return ajax_or_redirect('error', f'Error applying coupon: {str(e)}', cart_id)
 def checkout_add_address(request, cart_id):
-    """Sets session next URL then redirects to add address page"""
-    from django.urls import reverse
     request.session['next'] = reverse('cart_app:checkout', kwargs={'cart_id': cart_id})
     return redirect('customer_app:add_address')
 def checkout_edit_address(request, cart_id, addr_id):
-    """Sets session next URL then redirects to edit address page"""
-    from django.urls import reverse
     request.session['next'] = reverse('cart_app:checkout', kwargs={'cart_id': cart_id})
     return redirect('customer_app:edit_address', id=addr_id)
 def update_cart_item_quantity_ajax(request):
-    if request.method == 'POST':
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
+
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'Authentication required.'}, status=401)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON body.'}, status=400)
+    try:
+        product_id = data.get('product_id')
+        varient_id = data.get('varient_id')
+        action = data.get('action')
+        if not all([product_id, varient_id, action]):
+            return JsonResponse({'success': False, 'error': 'product_id, varient_id, and action are required.'}, status=400)
         try:
-            import json
-            data = json.loads(request.body)
-            product_id = data.get('product_id')
-            varient_id = data.get('varient_id')
-            action = data.get('action')
-            varient_obj=Varient.objects.get(id=varient_id)
-
-            cart_item = get_object_or_404(Cart_item, product_id=product_id, varient_id=varient_id)
-
-            if action == 'increment':
-                if cart_item.quantity >= varient_obj.stock:
-                    return JsonResponse({'success': False, 'error': 'Invalid action or quantity'})
-                else:
-                    cart_item.quantity += 1
-            elif action == 'decrement' and cart_item.quantity > 1:
+            varient_obj = Varient.objects.get(id=varient_id)
+        except Varient.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Variant not found.'}, status=404)
+        cart_item = get_object_or_404(Cart_item, product_id=product_id, varient_id=varient_id, cart__user=request.user)
+        if action == 'increment':
+            if cart_item.quantity >= varient_obj.stock:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Maximum available stock ({varient_obj.stock}) reached.'
+                })
+            cart_item.quantity += 1
+        elif action == 'decrement':
+            if cart_item.quantity > 1:
                 cart_item.quantity -= 1
             else:
-                return JsonResponse({'success': False, 'error': 'Invalid action or quantity'})
-
-            cart_item.total_price = cart_item.quantity * cart_item.product.discount_price
-            cart_item.save()
-            cart_total = Cart_item.objects.filter(cart=cart_item.cart).aggregate(total=Sum('total_price'))['total']
-            
-            return JsonResponse({'success': True, 'new_quantity': cart_item.quantity, 'item_total_price': cart_item.total_price,'cart_subtotal': cart_total,'cart_total':cart_total+50})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
-
-
-
+                return JsonResponse({'success': False, 'error': 'Quantity cannot be less than 1. Remove the item instead.'})
+        else:
+            return JsonResponse({'success': False, 'error': f'Unknown action: {action}.'}, status=400)
+        cart_item.total_price = cart_item.quantity * cart_item.product.discount_price
+        cart_item.save()
+        cart_total = Cart_item.objects.filter(cart=cart_item.cart).aggregate(
+            total=Sum('total_price')
+        )['total'] or 0
+        return JsonResponse({
+            'success': True,
+            'new_quantity': cart_item.quantity,
+            'item_total_price': float(cart_item.total_price),
+            'cart_subtotal': float(cart_total),
+            'cart_total': float(cart_total) + 50,
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

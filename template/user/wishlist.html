@@ -205,11 +205,20 @@
                 <h3 class="product-name">{{ item.product.product_name }}</h3>
 
                 <div class="product-meta">
-                    <span class="product-price">₹{{ item.product.price|floatformat:2 }}</span>
-                    {% if item.varient and item.varient.size %}
-                        <span class="product-size">Size: {{ item.varient.size }}</span>
-                    {% endif %}
-                </div>
+    <div>
+        {% if item.product.discount_price and item.product.discount_price != item.product.price %}
+            <span class="product-price">₹{{ item.product.discount_price|floatformat:2 }}</span>
+            <span style="text-decoration: line-through; color: #999; font-size: 1rem; margin-left: 6px;">
+                ₹{{ item.product.price|floatformat:2 }}
+            </span>
+        {% else %}
+            <span class="product-price">₹{{ item.product.price|floatformat:2 }}</span>
+        {% endif %}
+    </div>
+    {% if item.varient and item.varient.size %}
+        <span class="product-size">Size: {{ item.varient.size }}</span>
+    {% endif %}
+</div>
 
                 <!-- Optional: Show Color -->
                 {% if item.varient and item.varient.color %}
@@ -244,28 +253,59 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Add to Cart Confirmation
-    document.querySelectorAll('.add_to_cart').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
+    // Show notification if item was just added from wishlist
+    {% if just_added_info %}
+    document.addEventListener('DOMContentLoaded', function() {
+        const info = {{ just_added_info|safe }};
+        
+        if (info.was_already_in_cart) {
+            Swal.fire({
+                title: 'Already in Cart',
+                text: `"${info.product_name}" is already in your cart.`,
+                icon: 'info',
+                confirmButtonColor: '#3bd4c0',
+                timer: 3000,
+                timerProgressBar: true,
+            });
+        } else {
             Swal.fire({
                 title: 'Added to Cart!',
+                text: `"${info.product_name}" has been added to your cart.`,
                 icon: 'success',
                 showCancelButton: true,
                 confirmButtonText: 'View Cart',
-                cancelButtonText: 'Continue',
-                confirmButtonColor: '#3bd4c0'
+                cancelButtonText: 'Continue Shopping',
+                confirmButtonColor: '#3bd4c0',
             }).then(result => {
                 if (result.isConfirmed) {
                     window.location.href = "{% url 'cart_app:view_cart' %}";
-                } else {
-                    form.submit();
                 }
+                // else: do nothing → stay on wishlist
             });
+        }
+    });
+    {% endif %}
+
+    // Add to Cart Form Handler
+    document.querySelectorAll('.add_to_cart').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            Swal.fire({
+                title: 'Adding to Cart...',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => Swal.showLoading()
+            });
+
+            // Submit after small delay for better UX
+            setTimeout(() => {
+                form.submit();
+            }, 500);
         });
     });
 
-    // Remove Confirmation
+    // Remove from Wishlist
     document.querySelectorAll('.remove_item').forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();

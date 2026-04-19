@@ -1,32 +1,34 @@
 {% extends 'admin/admin_base.html' %}
 {% load static %}
 {% block content %}
+
 <div class="container mt-5">
     <br><br><br>
-    <!-- alert box  -->
+
+    <!-- Messages -->
     {% if messages %}
         {% for message in messages %}
-            <div class="alert alert-{{message.tags}}">
-                <strong>{{message}}</strong>
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                <strong>{{ message }}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         {% endfor %}
     {% endif %}
 
-    <script>
-        setTimeout (() => {
-            $(".alert").alert("close")
-        },3000)
-    </script>
     <h2>Order #{{ order.id }} Details</h2><br><br>
-    
+
     <div class="row">
         <div class="col-md-6">
             <h4>Order Information</h4>
-            <p><strong>Order Date:</strong> {{ order.order_date }}</p>
-            <p><strong>Delivery Date:</strong> {{ order.delivery_date }}</p>
-            <p><strong>Status:</strong> {{ order.order_status|title }}</p>
+            <p><strong>Order Date:</strong> {{ order.order_date|date:"d M Y, H:i" }}</p>
+            <p><strong>Delivery Date:</strong> {{ order.delivery_date|date:"d M Y" }}</p>
+            <p><strong>Status:</strong> 
+                <span class="badge bg-{% if order.order_status == 'delivered' %}success{% elif order.order_status == 'canceled' %}danger{% else %}warning{% endif %}">
+                    {{ order.order_status|title }}
+                </span>
+            </p>
             {% if order.order_status == 'canceled' %}
-                <p><strong>Reason for Cancellation:</strong> {{ order.cancellation_reason }}</p>
+                <p><strong>Cancellation Reason:</strong> {{ order.cancellation_reason|default:"—" }}</p>
             {% endif %}
         </div>
         <div class="col-md-6">
@@ -49,131 +51,156 @@
     <hr>
 
     <h4>Order Items</h4>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Product</th>
-            <th>Image</th>
-            <th>Quantity</th>
-            <th>Price (₹)</th>
-            <th>Total (₹)</th>
-            <th>Item Status</th>
-            <th>Action / Reason</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item, item_total in order_items %}
-        <tr>
-            <td>{{ item.product.product_name }}</td>
-            <td><img src="{{ item.product.image1.url }}" alt="{{ item.product.product_name }}" width="100"/></td>
-            <td>{{ item.quantity }}</td>
-            <td>{{ item.item_price }}</td>
-            <td>{{ item.price }}</td>
+    <table class="table table-bordered align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Product</th>
+                <th>Image</th>
+                <th>Quantity</th>
+                <th>Original Price (₹)</th>
+                <th>Discounted Price (₹)</th>
+                <th>Total (₹)</th>
+                <th>Item Status</th>
+                <th>Action / Reason</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item, item_total in order_items %}
+            <tr>
+                <td>{{ item.product.product_name }}</td>
+                <td><img src="{{ item.product.image1.url }}" alt="{{ item.product.product_name }}" width="90" class="img-thumbnail"></td>
+                <td>{{ item.quantity }}</td>
 
-            {% if item.cancel_status == 'canceled' %}
-                <td><span class="badge bg-danger">Canceled</span></td>
-                <td><small class="text-muted">{{ item.cancel_reason }}</small></td>
+                <!-- Original Price -->
+                <td>
+                    <span style="text-decoration: line-through; color: #999;">
+                        ₹{{ item.product.price }}
+                    </span>
+                </td>
 
-            {% elif item.return_status == 'returned' %}
-                <td><span class="badge bg-secondary">Returned</span></td>
-                <td><small class="text-muted">{{ item.return_reason }}</small></td>
+                <!-- Discounted Price -->
+                <td>
+                    <strong>₹{{ item.product.discount_price }}</strong>
+                </td>
 
-            {% elif item.return_status == 'pending' and item.return_reason %}
-    <td><span class="badge bg-warning text-dark">Return Requested</span></td>
-    <td>
-        <p class="mb-1"><small>{{ item.return_reason }}</small></p>
-        <form class="confirm_return"
-              action="{% url 'order_app:return_confirm' item.id order.id %}"
-              method="post">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-sm btn-outline-danger">
-                Confirm Return
-            </button>
-        </form>
-    </td>
+                <!-- Item Total -->
+                <td><strong>₹{{ item.price }}</strong></td>
 
-            {% else %}
-                <td><span class="badge bg-success">Active</span></td>
-                <td>—</td>
+                <!-- Status -->
+                {% if item.cancel_status == 'canceled' %}
+                    <td><span class="badge bg-danger">Canceled</span></td>
+                    <td><small>{{ item.cancel_reason|default:"—" }}</small></td>
+
+                {% elif item.return_status == 'returned' %}
+                    <td><span class="badge bg-secondary">Returned</span></td>
+                    <td><small>{{ item.return_reason|default:"—" }}</small></td>
+
+                {% elif item.return_status == 'pending' %}
+                    <td><span class="badge bg-warning text-dark">Return Requested</span></td>
+                    <td>
+                        <small class="d-block mb-1">{{ item.return_reason }}</small>
+                        <form class="confirm_return" 
+                              action="{% url 'order_app:return_confirm' item.id order.id %}" 
+                              method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Confirm Return</button>
+                        </form>
+                    </td>
+
+                {% else %}
+                    <td><span class="badge bg-success">Active</span></td>
+                    <td>—</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+
+    <!-- Price Breakdown - What you asked for -->
+    <div class="d-flex justify-content-end">
+        <div style="max-width: 450px; width: 100%;">
+
+            <div class="d-flex justify-content-between mb-2">
+                <h5>Actual Amount (Subtotal):</h5>
+                <h5>₹{{ total_price }}+50</h5>
+               
+            </div>
+
+            {% if coupon_savings > 0 %}
+            <div class="d-flex justify-content-between mb-2 text-success">
+                <h5>Coupon Discount:</h5>
+                <h5>- ₹{{ coupon_savings }}</h5>
+            </div>
             {% endif %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
 
-   <hr>
+            
 
-<div class="d-flex justify-content-between" style="max-width: 400px;">
-    <h5>Subtotal:</h5>
-    <h5>₹{{ total_price }}</h5>
-</div>
+            <div class="d-flex justify-content-between fw-bold border-top pt-3 fs-5">
+                <h4>Total Paid:</h4>
+                <h4>₹{{ order.discount }}</h4>
+            </div>
 
-{% if coupon_savings > 0 %}
-<div class="d-flex justify-content-between" style="max-width: 400px; color: green;">
-    <h5>Coupon Discount ({{ order.coupons.code }}):</h5>
-    <h5>- ₹{{ coupon_savings }}</h5>
-</div>
-{% endif %}
+        </div>
+    </div>
 
-<div class="d-flex justify-content-between fw-bold" style="max-width: 400px;">
-    <h4>Total Paid:</h4>
-    <h4>₹{{ order.discount }}</h4>
-</div>
-    <br>
+    <br><br>
+
+    <!-- Change Order Status -->
     {% if order.order_status != 'canceled' and order.order_status != 'delivered' %}
-    <form action="" method="post">
+    <form method="post">
         {% csrf_token %}
-        <div class="mb-3">
-            <label for="status" class="form-label">Change Order Status</label>
-            <button type="submit" class="btn btn-outline-warning" style="margin-left: 50rem;">Save</button><br><br>
-            <select id="order-status" name="order_status" class="form-select" required>
-                <!-- Looping through STATUS choices -->
-                {% for status_code, status_name in status_choices %}
-                <option value="{{ status_code }}" {% if order.order_status == status_code %}selected{% endif %}>
-                    {{ status_name }}
-                </option>
-                {% endfor %}
-            </select>
+        <div class="row">
+            <div class="col-md-6">
+                <label class="form-label">Change Order Status</label>
+                <select name="order_status" class="form-select">
+                    {% for status_code, status_name in status_choices %}
+                    <option value="{{ status_code }}" {% if order.order_status == status_code %}selected{% endif %}>
+                        {{ status_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary">Update Status</button>
+            </div>
         </div>
     </form>
     {% endif %}
-    
-</div>
-<br><br><br><br><br>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-  <script>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Auto close alerts
+    setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(el => el.remove());
+    }, 4000);
+
+    // Confirm Return with SweetAlert
     document.querySelectorAll(".confirm_return").forEach(form => {
-      form.addEventListener("submit", function(event) {
-          event.preventDefault(); 
-        Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, Return the item!"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Show success alert after deletion confirmation
-                Swal.fire({
-                    title: "Item returned!",
-                    text: "Return request has been confirmed.",
-                    icon: "success",
-                    timer: 1500,
-                    showConfirmButton: false
-                }).then(() => {
-                    // Submit the form after confirmation
-                    event.target.submit();
-                });
-            }
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: "Confirm return for this item?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, Confirm Return"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
         });
     });
-    });
 </script>
-<script
-  src="https://code.jquery.com/jquery-3.7.1.js"
-  integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
-  crossorigin="anonymous"></script>
+
 {% endblock content %}
