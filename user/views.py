@@ -18,11 +18,6 @@ from django.db.models import F
 
 User = get_user_model()
 
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 def generate_referral_code(user_id, salt="my_secret_salt"):
     hash_input = f"{user_id}{salt}".encode()
     return hashlib.md5(hash_input).hexdigest()[:6].upper()
@@ -42,7 +37,7 @@ def _send_otp_email(email, otp):
 
 
 def _set_otp_session(request, email, otp, access=False):
-    """Store OTP and expiry in session."""
+    
     valid_time = (datetime.now() + timedelta(minutes=3)).isoformat()
     request.session['registration_otp'] = otp
     request.session['registered_email'] = email
@@ -56,10 +51,6 @@ def _clear_otp_session(request):
 
 
 def _validate_otp(request, submitted_otp):
-    """
-    Returns (ok: bool, error: str|None).
-    ok=True means OTP is valid and not expired.
-    """
     valid_time = request.session.get('valid_time')
     stored_otp = request.session.get('registration_otp')
 
@@ -91,11 +82,6 @@ def validation_view(request, email, username, first_name, last_name, password, c
             errors[key] = validator
 
     return errors
-
-
-# ---------------------------------------------------------------------------
-# Views
-# ---------------------------------------------------------------------------
 
 def user_login(request):
     if request.user.is_authenticated:
@@ -172,7 +158,6 @@ def sign_up(request):
         'password': password, 'confirm_password': confirm_password,
     }
 
-    # Validate referral code before anything else
     if referral_code:
         if not UserReferral.objects.filter(referral_code=referral_code).exists():
             return render(request, 'user/sign_up.html', {
@@ -181,16 +166,13 @@ def sign_up(request):
             })
         request.session['referral'] = referral_code
 
-    # Field-level validation
     errors = validation_view(request, email, username, first_name, last_name, password, confirm_password)
     if errors:
         return render(request, 'user/sign_up.html', {**form_data, 'error': errors})
 
-    # Email already registered
     existing = CustomUser.objects.filter(email=email).first()
     if existing:
         if not existing.is_active:
-            # Re-send OTP for unverified account
             otp = random.randint(10000, 99999)
             _set_otp_session(request, email, otp, access=False)
             try:
@@ -206,14 +188,13 @@ def sign_up(request):
                 'error1': 'An account with this email already exists.',
             })
 
-    # Username taken
+
     if CustomUser.objects.filter(username=username).exists():
         return render(request, 'user/sign_up.html', {
             **form_data,
             'error1': 'Username already taken. Please choose another.',
         })
 
-    # Create inactive user and send OTP
     try:
         user = CustomUser(email=email, username=username, first_name=first_name, last_name=last_name)
         user.set_password(password)
@@ -227,7 +208,6 @@ def sign_up(request):
         return redirect('user_app:enter_otp')
 
     except Exception:
-        # Roll back user creation if email failed
         CustomUser.objects.filter(email=email, is_active=False).delete()
         messages.error(request, 'Error sending OTP email. Please try again.')
         return render(request, 'user/sign_up.html', form_data)
@@ -259,15 +239,11 @@ def enter_otp(request):
         with transaction.atomic():
             user.is_active = True
             user.save()
-
-            # Create referral code for this user if it doesn't exist
             if not UserReferral.objects.filter(user=user).exists():
                 UserReferral.objects.create(
                     user=user,
                     referral_code=generate_referral_code(user.id),
                 )
-
-            # Apply referral reward if a referral code was used
             referral_code_used = request.session.get('referral')
             if referral_code_used:
                 try:
@@ -279,15 +255,12 @@ def enter_otp(request):
                     if referrer == user:
                         messages.warning(request, 'You cannot use your own referral code.')
                     else:
-                        # Reward new user
                         wallet_new, _ = Wallet.objects.get_or_create(user=user)
                         wallet_new.balance = Decimal(str(wallet_new.balance)) + Decimal('100')
                         wallet_new.save()
                         WalletTransation.objects.create(
                             wallet=wallet_new, transaction_type='referral', amount=Decimal('100'),
                         )
-
-                        # Reward referrer
                         wallet_referrer, _ = Wallet.objects.get_or_create(user=referrer)
                         wallet_referrer.balance = Decimal(str(wallet_referrer.balance)) + Decimal('500')
                         wallet_referrer.save()
@@ -345,7 +318,6 @@ def forget_password(request):
         return render(request, 'user/forget_password.html')
 
     if not CustomUser.objects.filter(email=email).exists():
-        # Intentionally vague to avoid email enumeration
         messages.error(request, 'If this email is registered, you will receive an OTP.')
         return render(request, 'user/forget_password.html')
 
