@@ -34,6 +34,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'ecommerce-loom.midhung.in',
+    '13.48.45.150',
 ]
 
 
