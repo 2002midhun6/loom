@@ -60,9 +60,9 @@ def men_product(request):
     if guard:
         return guard
     try:
-        products = Product.objects.filter(category_id=2)
+        products = Product.objects.filter(category_id=1)
         _expire_offers(products, now)
-        sub_category = Sub_Category.objects.filter(category_id=2)
+        sub_category = Sub_Category.objects.filter(category_id=1)
         search_query = request.GET.get("search", "").strip()
         if search_query:
             products = products.filter(product_name__icontains=search_query)
@@ -117,9 +117,9 @@ def women_product(request):
     if guard:
         return guard
     try:
-        products = Product.objects.filter(category_id=1)
+        products = Product.objects.filter(category_id=2)
         _expire_offers(products, now)
-        sub_category = Sub_Category.objects.filter(category_id=1)
+        sub_category = Sub_Category.objects.filter(category_id=2)
         search_query = request.GET.get("search", "").strip()
         if search_query:
             products = products.filter(product_name__icontains=search_query)
@@ -173,7 +173,7 @@ def men_category(request, id):
     if guard:
         return guard
     try:
-        products = Product.objects.filter(Q(category_id=2) & Q(sub_category=id))
+        products = Product.objects.filter(Q(category_id=1) & Q(sub_category=id))
         _expire_offers(products, now)
     except Exception as exc:
         logger.error("men_category view error for id=%s: %s", id, exc, exc_info=True)
@@ -187,7 +187,7 @@ def women_category(request, id):
     if guard:
         return guard
     try:
-        products = Product.objects.filter(Q(category_id=1) & Q(sub_category=id))
+        products = Product.objects.filter(Q(category_id=2) & Q(sub_category=id))
         _expire_offers(products, now)
     except Exception as exc:
         logger.error("women_category view error for id=%s: %s", id, exc, exc_info=True)
